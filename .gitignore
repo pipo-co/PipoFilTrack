@@ -48,3 +48,14 @@ Thumbs.db
 *.mov
 *.wmv
 
+Mediciones_ROIs/
+Test_Images_1Channel/
+static/uploads/
+venv/
+pyvenv.cfg
+.history/
+c1/
+tracking/TODO.txt
+.vscode/*
+.venv
+*/*_test.py
