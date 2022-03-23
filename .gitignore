@@ -52,6 +52,7 @@ Mediciones_ROIs/
 Test_Images_1Channel/
 static/uploads/
 venv/
+.env/
 pyvenv.cfg
 .history/
 c1/
