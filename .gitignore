@@ -58,5 +58,10 @@ pyvenv.cfg
 c1/
 tracking/TODO.txt
 .vscode/*
+.vscode-server/*
 .venv
+.cache/*
+.ssh/*
 */*_test.py
+.bash_history
+.gitconfig
