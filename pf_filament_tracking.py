@@ -49,7 +49,7 @@ def upload_images():
         file.save(complete_filename)
 
         if curr_index == 0:
-            first_image = save_first_frame_as_jpg(server_folder, filename, complete_filename)
+            first_image, ratio = save_first_frame_as_jpg(server_folder, filename, complete_filename)
 
         if extension == ".tiff" or extension == ".tif":
             check_is_multitiff(server_folder, complete_filename, extension)
@@ -58,7 +58,7 @@ def upload_images():
         elif extension == '.avi':
             convert_avi_to_tif(server_folder, complete_filename)
 
-    return render_template('upload.html', filename=first_image)
+    return render_template('upload.html', filename=first_image, ratio=ratio)
 
 
 @server.route('/track', methods=['POST'])
@@ -72,7 +72,7 @@ def track():
     except Exception as e:
         flash(str(e))
         print(traceback.print_exc())
-        return render_template('upload.html', filename=request.form['filename'])
+        return render_template('upload.html', filename=request.form['filename'], ratio=0.9) #TODO(nacho): hay que sacar el ratio de la imagen (width/heigth)
     results = sorted(glob.glob(f'{results_folder}/*.svg'), key=os.path.getmtime)
     return render_template('result.html', results=results, results_folder=results_folder)
 

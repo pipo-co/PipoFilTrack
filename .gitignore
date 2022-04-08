@@ -65,3 +65,4 @@ tracking/TODO.txt
 */*_test.py
 .bash_history
 .gitconfig
+images/*

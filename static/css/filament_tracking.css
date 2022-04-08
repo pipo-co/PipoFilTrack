@@ -173,10 +173,8 @@ body {
 
 #canvas {
   cursor:crosshair;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
-  background-size: cover !important;
-  width: 74vh;
+  background-size: contain; 
+  background-repeat: no-repeat;
   height: 74vh;
 }
 

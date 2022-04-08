@@ -13,6 +13,7 @@ from tracking.types_utils import Point
 
 matplotlib.use('Agg')
 
+DEFAULT_SCALING_FACTOR=10
 
 def get_frame(cell_path, invert: bool = False):
     img16 = cv2.imread(cell_path, cv2.IMREAD_UNCHANGED)
@@ -112,19 +113,23 @@ def save_first_frame_as_jpg(server_folder, filename, complete_filename):
     first_image_filter = '/'.join([server_folder, os.path.splitext(filename)[0] + "filter.jpg"])
     try:
         im = cv2.imread(complete_filename, cv2.IMREAD_UNCHANGED)
+        im = ((im - im.min()) / (im.max() - im.min())) * 255 
         im = im.astype('uint8')
         if len(im.shape) == 3:  # Image is not grayscale
             # Conversion to grayscale
             im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 
         im_filter = gauss_img(im)
-        cv2.imwrite(first_image, im)
-        cv2.imwrite(first_image_filter, im_filter)
+
+        cv2.imwrite(first_image, scale_img(im, DEFAULT_SCALING_FACTOR))
+        cv2.imwrite(first_image_filter, scale_img(im_filter, DEFAULT_SCALING_FACTOR))
     except Exception as e:
         print('Warning. Exception on save_first_frame_as_jpg. First image was probably not saved. ', e)
 
-    return first_image
+    return first_image, im.shape[1] / im.shape[0]
 
+def scale_img(img: np.ndarray, factor: int) -> np.ndarray:
+    return np.repeat(np.repeat(img, factor, axis=1), factor, axis=0)
 
 def check_is_multitiff(server_folder, complete_filename, extension):
     img = Image.open(complete_filename)

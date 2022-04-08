@@ -74,8 +74,8 @@ def track_filament(frames_folder: str, canvas_size: float, marked_points: list, 
         end_point = Point(marked_points[1]['x'], marked_points[1]['y'])
 
         # normalize points
-        start_point.x = int(float(start_point.x) / canvas_size * img.shape[0])
-        start_point.y = int(float(start_point.y) / canvas_size * img.shape[1])
+        start_point.x = int(float(start_point.x) / canvas_size * img.shape[1])
+        start_point.y = int(float(start_point.y) / canvas_size * img.shape[0])
         end_point.x = int(float(end_point.x) / canvas_size * img.shape[0])
         end_point.y = int(float(end_point.y) / canvas_size * img.shape[1])
 
