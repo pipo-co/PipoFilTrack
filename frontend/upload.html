@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="/static/css/filament_tracking.css">
 </head>
 <body>
-	{% if filename %}
+	{% if original %}
 		<div class="left blur">
 			<a class="logo" href="/">
 				<div class="float-left">Filament tracking</div>
@@ -31,16 +31,6 @@
 						<div class="row" style="height: 100%">
 							<div class="col-1 p-0">
 								<div class="container p-0">
-									<div class="row p-0">
-										<div class="col p-0">
-											<span id="plus" title="Increase dot size"><img class="mt-3" src="/static/images/plus.png" alt="plus"></span>
-										</div>
-									</div>
-									<div class="row p-0">
-										<div class="col p-0">
-											<span id="minus" title="Decrease dot size"><img class="mt-3" src="/static/images/minus.png" alt="minus"></span>
-										</div>
-									</div>
 									<div class="row p-0">
 										<div class="col p-0">
 											<span id="undo" title="Undo"><img class="mt-3" src="/static/images/undo.png" alt="undo"></span>
@@ -62,7 +52,7 @@
 								</div>
 							</div>
 							<div class="col-10 p-0">
-								<canvas id="canvas" style="width: {{74 * ratio}}vh; background:url({{ filename }});"></canvas>
+								<canvas id="canvas" style="width: {{74 * ratio}}vh; background:url({{ original }});"></canvas>
 							</div>
 							<div class="col-1 p-0"></div>
 						</div>
@@ -79,8 +69,8 @@
 							<div class="col-5 p-0">
 								<form id="tracking_form" method="post" action="/track" enctype="application/json">
 									<input type="hidden" name="points" id="points">
-									<input type="hidden" name="canvas_size" id="canvas_size">
-									<input type="hidden" name="filename" value="{{ filename }}">
+									<input type="hidden" name="canvas_shape" id="canvas_shape">
+									<input type="hidden" name="filename" value="{{ original }}">
 									<input type="hidden" name="point_size" value="">
 									<button id="submit_tracking_form" class="button mb-1 mt-2 ml-0 mr-0" type="submit">Start</button>
 								</form>
@@ -135,6 +125,13 @@
 			</div>
 		</div>
 	{% endif %}
+
+	<datalist id="image_urls">
+		{% if original %}
+			<option value="original">{{ original }}</option>
+			<option value="filterd">{{ filtered }}</option>
+		{% endif %}
+	</datalist>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>

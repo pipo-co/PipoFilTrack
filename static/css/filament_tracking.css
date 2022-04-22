@@ -159,7 +159,7 @@ body {
 }
 
 .button_result {
-  padding: 0 1.5rem; !important;
+  padding: 0 1.5rem !important;
   width: 95% !important;
 }
 
@@ -186,7 +186,7 @@ body {
   color: red;
 }
 
-#undo img, #redo img {
+#undo, #redo {
   margin-top: 1%;
   max-height: 32px;
   cursor: pointer;

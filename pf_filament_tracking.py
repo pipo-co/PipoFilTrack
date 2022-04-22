@@ -39,7 +39,7 @@ def upload_images():
         flash('Debe seleccionar al menos una imagen')
         return redirect(request.url)
 
-    first_image = None
+    original = None
 
     for curr_index, file in enumerate(files):
         extension = os.path.splitext(file.filename)[1].lower()
@@ -49,7 +49,7 @@ def upload_images():
         file.save(complete_filename)
 
         if curr_index == 0:
-            first_image, ratio = save_first_frame_as_jpg(server_folder, filename, complete_filename)
+            original, filtered, ratio = save_first_frame_as_jpg(server_folder, filename, complete_filename)
 
         if extension == ".tiff" or extension == ".tif":
             check_is_multitiff(server_folder, complete_filename, extension)
@@ -58,7 +58,7 @@ def upload_images():
         elif extension == '.avi':
             convert_avi_to_tif(server_folder, complete_filename)
 
-    return render_template('upload.html', filename=first_image, ratio=ratio)
+    return render_template('upload.html', original=original, filtered=filtered, ratio=ratio)
 
 
 @server.route('/track', methods=['POST'])

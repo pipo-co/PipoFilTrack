@@ -126,7 +126,7 @@ def save_first_frame_as_jpg(server_folder, filename, complete_filename):
     except Exception as e:
         print('Warning. Exception on save_first_frame_as_jpg. First image was probably not saved. ', e)
 
-    return first_image, im.shape[1] / im.shape[0]
+    return first_image, first_image_filter, im.shape[1] / im.shape[0]
 
 def scale_img(img: np.ndarray, factor: int) -> np.ndarray:
     return np.repeat(np.repeat(img, factor, axis=1), factor, axis=0)
