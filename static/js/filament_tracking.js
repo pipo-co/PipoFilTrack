@@ -49,7 +49,7 @@ window.addEventListener('load', () => {
 
 function formSubmitHandler() {
 
-        if (selected_points.length !== 2) {
+        if (selected_points.length < 2) {
             const div = document.createElement('div');
             div.className = 'flashes mt-2';
             div.innerHTML = '<p>Debe seleccionar el punto inicial y final del filamento</p>';
@@ -58,7 +58,7 @@ function formSubmitHandler() {
             return;
         }
 
-        form['points'] = JSON.stringify(selected_points);
+        form['points'].value = JSON.stringify(selected_points);
         form.submit();
 }
 
