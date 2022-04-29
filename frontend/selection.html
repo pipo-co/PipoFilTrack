@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<div id="section_tracking_form">
+    <span id="undo" title="Undo"><img src="/static/images/undo.png" alt="undo"></span>
+    <span id="redo" title="Redo"><img src="/static/images/redo.png" alt="redo"></span>
+    <label>
+        Filtro
+        <input id="toggle_filter" type="checkbox" data-toggle="toggle" data-onstyle="success">
+    </label>
+    <canvas id="canvas" style="width: {{74 * ratio}}vh;"></canvas>
+
+    <a href="/">
+        <button type="submit">Reset</button>
+    </a>
+
+    <form id="tracking_form" method="post" action="/track" enctype="application/json">
+        <input type="hidden" name="points" id="points">
+        <input type="hidden" name="canvas_shape" id="canvas_shape">
+        <input type="hidden" name="filename" value="{{ original }}">
+        <input type="hidden" name="point_size" value="">
+        <button id="submit_tracking_form" type="submit">Start</button>
+    </form>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+</div>
+{% endblock %}
+
+{% block footer %}
+<datalist id="image_urls">
+    {% if original %}
+    <option value="original">{{ original }}</option>
+    <option value="filtered">{{ filtered }}</option>
+    {% endif %}
+</datalist>
+<script src="/static/js/filament_tracking.js"></script>
+{% endblock %}
+

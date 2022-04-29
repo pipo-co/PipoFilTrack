@@ -58,7 +58,7 @@ def upload_images():
         elif extension == '.avi':
             convert_avi_to_tif(server_folder, complete_filename)
 
-    return render_template('upload.html', original=original, filtered=filtered, ratio=ratio)
+    return render_template('selection.html', original=original, filtered=filtered, ratio=ratio)
 
 
 @server.route('/track', methods=['POST'])

@@ -3,13 +3,17 @@ const POINT_COLOR = '#ff0000';
 let selected_points = [];
 let redo_points = [];
 
-const form = document.getElementById('tracking_form')
-const canvas = document.getElementById('canvas');
-const toggle = document.getElementById('toggle_filter');
+let form
+let canvas
+let toggle
 
 const images = {}
 
 window.addEventListener('load', () => {
+
+    canvas = document.getElementById('canvas');
+    form = document.getElementById('tracking_form')
+    toggle = document.getElementById('toggle_filter');
 
     // clientWidth = width + padding horizontal.
     // Por defecto, si canvas no tiene seteado width usa 300
@@ -22,6 +26,8 @@ window.addEventListener('load', () => {
         images[option.value] = option.text;
     }
 
+    canvas.style.backgroundImage = `url(${images['original']})`;
+
     canvas.addEventListener('click', addPoint);
 
     document.getElementById('undo').addEventListener('click', undoPoint);
@@ -31,19 +37,12 @@ window.addEventListener('load', () => {
     form.addEventListener('submit', formSubmitHandler);
 
     toggle.addEventListener('change', () => {
-
-        log.console('change');
-        // $('#toggle_filter').change(function() {
-        // if ($('#toggle_filter').prop('checked')) {
-        //     document.getElementById('canvas').style.background = document.getElementById('canvas').style.background.replace('.jpg', 'filter.jpg');
-        // } else {
-        //     document.getElementById('canvas').style.background = document.getElementById('canvas').style.background.replace('filter.jpg', '.jpg');
-        // }
-        // });
-    })
-    toggle.addEventListener('click', () => {
-
-        log.console('click');
+        let imgURL = images['original']
+        
+        if(toggle.checked) {
+            imgURL = images['filtered']
+        }
+        canvas.style.backgroundImage = `url(${imgURL})`;
     })
 
 });
