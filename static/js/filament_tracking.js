@@ -65,20 +65,40 @@ function formSubmitHandler() {
 function addPoint(event){
 
     let rect = canvas.getBoundingClientRect();
-    let x = event.clientX - rect.left;
-    let y = event.clientY - rect.top;
-    selected_points.push({'x': x, 'y': y});
+
+    let prev = null;
+    if(selected_points.length > 0) {
+        prev = selected_points[selected_points.length - 1];
+    }
+
+    let point = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        prev: prev
+    }
+    selected_points.push(point);
     
     updateInterface();
-    drawPoint(x,y);
+    drawPoint(point);
 }
 
-function drawPoint(x,y){
+function drawPoint(point){
 
     let ctx = canvas.getContext("2d");
 
+    // Line
+    if(point.prev) {
+        let previousPoint = point.prev;
+        ctx.beginPath();
+        ctx.moveTo(previousPoint['x'], previousPoint['y']);
+        ctx.lineTo(point['x'], point['y']);
+        ctx.strokeStyle = POINT_COLOR;
+        ctx.stroke();
+    }
+    
+    // Point
     ctx.beginPath();
-    ctx.arc(x, y, POINT_SIZE, 0, Math.PI * 2);
+    ctx.arc(point['x'], point['y'], POINT_SIZE, 0, Math.PI * 2);
     ctx.fillStyle = POINT_COLOR;
     ctx.fill();
 }
@@ -94,9 +114,7 @@ function undoPoint(){
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         // Redraw all poins
-        selected_points.forEach(function redraw(currentValue) {
-            drawPoint(currentValue['x'], currentValue['y']);
-        })
+        selected_points.forEach(drawPoint)
         updateInterface();
     }
 }
@@ -105,18 +123,15 @@ function redoPoint(){
     if (redo_points.length > 0) {
         const point = redo_points.pop();
         selected_points.push(point);
-        drawPoint(point['x'], point['y']);
+        drawPoint(point);
         updateInterface();
     }
 }
 
 function updateInterface() {
     
-    // debugger;
     document.getElementById('undo').style.visibility = selected_points.length === 0 ? 'hidden' : 'visible';
     document.getElementById('redo').style.visibility = redo_points.length === 0 ? 'hidden' : 'visible';
-    
-    // document.getElementById('undo').getElementsByTagName('img')[0].style.visibility = "visible";
     
     let error_flashes = document.getElementById("section_tracking_form").getElementsByClassName("flashes")[0];
     if (document.body.contains(error_flashes)) {
