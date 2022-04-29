@@ -28,7 +28,7 @@ window.addEventListener('load', () => {
 
     canvas.style.backgroundImage = `url(${images['original']})`;
 
-    canvas.addEventListener('click', addPoint);
+    canvas.addEventListener('click', clickHandle);
 
     document.getElementById('undo').addEventListener('click', undoPoint);
 
@@ -62,9 +62,15 @@ function formSubmitHandler() {
         form.submit();
 }
 
-function addPoint(event){
+function clickHandle(event) {
 
     let rect = canvas.getBoundingClientRect();
+    let x = event.clientX - rect.left;
+    let y = event.clientY - rect.top;
+    addPoint(x, y)
+}
+
+function addPoint(x, y){
 
     let prev = null;
     if(selected_points.length > 0) {
@@ -72,8 +78,8 @@ function addPoint(event){
     }
 
     let point = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
+        x: x,
+        y: y,
         prev: prev
     }
     selected_points.push(point);
@@ -122,9 +128,7 @@ function undoPoint(){
 function redoPoint(){
     if (redo_points.length > 0) {
         const point = redo_points.pop();
-        selected_points.push(point);
-        drawPoint(point);
-        updateInterface();
+        addPoint(point['x'], point['y'])
     }
 }
 
