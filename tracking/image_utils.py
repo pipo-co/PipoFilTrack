@@ -8,13 +8,10 @@ from werkzeug.utils import secure_filename
 from matplotlib import pyplot as plt
 import matplotlib
 import numpy as np
-from typing import List
-from tracking.types_utils import Point
 
 matplotlib.use('Agg')
 
-DEFAULT_SCALING_FACTOR=10
-
+# TODO(tobi): When we are happy with the tracking algorithm we should review all image manipulation algorithms. They probably suck
 def get_frame(cell_path, invert: bool = False):
     img16 = cv2.imread(cell_path, cv2.IMREAD_UNCHANGED)
     img16 = ((img16 - img16.min()) / (img16.max() - img16.min())) * 255 

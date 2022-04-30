@@ -11,7 +11,6 @@ from flask import (flash, redirect, render_template, request,
 from flask_apscheduler import APScheduler
 from werkzeug.utils import secure_filename
 
-# Project imports
 from __init__ import server
 from tracking.image_utils import (check_is_multitiff, convert_avi_to_tif,
                                   convert_jpg_to_tif, save_first_frame_as_jpg)

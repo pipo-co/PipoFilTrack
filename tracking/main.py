@@ -1,18 +1,18 @@
 import json
 import os
 import re
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
 
-# Project imports
 import tracking.image_utils as image_utils
-from tracking.tracking import (adjust_points, get_line_angle, outline_filament, smooth)
-from tracking.types_utils import Conf, Point
+from tracking.tracking import adjust_points
+from tracking.types_utils import Point
 
 SAMPLE_POINTS = 100
 PIXEL_POINT_RATIO = 1
 
+# TODO(tobi): Not used. Find use or deprecate. It could be usefull to store point data.
 def save_info_as_json(folder: str, points: List[Point], frame_name: str) -> None:
     if frame_name == '0':  # json file is not yet created
         points_dict = {}
@@ -29,8 +29,7 @@ def save_info_as_json(folder: str, points: List[Point], frame_name: str) -> None
     f.write(json.dumps(points_dict))
     f.close()
 
-
-def save_results(folder, img, points: np.ndarray, debug_points: List[Point], frame: str) -> None:
+def save_results(folder, img, points: np.ndarray, frame: str) -> None:
     """
         In `folder`/results, save image with points and debug_points,
         as well as the points in a json file
@@ -38,13 +37,6 @@ def save_results(folder, img, points: np.ndarray, debug_points: List[Point], fra
 
     # Make plot
     image_utils.add_img_to_plot(img)
-    if debug_points is not None and len(debug_points) > 0:
-        from itertools import groupby, zip_longest
-        i = (list(g) for _, g in groupby(debug_points, key=debug_points[0].__ne__))
-        debug_points_list = [a + b for a, b in zip_longest(i, i, fillvalue=[])]
-        # image_utils.add_points_to_plot(debug_points, 'red')
-        for debug_pts in debug_points_list:
-            image_utils.add_points_to_plot(debug_pts, 'darkgrey')
     image_utils.add_points_to_plot(points, 'tab:blue')
 
     # Save to results folder
@@ -71,6 +63,8 @@ def track_filament(frames_folder: str, user_points: np.ndarray) -> str:
         Given a folder with images and a set of points, tracks a 
          filament containing those points in all the images (or frames)
     """
+
+    # TODO(tobi): File system manipulation should go in another module. At least a private function
     frames = []
     for root, _, filenames in os.walk(frames_folder):
         if 'results' in root:
@@ -83,39 +77,24 @@ def track_filament(frames_folder: str, user_points: np.ndarray) -> str:
     img, invert = image_utils.get_frame(start_frame)
     img_gauss = image_utils.gauss_img(img)
 
-    points = points_linear_interpolation(user_points, PIXEL_POINT_RATIO)
+    starting_points = points_linear_interpolation(user_points, PIXEL_POINT_RATIO)
     # # start_angle = get_line_angle(start_point, end_point)
 
-    # step_size = 3
-    # points, debug_points, filament_width = outline_filament(Conf(
-    #     start=start_point,
-    #     current_position=start_point,
-    #     end=end_point,
-    #     start_angle=start_angle,
-    #     max_step_size=step_size,
-    #     angle_aperture=math.pi,
-    #     angles_amount=100,
-    #     img=img_gauss
-    # ))
-    # if len(points) < 2:
-    #     raise Exception('Tracking failed, please try again')
+    # Descomentar para mostrar la interpolacion
+    # save_results(frames_folder, img, points, [], start_frame)
 
-    # points = smooth(points)
-    
-    save_results(frames_folder, img, points, [], start_frame)
-    # save_results(frames_folder, img_gauss, points, debug_points, start_frame)
+    # TODO(tobi): Que normal_len sea un parametro, y que sino se pueda calcular a partir del ancho del tubo en esa seccion
+    normal_len = 10
 
-    # print(f'\nAdjusting points to frame number ', end='')
-    next_frames = frames[1:]  # start_frame skipped, already analyzed (it's the base for the adjusting)
-    prev_frame_points = user_points
-    for i, frame in enumerate(next_frames):
+    prev_frame_points = starting_points
+    for i, frame in enumerate(frames):
         img, _ = image_utils.get_frame(frame, invert)
         blurred_img = image_utils.blur_img(img)
 
-        prev_frame_points, debug_points = adjust_points(blurred_img, prev_frame_points, filament_width)
+        prev_frame_points = adjust_points(blurred_img, prev_frame_points, normal_len)
         # prev_frame_points = smooth(prev_frame_points)
 
-        save_results(frames_folder, img, prev_frame_points, [], frame)
+        save_results(frames_folder, img, prev_frame_points, frame)
         # save_results(frames_folder, img, prev_frame_points, debug_points, frame)
 
     results_folder = f'{frames_folder}/results'
