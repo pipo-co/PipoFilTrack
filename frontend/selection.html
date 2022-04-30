@@ -8,7 +8,9 @@
         Filtro
         <input id="toggle_filter" type="checkbox" data-toggle="toggle" data-onstyle="success">
     </label>
-    <canvas id="canvas" style="width: {{74 * ratio}}vh;"></canvas>
+
+    {#TODO(tobi): Add zoom element #}
+    <canvas id="canvas" data-img_width="{{ img_width }}" data-img_height="{{ img_height }}"></canvas>
 
     <a href="/">
         <button type="submit">Reset</button>
@@ -16,7 +18,6 @@
 
     <form id="tracking_form" method="post" action="/track" enctype="application/json">
         <input type="hidden" name="points" id="points">
-        <input type="hidden" name="canvas_shape" id="canvas_shape">
         <input type="hidden" name="filename" value="{{ original }}">
         <input type="hidden" name="point_size" value="4">
         <button id="submit_tracking_form" type="submit">Start</button>

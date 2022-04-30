@@ -54,8 +54,7 @@ def save_results(folder, img, points: np.ndarray, debug_points: List[Point], fra
     image_utils.save_plot(folder, frame_name)
     # save_info_as_json(folder, points, frame_name)
 
-
-def track_filament(frames_folder: str, canvas_shape: Tuple[int, int], points: np.ndarray) -> str:
+def track_filament(frames_folder: str, points: np.ndarray) -> str:
     """
         Given a folder with images and a set of points, tracks a 
          filament containing those points in all the images (or frames)

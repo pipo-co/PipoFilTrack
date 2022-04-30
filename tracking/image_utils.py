@@ -122,15 +122,13 @@ def save_first_frame_as_jpg(server_folder, filename, complete_filename):
 
         im_filter = gauss_img(im)
 
-        cv2.imwrite(first_image, scale_img(im, DEFAULT_SCALING_FACTOR))
-        cv2.imwrite(first_image_filter, scale_img(im_filter, DEFAULT_SCALING_FACTOR))
+        cv2.imwrite(first_image, im)
+        cv2.imwrite(first_image_filter, im_filter)
     except Exception as e:
         print('Warning. Exception on save_first_frame_as_jpg. First image was probably not saved. ', e)
 
-    return first_image, first_image_filter, im.shape[1] / im.shape[0]
+    return first_image, first_image_filter, im.shape
 
-def scale_img(img: np.ndarray, factor: int) -> np.ndarray:
-    return np.repeat(np.repeat(img, factor, axis=1), factor, axis=0)
 
 def check_is_multitiff(server_folder, complete_filename, extension):
     img = Image.open(complete_filename)

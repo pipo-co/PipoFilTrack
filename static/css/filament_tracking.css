@@ -11,10 +11,15 @@
 }
 
 #canvas {
-  cursor:crosshair;
-  background-size: contain !important; 
-  background-repeat: no-repeat !important;
-  height: 74vh;
+  cursor: crosshair;
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 50%;
+
+  /* Keep the image pixelated: https://css-tricks.com/keep-pixelated-images-pixelated-as-they-scale/*/
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 #stats {

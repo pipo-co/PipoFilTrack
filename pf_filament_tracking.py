@@ -53,7 +53,7 @@ def upload_images():
         file.save(complete_filename)
 
         if curr_index == 0:
-            original, filtered, ratio = save_first_frame_as_jpg(server_folder, filename, complete_filename)
+            original, filtered, img_shape = save_first_frame_as_jpg(server_folder, filename, complete_filename)
 
         if extension == ".tiff" or extension == ".tif":
             check_is_multitiff(server_folder, complete_filename, extension)
@@ -62,16 +62,15 @@ def upload_images():
         elif extension == '.avi':
             convert_avi_to_tif(server_folder, complete_filename)
 
-    return render_template('selection.html', original=original, filtered=filtered, ratio=ratio)
+    return render_template('selection.html', original=original, filtered=filtered, img_width=img_shape[1], img_height=img_shape[0])
 
 
 @server.route('/track', methods=['POST'])
 def track():
-    canvas_shape = json.loads(request.form['canvas_shape'], object_hook=lambda shape: (int(shape['width']), int(shape['height'])))
     points = json.loads(request.form['points'], object_hook=lambda point: (point['x'], point['y']))
     folder = os.path.dirname(request.form['filename'])
     try:
-        results_folder = track_filament(folder, canvas_shape, np.array(points))
+        results_folder = track_filament(folder, np.array(points))
     except Exception as e:
         flash(str(e))
         print(traceback.print_exc())
