@@ -1,4 +1,4 @@
-const POINT_SIZE = 4;
+const POINT_SIZE = 2;
 const POINT_COLOR = '#ff0000';
 let selected_points = [];
 let redo_points = [];
