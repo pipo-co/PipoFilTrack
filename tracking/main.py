@@ -7,12 +7,11 @@ import numpy as np
 
 # Project imports
 import tracking.image_utils as image_utils
-from tracking.tracking import (adjust_points, get_line_angle, outline_filament,
-                               smooth)
+from tracking.tracking import (adjust_points, get_line_angle, outline_filament, smooth)
 from tracking.types_utils import Conf, Point
 
 SAMPLE_POINTS = 100
-SEGMENT_POINT_RATIO = 1
+PIXEL_POINT_RATIO = 1
 
 def save_info_as_json(folder: str, points: List[Point], frame_name: str) -> None:
     if frame_name == '0':  # json file is not yet created
@@ -54,7 +53,20 @@ def save_results(folder, img, points: np.ndarray, debug_points: List[Point], fra
     image_utils.save_plot(folder, frame_name)
     # save_info_as_json(folder, points, frame_name)
 
-def track_filament(frames_folder: str, points: np.ndarray) -> str:
+def points_linear_interpolation(points: np.ndarray, pixel_point_ratio: int) -> np.ndarray:
+    """
+    Given a point vector, interpolates linearly between each point pair adding a point every `pixel_point_ratio` pixels.
+    """
+    ret = []
+    for start, end in zip(points, points[1:]):
+        ratio = int(np.linalg.norm(start - end, ord=2)) // pixel_point_ratio
+        x = np.linspace(start[0], end[0], ratio).round().astype(np.uint8)
+        y = np.linspace(start[1], end[1], ratio).round().astype(np.uint8)
+        ret.append(np.stack((x, y), axis=-1))
+
+    return np.concatenate(ret)
+
+def track_filament(frames_folder: str, user_points: np.ndarray) -> str:
     """
         Given a folder with images and a set of points, tracks a 
          filament containing those points in all the images (or frames)
@@ -70,18 +82,8 @@ def track_filament(frames_folder: str, points: np.ndarray) -> str:
     start_frame = frames[0]
     img, invert = image_utils.get_frame(start_frame)
     img_gauss = image_utils.gauss_img(img)
-    
-    points = points / canvas_shape * np.flip(img.shape)
 
-    interpol = []
-
-    for start, end in zip(points, points[1:]):
-        ratio = int(np.linalg.norm(start-end)) // SEGMENT_POINT_RATIO
-        x = np.linspace(start[0], end[0], ratio).round().astype(np.uint8)
-        y = np.linspace(start[1], end[1], ratio).round().astype(np.uint8)
-        interpol.append(np.array((x, y)))
-
-    interpol = np.concatenate(interpol, axis=1)
+    points = points_linear_interpolation(user_points, PIXEL_POINT_RATIO)
     # # start_angle = get_line_angle(start_point, end_point)
 
     # step_size = 3
@@ -100,12 +102,12 @@ def track_filament(frames_folder: str, points: np.ndarray) -> str:
 
     # points = smooth(points)
     
-    save_results(frames_folder, img, interpol, [], start_frame)
+    save_results(frames_folder, img, points, [], start_frame)
     # save_results(frames_folder, img_gauss, points, debug_points, start_frame)
 
     # print(f'\nAdjusting points to frame number ', end='')
     next_frames = frames[1:]  # start_frame skipped, already analyzed (it's the base for the adjusting)
-    prev_frame_points = points
+    prev_frame_points = user_points
     for i, frame in enumerate(next_frames):
         img, _ = image_utils.get_frame(frame, invert)
         blurred_img = image_utils.blur_img(img)

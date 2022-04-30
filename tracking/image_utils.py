@@ -48,7 +48,7 @@ def add_points_to_plot(points: np.ndarray, color='darkgrey') -> None:
     if color == 'rainbow':
         pass
     
-    plt.plot(points[0], points[1], color)
+    plt.plot(points[:, 0], points[:, 1], color)
 
 
 def save_plot(folder, name):
