@@ -6,6 +6,9 @@
  font-weight:normal
 }
 
+.photo {
+  height: 74vh;
+}
 
 #canvas {
   cursor:crosshair;

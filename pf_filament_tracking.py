@@ -1,16 +1,20 @@
-import os
 import glob
 import json
-import time
+import os
 import shutil
-from flask import flash, request, redirect, render_template, send_from_directory
+import time
+import traceback
+
+import numpy as np
+from flask import (flash, redirect, render_template, request,
+                   send_from_directory)
 from flask_apscheduler import APScheduler
 from werkzeug.utils import secure_filename
-import traceback
 
 # Project imports
 from __init__ import server
-from tracking.image_utils import save_first_frame_as_jpg, convert_jpg_to_tif, check_is_multitiff, convert_avi_to_tif
+from tracking.image_utils import (check_is_multitiff, convert_avi_to_tif,
+                                  convert_jpg_to_tif, save_first_frame_as_jpg)
 from tracking.main import track_filament
 
 
@@ -63,12 +67,11 @@ def upload_images():
 
 @server.route('/track', methods=['POST'])
 def track():
-    canvas_size = json.loads(request.form['canvas_size'])
-    points = json.loads(request.form['points'])
+    canvas_shape = json.loads(request.form['canvas_shape'], object_hook=lambda shape: (int(shape['width']), int(shape['height'])))
+    points = json.loads(request.form['points'], object_hook=lambda point: (point['x'], point['y']))
     folder = os.path.dirname(request.form['filename'])
-    point_size = int(float(request.form['point_size']) * 10)
     try:
-        results_folder = track_filament(folder, canvas_size, points, point_size)
+        results_folder = track_filament(folder, canvas_shape, np.array(points))
     except Exception as e:
         flash(str(e))
         print(traceback.print_exc())

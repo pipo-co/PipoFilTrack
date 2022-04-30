@@ -17,6 +17,7 @@ DEFAULT_SCALING_FACTOR=10
 
 def get_frame(cell_path, invert: bool = False):
     img16 = cv2.imread(cell_path, cv2.IMREAD_UNCHANGED)
+    img16 = ((img16 - img16.min()) / (img16.max() - img16.min())) * 255 
     img8 = img16.astype('uint8')
     if len(img8.shape) == 3:  # Image is not grayscale
         # Conversion to grayscale
@@ -40,14 +41,14 @@ def add_img_to_plot(img) -> None:
     plt.imshow(img, 'gray')
 
 
-def add_points_to_plot(points: List[Point], color='darkgrey') -> None:
+def add_points_to_plot(points: np.ndarray, color='darkgrey') -> None:
     if points is None:
         return
 
     if color == 'rainbow':
         pass
-    points_x, points_y = ([point.x for point in points], [point.y for point in points])
-    plt.plot(points_x, points_y, color)
+    
+    plt.plot(points[0], points[1], color)
 
 
 def save_plot(folder, name):
