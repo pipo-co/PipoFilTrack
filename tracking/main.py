@@ -64,7 +64,7 @@ def points_linear_interpolation(points: np.ndarray, pixel_point_ratio: int) -> n
         y = np.linspace(start[1], end[1], ratio).round().astype(np.uint8)
         ret.append(np.stack((x, y), axis=-1))
 
-    return np.concatenate(ret)
+    return np.unique(np.concatenate(ret), axis=0)
 
 def track_filament(frames_folder: str, user_points: np.ndarray) -> str:
     """
