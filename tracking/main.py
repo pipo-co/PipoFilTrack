@@ -51,7 +51,7 @@ def points_linear_interpolation(points: np.ndarray, pixel_point_ratio: int) -> n
     """
     ret = []
     for start, end in zip(points, points[1:]):
-        ratio = int(np.linalg.norm(start - end, ord=2)) // pixel_point_ratio
+        ratio = int(np.linalg.norm(start - end, ord=2)) // pixel_point_ratio + 1
         x = np.linspace(start[0], end[0], ratio).round().astype(np.uint8)
         y = np.linspace(start[1], end[1], ratio).round().astype(np.uint8)
         ret.append(np.stack((x, y), axis=-1))
