@@ -20,6 +20,12 @@
         <input type="hidden" name="points" id="points">
         <input type="hidden" name="filename" value="{{ original }}">
         <input type="hidden" name="point_size" value="4">
+        <div>
+            Execute up to step:
+            {% for step in steps %}
+                <label><input type="radio" name="up_to_step" value="{{ step }}" {% if loop.last %} checked {% endif %}>{{ step.capitalize() }}</label>
+            {% endfor %}
+        </div>
         <button id="submit_tracking_form" type="submit">Start</button>
     </form>
     {% with messages = get_flashed_messages() %}

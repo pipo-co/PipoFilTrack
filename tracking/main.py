@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from enum import Enum
 from typing import List
 
 import numpy as np
@@ -58,7 +59,23 @@ def points_linear_interpolation(points: np.ndarray, pixel_point_ratio: int) -> n
 
     return np.unique(np.concatenate(ret), axis=0)
 
-def track_filament(frames_folder: str, user_points: np.ndarray) -> str:
+class TrackStep(Enum):
+    INTERPOLATION   = "interpolation"
+    FILTER          = "filter"
+    NORMAL          = "normal"
+    ALL             = "all"
+
+    @classmethod
+    def values(cls):
+        return list(map(lambda c: c.value, cls))
+
+    @classmethod
+    def from_str(cls, val):
+        if val not in cls.values():
+            raise ValueError(f'"{val}" is not a supported track step')
+        return cls(val)
+
+def track_filament(frames_folder: str, user_points: np.ndarray, up_to_step: TrackStep = TrackStep.ALL) -> None:
     """
         Given a folder with images and a set of points, tracks a 
          filament containing those points in all the images (or frames)
@@ -75,27 +92,32 @@ def track_filament(frames_folder: str, user_points: np.ndarray) -> str:
 
     start_frame = frames[0]
     img, invert = image_utils.get_frame(start_frame)
-    img_gauss = image_utils.gauss_img(img)
 
     starting_points = points_linear_interpolation(user_points, PIXEL_POINT_RATIO)
-    # # start_angle = get_line_angle(start_point, end_point)
-
-    # Descomentar para mostrar la interpolacion
-    # save_results(frames_folder, img, points, [], start_frame)
+    if up_to_step == TrackStep.INTERPOLATION:
+        save_results(frames_folder, img, starting_points, start_frame, scatter=True)
+        return
 
     # TODO(tobi): Que normal_len sea un parametro, y que sino se pueda calcular a partir del ancho del tubo en esa seccion
     normal_len = 10
-
+    scatter = up_to_step != TrackStep.NORMAL
     prev_frame_points = starting_points
+
     for i, frame in enumerate(frames):
         img, _ = image_utils.get_frame(frame, invert)
         blurred_img = image_utils.blur_img(img)
 
-        prev_frame_points = adjust_points(blurred_img, prev_frame_points, normal_len)
-        # prev_frame_points = smooth(prev_frame_points)
+        if up_to_step == TrackStep.FILTER:
+            img = blurred_img
+            prev_frame_points = None
+        elif up_to_step == TrackStep.NORMAL:
+            pass  # TODO(tobi): Normal
+        elif up_to_step == TrackStep.ALL:
+            prev_frame_points = adjust_points(blurred_img, prev_frame_points, normal_len)
 
-        save_results(frames_folder, img, prev_frame_points, frame, scatter=True)
+        save_results(frames_folder, img, prev_frame_points, frame, scatter=scatter)
 
+def save_tracking_film(frames_folder) -> str:
     results_folder = f'{frames_folder}/results'
     image_utils.create_film(results_folder)
     image_utils.create_result_zip(results_folder)

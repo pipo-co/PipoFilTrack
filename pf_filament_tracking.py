@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 from __init__ import server
 from tracking.image_utils import (check_is_multitiff, convert_avi_to_tif,
                                   convert_jpg_to_tif, save_first_frame_as_jpg)
-from tracking.main import track_filament
+from tracking.main import track_filament, save_tracking_film, TrackStep
 
 
 @server.after_request
@@ -61,15 +61,17 @@ def upload_images():
         elif extension == '.avi':
             convert_avi_to_tif(server_folder, complete_filename)
 
-    return render_template('selection.html', original=original, filtered=filtered, img_width=img_shape[1], img_height=img_shape[0])
+    return render_template('selection.html', original=original, filtered=filtered, img_width=img_shape[1], img_height=img_shape[0], steps=TrackStep.values())
 
 
 @server.route('/track', methods=['POST'])
 def track():
     points = json.loads(request.form['points'], object_hook=lambda point: (point['x'], point['y']))
     folder = os.path.dirname(request.form['filename'])
+    up_to_step = TrackStep.from_str(request.form['up_to_step'])
     try:
-        results_folder = track_filament(folder, np.array(points))
+        track_filament(folder, np.array(points), up_to_step)
+        results_folder = save_tracking_film(folder)
     except Exception as e:
         flash(str(e))
         print(traceback.print_exc())
