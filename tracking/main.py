@@ -5,6 +5,7 @@ from enum import Enum
 from typing import List
 
 import numpy as np
+import skimage as skimg
 
 import tracking.image_utils as image_utils
 from tracking.tracking import adjust_points
@@ -48,16 +49,12 @@ def save_results(folder, img, points: np.ndarray, frame: str, scatter: bool = Fa
 
 def points_linear_interpolation(points: np.ndarray, pixel_point_ratio: int) -> np.ndarray:
     """
-    Given a point vector, interpolates linearly between each point pair adding a point every `pixel_point_ratio` pixels.
+    Given a point vector, interpolates linearly between each point pair.
     """
-    ret = []
-    for start, end in zip(points, points[1:]):
-        ratio = int(np.linalg.norm(start - end, ord=2)) // pixel_point_ratio + 1
-        x = np.linspace(start[0], end[0], ratio).round().astype(np.uint8)
-        y = np.linspace(start[1], end[1], ratio).round().astype(np.uint8)
-        ret.append(np.stack((x, y), axis=-1))
-
-    return np.unique(np.concatenate(ret), axis=0)
+    # line returns the pixels of the line described by the 2 points
+    # https://scikit-image.org/docs/stable/api/skimage.draw.html#line
+    # Nota(tobi): Aca hay una bocha de truquito, lo podemos simplificar
+    return np.concatenate([np.stack(skimg.draw.line(*start, *end), axis=-1) for start, end in zip(points, points[1:])])
 
 class TrackStep(Enum):
     INTERPOLATION   = "interpolation"
