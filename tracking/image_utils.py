@@ -38,14 +38,17 @@ def add_img_to_plot(img) -> None:
     plt.imshow(img, 'gray')
 
 
-def add_points_to_plot(points: np.ndarray, color='darkgrey') -> None:
+def add_points_to_plot(points: np.ndarray, color='darkgrey', scatter: bool = False) -> None:
     if points is None:
         return
 
     if color == 'rainbow':
         pass
-    
-    plt.scatter(points[:, 0], points[:, 1], s=1, c=color)
+
+    if scatter:
+        plt.scatter(points[:, 0], points[:, 1], s=1, c=color)
+    else:
+        plt.plot(points[:, 0], points[:, 1], color)
 
 
 def save_plot(folder, name):

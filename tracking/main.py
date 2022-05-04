@@ -29,7 +29,7 @@ def save_info_as_json(folder: str, points: List[Point], frame_name: str) -> None
     f.write(json.dumps(points_dict))
     f.close()
 
-def save_results(folder, img, points: np.ndarray, frame: str) -> None:
+def save_results(folder, img, points: np.ndarray, frame: str, scatter: bool = False) -> None:
     """
         In `folder`/results, save image with points and debug_points,
         as well as the points in a json file
@@ -37,7 +37,7 @@ def save_results(folder, img, points: np.ndarray, frame: str) -> None:
 
     # Make plot
     image_utils.add_img_to_plot(img)
-    image_utils.add_points_to_plot(points, 'tab:blue')
+    image_utils.add_points_to_plot(points, 'tab:blue', scatter)
 
     # Save to results folder
     os.makedirs(f'{folder}/results/download', exist_ok=True)
@@ -94,8 +94,7 @@ def track_filament(frames_folder: str, user_points: np.ndarray) -> str:
         prev_frame_points = adjust_points(blurred_img, prev_frame_points, normal_len)
         # prev_frame_points = smooth(prev_frame_points)
 
-        save_results(frames_folder, img, prev_frame_points, frame)
-        # save_results(frames_folder, img, prev_frame_points, debug_points, frame)
+        save_results(frames_folder, img, prev_frame_points, frame, scatter=True)
 
     results_folder = f'{frames_folder}/results'
     image_utils.create_film(results_folder)
