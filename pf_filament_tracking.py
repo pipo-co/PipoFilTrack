@@ -105,9 +105,9 @@ def delete_uploaded_folders():
             # then, if the folder was created more than three hours ago, we assume we can delete it
             shutil.rmtree(folder)
 
-
-scheduler = APScheduler()
-scheduler.add_job(id='Scheduled Delete Task', func=delete_uploaded_folders, trigger='interval', seconds=3600)
-scheduler.start()
-delete_uploaded_folders()
-server.run(host='0.0.0.0', debug=True, use_reloader=False)
+if __name__ == '__main__':
+    scheduler = APScheduler()
+    scheduler.add_job(id='Scheduled Delete Task', func=delete_uploaded_folders, trigger='interval', seconds=3600)
+    scheduler.start()
+    delete_uploaded_folders()
+    server.run(host='0.0.0.0', debug=True, use_reloader=False)
