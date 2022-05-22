@@ -2,7 +2,7 @@ import json
 import os
 import re
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import skimage as skimg
@@ -31,7 +31,7 @@ def save_info_as_json(folder: str, points: List[Point], frame_name: str) -> None
     f.write(json.dumps(points_dict))
     f.close()
 
-def save_results(folder, img, points: np.ndarray, frame: str, scatter: bool = False) -> None:
+def save_results(folder, img, points: np.ndarray, frame: str, normal_lines: Optional[np.ndarray] = None, scatter: bool = False) -> None:
     """
         In `folder`/results, save image with points and debug_points,
         as well as the points in a json file
@@ -40,6 +40,9 @@ def save_results(folder, img, points: np.ndarray, frame: str, scatter: bool = Fa
     # Make plot
     image_utils.add_img_to_plot(img)
     image_utils.add_points_to_plot(points, 'tab:blue', scatter)
+
+    if normal_lines is not None:
+        image_utils.add_normal_lines(normal_lines)
 
     # Save to results folder
     os.makedirs(f'{folder}/results/download', exist_ok=True)
@@ -97,6 +100,8 @@ def track_filament(frames_folder: str, user_points: np.ndarray, up_to_step: Trac
 
     # TODO(tobi): Que normal_len sea un parametro, y que sino se pueda calcular a partir del ancho del tubo en esa seccion
     normal_len = 10
+    normal_line_resolution = 15
+    normal_lines = None
     scatter = up_to_step != TrackStep.NORMAL
     prev_frame_points = starting_points
 
@@ -108,11 +113,25 @@ def track_filament(frames_folder: str, user_points: np.ndarray, up_to_step: Trac
             img = blurred_img
             prev_frame_points = None
         elif up_to_step == TrackStep.NORMAL:
-            pass  # TODO(tobi): Normal
+            normal_lines = generate_normal_line_bounds(prev_frame_points, normal_line_resolution, normal_len)
+
         elif up_to_step == TrackStep.ALL:
             prev_frame_points = adjust_points(blurred_img, prev_frame_points, normal_len)
 
-        save_results(frames_folder, img, prev_frame_points, frame, scatter=scatter)
+        save_results(frames_folder, img, prev_frame_points, frame, normal_lines=normal_lines,scatter=scatter)
+
+
+def generate_normal_line_bounds(points: np.ndarray, resolution: int, line_len: float) -> np.ndarray:
+    d = resolution
+    start = points[:-d]
+    end = points[d:]
+
+    ang = np.arctan2(end[:,1] - start[:,1], end[:,0] - start[:,0]) + np.pi/2
+
+    aux = np.hstack((np.cos(ang)[:,None], np.sin(ang)[:,None]))
+    upper = points[d//2:d//2+aux.shape[0]]+ aux * (line_len // 2)
+    lower = points[d//2:d//2+aux.shape[0]]- aux * (line_len // 2)
+    return np.hstack((np.expand_dims(upper, axis=1), np.expand_dims(lower, axis=1)))
 
 def save_tracking_film(frames_folder) -> str:
     results_folder = f'{frames_folder}/results'
