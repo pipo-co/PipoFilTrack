@@ -122,16 +122,26 @@ def track_filament(frames_folder: str, user_points: np.ndarray, up_to_step: Trac
 
 
 def generate_normal_line_bounds(points: np.ndarray, resolution: int, line_len: float) -> np.ndarray:
+    
     d = resolution
+
     start = points[:-d]
     end = points[d:]
 
-    ang = np.arctan2(end[:,1] - start[:,1], end[:,0] - start[:,0]) + np.pi/2
+    section_angle = np.arctan2(end[:,1] - start[:,1], end[:,0] - start[:,0])
+    
+    normal_angle = np.zeros(len(points))
+    normal_angle[d//2:-d//2] = section_angle + np.pi/2
+    normal_angle[:d//2] = normal_angle[d//2]
+    normal_angle[-d//2:] = normal_angle[-d//2 -1]
 
-    aux = np.hstack((np.cos(ang)[:,None], np.sin(ang)[:,None]))
-    upper = points[d//2:d//2+aux.shape[0]]+ aux * (line_len // 2)
-    lower = points[d//2:d//2+aux.shape[0]]- aux * (line_len // 2)
-    return np.hstack((np.expand_dims(upper, axis=1), np.expand_dims(lower, axis=1)))
+    component_multiplier = np.stack((np.cos(normal_angle), np.sin(normal_angle)), axis=1)
+    upper = points + component_multiplier * line_len / 2
+    lower = points - component_multiplier * line_len / 2
+    
+    bounds = np.stack((upper, lower), axis=1)
+
+    return np.rint(bounds).astype(np.int64)
 
 def save_tracking_film(frames_folder) -> str:
     results_folder = f'{frames_folder}/results'
