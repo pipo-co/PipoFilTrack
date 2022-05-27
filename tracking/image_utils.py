@@ -46,7 +46,7 @@ def add_points_to_plot(points: np.ndarray, color='darkgrey', scatter: bool = Fal
         pass
 
     if scatter:
-        plt.scatter(points[:, 0], points[:, 1], s=1, c=color)
+        plt.scatter(points[:, 0], points[:, 1], s=1, c=color, zorder=2)
     else:
         plt.plot(points[:, 0], points[:, 1], color)
 
@@ -58,7 +58,7 @@ def add_normal_lines(nomal_points: np.ndarray, color='darkgrey') -> None:
         pass
 
     for points in nomal_points:
-        plt.plot(points[:, 0], points[:, 1], color)
+        plt.plot(points[:, 0], points[:, 1], color,alpha=.5, zorder=1)
 
 
 def save_plot(folder, name):
