@@ -76,7 +76,7 @@ def track():
         flash(str(e))
         print(traceback.print_exc())
         return render_template('upload.html', filename=request.form['filename'], ratio=0.9) #TODO(nacho): hay que sacar el ratio de la imagen (width/heigth)
-    results = sorted(glob.glob(f'{results_folder}/*.svg'), key=os.path.getmtime)
+    results = sorted(glob.glob(f'{results_folder}/*.png'), key=os.path.getmtime)
     return render_template('result.html', results=results, results_folder=results_folder)
 
 

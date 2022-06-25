@@ -63,10 +63,10 @@ def add_normal_lines(nomal_points: np.ndarray, color='darkgrey') -> None:
 
 def save_plot(folder, name):
     plt.axis('off')
-    filename = f'{folder}/results/result_{name}.svg'
+    filename = f'{folder}/results/result_{name}.png'
     if os.path.exists(filename):
         os.remove(filename)
-    plt.savefig(filename, bbox_inches='tight', pad_inches=0, format="svg")
+    plt.savefig(filename, bbox_inches='tight', pad_inches=0, format="png")
     # plt.gca().invert_yaxis()
     plt.close()
 
@@ -208,12 +208,12 @@ def create_film(folder):
         img_array.append(img)
 
     fps = 5 if len(frames) > 10 else 1
-    out = cv2.VideoWriter(f'{folder}/download/film.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, size)
+    # out = cv2.VideoWriter(f'{folder}/download/film.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, size)
 
-    for i in range(len(img_array)):
-        out.write(img_array[i])
+    # for i in range(len(img_array)):
+    #     out.write(img_array[i])
 
-    out.release()
+    # out.release()
 
 
 def create_result_zip(folder):
