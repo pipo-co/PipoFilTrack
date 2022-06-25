@@ -1,116 +1,63 @@
-import json
-import os
-import re
-from enum import Enum
-from typing import List, Optional
+
+from typing import List
 
 import numpy as np
 
-import tracking.image_utils as image_utils
-from tracking.tracking import adjust_points, multi_point_linear_interpolation
-from tracking.types_utils import Point
-
-SAMPLE_POINTS = 100
-
-# TODO(tobi): Not used. Find use or deprecate. It could be usefull to store point data.
-def save_info_as_json(folder: str, points: List[Point], frame_name: str) -> None:
-    if frame_name == '0':  # json file is not yet created
-        points_dict = {}
-    else:
-        with open(f'{folder}/results/download/positions.json') as json_file:
-            points_dict = json.load(json_file)
-
-    frame = f'frame_{frame_name}'
-    points_dict[frame] = []
-    for point in points:
-        points_dict[frame].append({'x': point.x, 'y': point.y})
-
-    f = open(f'{folder}/results/download/positions.json', 'w')
-    f.write(json.dumps(points_dict))
-    f.close()
-
-def save_results(folder, img, points: np.ndarray, frame: str, normal_lines: Optional[np.ndarray] = None, scatter: bool = False) -> None:
-    """
-        In `folder`/results, save image with points and debug_points,
-        as well as the points in a json file
-    """
-
-    # Make plot
-    image_utils.add_img_to_plot(img)
-    image_utils.add_points_to_plot(points, 'tab:blue', scatter)
-
-    if normal_lines is not None:
-        image_utils.add_normal_lines(normal_lines)
-
-    # Save to results folder
-    os.makedirs(f'{folder}/results/download', exist_ok=True)
-    frame_name = ''.join(os.path.basename(frame).split('.')[:-1])
-    image_utils.save_plot(folder, frame_name)
-    # save_info_as_json(folder, points, frame_name)
+from .models import Config, Result, TrackStep
+from .image_utils import get_frame 
+from .tracking import gauss_fitting, generate_normal_line_bounds, index_to_point, multi_point_linear_interpolation, points_linear_interpolation
 
 
-class TrackStep(Enum):
-    INTERPOLATION   = "interpolation"
-    FILTER          = "filter"
-    NORMAL          = "normal"
-    ALL             = "all"
-
-    @classmethod
-    def values(cls):
-        return list(map(lambda c: c.value, cls))
-
-    @classmethod
-    def from_str(cls, val):
-        if val not in cls.values():
-            raise ValueError(f'"{val}" is not a supported track step')
-        return cls(val)
-
-def track_filament(frames_folder: str, user_points: np.ndarray, up_to_step: TrackStep = TrackStep.ALL) -> None:
+def track_filament(frames: List[str], user_points: np.ndarray, config: Config) -> List[Result]:
     """
         Given a folder with images and a set of points, tracks a 
          filament containing those points in all the images (or frames)
     """
 
-    # TODO(tobi): File system manipulation should go in another module. At least a private function
-    frames = []
-    for root, _, filenames in os.walk(frames_folder):
-        if 'results' in root:
-            continue
-        for filename in sorted(filenames, key=lambda x: int(re.search(r'\d+', x).group())):
-            if filename.endswith('.tif'):
-                frames.append(os.path.join(root, filename))
-
     start_frame = frames[0]
-    img, invert = image_utils.get_frame(start_frame)
+    img, invert = get_frame(start_frame)
+    prev_frame_points = multi_point_linear_interpolation(user_points)
+    results = []
 
-    if up_to_step == TrackStep.INTERPOLATION:
-        save_results(frames_folder, img, multi_point_linear_interpolation(user_points), start_frame, scatter=True)
-        return
+    if config.up_to_step == TrackStep.INTERPOLATION:
+        return [Result(prev_frame_points, start_frame, None)]
 
-    # TODO(tobi): Que normal_len sea un parametro, y que sino se pueda calcular a partir del ancho del tubo en esa seccion
-    normal_len = 10
-    angle_resolution = 15
-    normal_lines_bounds = None
-    scatter = up_to_step != TrackStep.NORMAL
-    prev_frame_points = user_points
 
-    for i, frame in enumerate(frames):
-        img, _ = image_utils.get_frame(frame, invert)
-        blurred_img = image_utils.blur_img(img)
+    for frame in frames:
+        img, _ = get_frame(frame, invert)
+        
+        # interpolated_points = multi_point_linear_interpolation(prev_frame_points)
 
-        if up_to_step == TrackStep.FILTER:
-            img = blurred_img
-            prev_frame_points = None
+        normal_lines_limits = generate_normal_line_bounds(prev_frame_points, config.max_tangent_length, config.normal_line_length)
+        # No es un ndarray porque no todas salen con la misma longitud
+        normal_lines = [points_linear_interpolation(start, end) for start, end in normal_lines_limits]
+        
+        intensity_profiles = map(lambda nl, img=img: read_line_from_img(img, nl), normal_lines)
+        
+        brightest_point_profile_index = map(lambda ip, img=img: gauss_fitting(ip, img.max())[0], intensity_profiles)
+        # La media (el punto mas alto) esta en el intervalo (0, len(profile)). 
+        # Hay que encontrar las coordenadas del punto que representa la media.
+        brightest_point = [index_to_point(idx, nl) for idx, nl in zip(brightest_point_profile_index, normal_lines)]
+        brightest_point = np.array([new_p if new_p else prev_p for new_p, prev_p in zip(brightest_point, prev_frame_points)])
 
-        elif up_to_step == TrackStep.ALL:
-            interpolated_points = multi_point_linear_interpolation(prev_frame_points)
-            prev_frame_points, normal_lines_bounds = adjust_points(img, interpolated_points, normal_len, angle_resolution)
+        smooth_points = brightest_point
 
-        save_results(frames_folder, img, prev_frame_points, frame, normal_lines=normal_lines_bounds, scatter=scatter)
+        if config.smooth_x:
+            smooth_points[:, 0] = moving_average(brightest_point[:, 0], config.moving_average_count)
+        
+        if config.smooth_y:
+            smooth_points[:, 1] = moving_average(brightest_point[:, 1], config.moving_average_count)
 
-def save_tracking_film(frames_folder) -> str:
-    results_folder = f'{frames_folder}/results'
-    image_utils.create_film(results_folder)
-    image_utils.create_result_zip(results_folder)
+        prev_frame_points = smooth_points
+        results.append(Result(brightest_point, frame, normal_lines_limits))
+    
+    return results
 
-    return results_folder
+# indices (n, 2) de la forma (x, y)
+def read_line_from_img(img: np.ndarray, indices: np.ndarray) -> np.ndarray:
+    return img[indices[:,1], indices[:,0]]
+
+def moving_average(values: np.ndarray, N: int) -> np.ndarray:
+    extended = np.append(np.repeat(values[0], N//2), values)
+    extended = np.append(extended, np.repeat(values[-1], N//2))
+    return np.correlate(extended, np.ones(N)/N, mode='valid')

@@ -12,9 +12,12 @@ from flask_apscheduler import APScheduler
 from werkzeug.utils import secure_filename
 
 from __init__ import server
+from tracking.files import get_frame_identifiers
 from tracking.image_utils import (check_is_multitiff, convert_avi_to_tif,
                                   convert_jpg_to_tif, save_first_frame_as_jpg)
-from tracking.main import track_filament, save_tracking_film, TrackStep
+from tracking.main import TrackStep, track_filament
+from tracking.models import Config, DisplayConfig
+from tracking.results import save_results, save_tracking_film
 
 
 @server.after_request
@@ -70,11 +73,13 @@ def track():
     folder = os.path.dirname(request.form['filename'])
     up_to_step = TrackStep.from_str(request.form['up_to_step'])
     try:
-        track_filament(folder, np.array(points), up_to_step)
+        frames = get_frame_identifiers(folder)
+        r = track_filament(frames, np.array(points), Config(smooth_y=False, smooth_x=False, moving_average_count=15, max_tangent_length=15, normal_line_length=10, up_to_step=up_to_step))
+        save_results(folder, r, DisplayConfig(scatter=True, normal_lines=up_to_step == TrackStep.NORMAL))
         results_folder = save_tracking_film(folder)
     except Exception as e:
         flash(str(e))
-        print(traceback.print_exc())
+        traceback.print_exc()
         return render_template('upload.html', filename=request.form['filename'], ratio=0.9) #TODO(nacho): hay que sacar el ratio de la imagen (width/heigth)
     results = sorted(glob.glob(f'{results_folder}/*.png'), key=os.path.getmtime)
     return render_template('result.html', results=results, results_folder=results_folder)
