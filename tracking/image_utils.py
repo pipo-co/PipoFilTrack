@@ -150,6 +150,7 @@ def check_is_multitiff(server_folder, complete_filename, extension):
             complete_filename = '/'.join([server_folder, filename])
             if frame.height != frame.width:
                 frame = resize_image(frame, min(frame.size[0], frame.size[1]))
+            frame.filename = ''
             frame.save(complete_filename)
 
         # Delete the multi tiff file because we already saved each frame

@@ -39,6 +39,8 @@ def save_frame_results(folder: str, result: Result, display_conf: DisplayConfig)
     # Make plot
     add_img_to_plot(img)
     add_points_to_plot(result.points, 'tab:blue', display_conf.scatter)
+    if display_conf.invalid_values and result.none_points is not None and len(result.none_points) > 0:
+      add_points_to_plot(result.none_points, 'tab:red', display_conf.scatter)
 
     if display_conf.normal_lines and result.normal_lines is not None:
         add_normal_lines(result.normal_lines)

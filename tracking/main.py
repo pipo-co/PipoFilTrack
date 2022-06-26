@@ -5,7 +5,7 @@ import numpy as np
 
 from .models import Config, Result, TrackStep
 from .image_utils import get_frame 
-from .tracking import gauss_fitting, generate_normal_line_bounds, index_to_point, multi_point_linear_interpolation, points_linear_interpolation
+from .tracking import indexes_to_points, gauss_fitting, generate_normal_line_bounds, multi_point_linear_interpolation, points_linear_interpolation
 
 
 def track_filament(frames: List[str], user_points: np.ndarray, config: Config) -> List[Result]:
@@ -20,7 +20,7 @@ def track_filament(frames: List[str], user_points: np.ndarray, config: Config) -
     results = []
 
     if config.up_to_step == TrackStep.INTERPOLATION:
-        return [Result(prev_frame_points, start_frame, None)]
+        return [Result(prev_frame_points, None, start_frame, None)]
 
 
     for frame in frames:
@@ -29,17 +29,17 @@ def track_filament(frames: List[str], user_points: np.ndarray, config: Config) -
         # interpolated_points = multi_point_linear_interpolation(prev_frame_points)
 
         normal_lines_limits = generate_normal_line_bounds(prev_frame_points, config.max_tangent_length, config.normal_line_length)
+
         # No es un ndarray porque no todas salen con la misma longitud
         normal_lines = [points_linear_interpolation(start, end) for start, end in normal_lines_limits]
         
         intensity_profiles = map(lambda nl, img=img: read_line_from_img(img, nl), normal_lines)
         
-        brightest_point_profile_index = map(lambda ip, img=img: gauss_fitting(ip, img.max())[0], intensity_profiles)
+        brightest_point_profile_index = map(lambda ip, img=img: gauss_fitting(ip, img.max()), intensity_profiles)
         # La media (el punto mas alto) esta en el intervalo (0, len(profile)). 
         # Hay que encontrar las coordenadas del punto que representa la media.
-        brightest_point = [index_to_point(idx, nl) for idx, nl in zip(brightest_point_profile_index, normal_lines)]
-        brightest_point = np.array([new_p if new_p else prev_p for new_p, prev_p in zip(brightest_point, prev_frame_points)])
-
+        brightest_point, none_points = indexes_to_points(brightest_point_profile_index, normal_lines, prev_frame_points)
+        # brightest_point, none_points = [index_to_point(idx, nl, pfp) for idx, nl, pfp in zip(brightest_point_profile_index, normal_lines, prev_frame_points)]
         smooth_points = brightest_point
 
         if config.smooth_x:
@@ -49,7 +49,7 @@ def track_filament(frames: List[str], user_points: np.ndarray, config: Config) -
             smooth_points[:, 1] = moving_average(brightest_point[:, 1], config.moving_average_count)
 
         prev_frame_points = smooth_points
-        results.append(Result(brightest_point, frame, normal_lines_limits))
+        results.append(Result(brightest_point, none_points, frame, normal_lines_limits))
     
     return results
 

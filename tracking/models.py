@@ -32,6 +32,7 @@ class Config:
 @dataclass
 class Result:
     points: np.ndarray
+    none_points: Optional[np.ndarray]
     frame: str
     normal_lines: Optional[np.ndarray] # Cada linea normal esta definida por sus dos extremos
 
@@ -39,3 +40,4 @@ class Result:
 class DisplayConfig:
     scatter: bool = True
     normal_lines: bool = False
+    invalid_values: bool = True
