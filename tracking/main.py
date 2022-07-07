@@ -5,7 +5,7 @@ import numpy as np
 
 from .models import Config, Result, TrackStep
 from .image_utils import get_frame 
-from .tracking import indexes_to_points, gauss_fitting, generate_normal_line_bounds, multi_point_linear_interpolation, points_linear_interpolation
+from .tracking import interpolate_missing, gauss_fitting, generate_normal_line_bounds, multi_point_linear_interpolation, points_linear_interpolation
 
 
 def track_filament(frames: List[str], user_points: np.ndarray, config: Config) -> List[Result]:
@@ -38,7 +38,7 @@ def track_filament(frames: List[str], user_points: np.ndarray, config: Config) -
         brightest_point_profile_index = map(lambda ip, img=img: gauss_fitting(ip, img.max()), intensity_profiles)
         # La media (el punto mas alto) esta en el intervalo (0, len(profile)). 
         # Hay que encontrar las coordenadas del punto que representa la media.
-        brightest_point, none_points = indexes_to_points(brightest_point_profile_index, normal_lines, prev_frame_points)
+        brightest_point, none_points = interpolate_missing(brightest_point_profile_index, normal_lines, prev_frame_points)
         # brightest_point, none_points = [index_to_point(idx, nl, pfp) for idx, nl, pfp in zip(brightest_point_profile_index, normal_lines, prev_frame_points)]
         smooth_points = brightest_point
 
