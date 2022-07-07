@@ -10,7 +10,7 @@
     </label>
 
     {#TODO(tobi): Add zoom element #}
-    <canvas id="canvas" data-img_width="{{ img_width }}" data-img_height="{{ img_height }}"></canvas>
+    <canvas id="canvas" data-img_width="{{ img_width }}" data-img_height="{{ img_height }}" data-img_src="{{original}}"></canvas>
 
     <a href="/">
         <button type="submit">Reset</button>
@@ -41,12 +41,6 @@
 {% endblock %}
 
 {% block footer %}
-<datalist id="image_urls">
-    {% if original %}
-    <option value="original">{{ original }}</option>
-    <option value="filtered">{{ filtered }}</option>
-    {% endif %}
-</datalist>
 <script src="/static/js/filament_tracking.js"></script>
 {% endblock %}
 

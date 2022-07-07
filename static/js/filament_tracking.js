@@ -30,12 +30,19 @@ window.addEventListener('load', () => {
     canvas_draw_width = canvas.width;
     canvas_draw_height = canvas.height;
 
-    const image_datalist = document.getElementById('image_urls');
-    for (let option of image_datalist.options) {
-        images[option.value] = option.text;
-    }
+    const ctx = canvas.getContext('2d');
+    
+    // turn off image aliasing
+    // https://stackoverflow.com/a/19129822/12270520
+    ctx.msImageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = false;
 
-    canvas.style.backgroundImage = `url(${images['original']})`;
+    let img = new Image();
+    console.log(canvas.dataset.img_src);
+    img.src = canvas.dataset.img_src;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
     canvas.addEventListener('click', clickHandle);
 
@@ -51,7 +58,6 @@ window.addEventListener('load', () => {
         if(toggle.checked) {
             imgURL = images['filtered']
         }
-        canvas.style.backgroundImage = `url(${imgURL})`;
     })
 
 });
