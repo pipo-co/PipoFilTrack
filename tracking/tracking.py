@@ -1,15 +1,8 @@
-from dataclasses import dataclass
-from distutils.command.config import config
-import math
-from itertools import tee
-from turtle import right
-from typing import Optional, Tuple
+from typing import  List, Optional, Tuple
 
 import numpy as np
 import skimage as skimg
 from scipy.optimize import curve_fit
-
-from tracking.models import Config
 
 PIXEL_POINT_RATIO=1
 
@@ -29,10 +22,10 @@ def interpolate_missing(brightest_point_profile_index: np.ndarray, normal_lines:
   valid_values = []
   invalid_values = []
   none_flag = False
-  left_pos = right_pos = 0
-  previous_point: Tuple[int, int]
-  next_point: Tuple[int, int]
-
+  left_pos = 0
+  previous_index = 0
+  interpolation_points: List[Tuple[int, int]] = []
+  left_point = Tuple[int, int]
   """
   Si los primeros o ultimos n puntos son None, se descartan
   """
@@ -41,36 +34,39 @@ def interpolate_missing(brightest_point_profile_index: np.ndarray, normal_lines:
   for i, cp in enumerate(converted_points):
     if cp:
       if none_flag:
-        for j in range(3, 0, -1):
+        interpolation_points.append(cp)
+        for j in range(1, 3):
           new_pos = i + j
-          if new_pos < len(converted_points) and converted_points[new_pos] and right_pos == 0:
-            right_pos = new_pos
-        if right_pos != i:
+          if new_pos < len(converted_points) and converted_points[new_pos]:
+            interpolation_points.append(converted_points[new_pos])
 
-          next_point = converted_points[right_pos]
           #interpolo entre previous_point y next_point, pero elimino lo que me corri, osea saco los primeros l_pos
-          interpolation = points_linear_interpolation(np.asarray(previous_point), np.asarray(next_point))[left_pos: i - right_pos]
+        interpolation = points_linear_interpolation(np.asarray(left_point), np.asarray(cp))[:]
+        print(f'Interpolation between: {left_point} and {cp}')
+        print(f'Ans: {interpolation}')
           # print(len(interpolation), len(interpolation))
-          valid_values.extend(interpolation)
-          invalid_values.extend(interpolation)
+        valid_values.extend(interpolation)
+        invalid_values.extend(interpolation)
           
         none_flag = False
-        left_pos = right_pos = 0
-      else:
-        # dejo el punto en converted como esta y lo appendeo a los valores validos
-        valid_values.append(cp)
+      # else:
+      #   # dejo el punto en converted como esta y lo appendeo a los valores validos
+      valid_values.append(cp)
     else:
       # no es valido el punto y vengo de uno valido
       if not none_flag:
         # busco el indice del punto mas lejos que tenga para atras
         if len(valid_values) > 0:
-          for j in range(3, 0, -1):
-            if j < len(valid_values) and left_pos == 0:
-              left_pos = j
+          left_pos = min(len(valid_values), 3)
           # print(left_pos, len(valid_values))
           # me guardo ese punto valido como punto izq de la interpolacion
-          previous_point = valid_values[-left_pos]
+          # interpolation_points.extend(valid_values[-left_pos:])
+          left_point = valid_values[-left_pos:]
+          #indice previo
+          previous_index = i
           none_flag = True
+  print(np.array(valid_values))
+  print(np.array(invalid_values))
   return np.array(valid_values), np.array(invalid_values)
     
 # brightest_point = media y error
@@ -82,7 +78,7 @@ def index_to_point(brightest_point: Tuple[float, float], points: np.ndarray) -> 
     idx = brightest_point[0]
 
     # TODO(tobi): habilitarlo por config 
-    if brightest_point[1] > 0.2 or int(idx) + 1 >= len(points):
+    if brightest_point[1] > 0.2 or int(idx) < 0 or int(idx) + 1 >= len(points):
         return None
 
     start = points[int(idx)]
@@ -92,7 +88,7 @@ def index_to_point(brightest_point: Tuple[float, float], points: np.ndarray) -> 
     new_x = start[0] + delta * (end[0] - start[0])
     new_y = start[1] + delta * (end[1] - start[1])
 
-    return start
+    return new_x, new_y
 
 def gaussian(x, mu, sig):
     return 1./(np.sqrt(2.*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2.)/2)
