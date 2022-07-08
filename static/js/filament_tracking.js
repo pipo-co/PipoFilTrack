@@ -40,9 +40,8 @@ window.addEventListener('load', () => {
     ctx.imageSmoothingEnabled = false;
 
     let img = new Image();
-    console.log(canvas.dataset.img_src);
     img.src = canvas.dataset.img_src;
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    img.addEventListener('load', () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height), false)
 
     canvas.addEventListener('click', clickHandle);
 
@@ -140,6 +139,11 @@ function drawPoint(point) {
     ctx.arc(x, y, POINT_SIZE, 0, Math.PI * 2);
     ctx.fillStyle = POINT_COLOR;
     ctx.fill();
+
+    let downloadButton = document.getElementById('download')
+    downloadButton.href = canvas.toDataURL("image/png");
+    downloadButton.download = "IMAGE.PNG";
+    // downloadButton.click(); 
 }
 
 function undoPoint(){
