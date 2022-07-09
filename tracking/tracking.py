@@ -33,19 +33,10 @@ def interpolate_points(interpolation_points: List[Tuple[float, float]], none_poi
   
   interpolation_points = np.asarray(interpolation_points)
   res = stats.linregress(interpolation_points)
-
-  angle = np.arctan(res.slope)
-  m1 = (leftmost_point[1] - rightmost_point[1])/(leftmost_point[0] - rightmost_point[0])
-  m2 = (rightmost_point[1] - leftmost_point[1])/(rightmost_point[0] - leftmost_point[0])
-  print(f'res slope {res.slope}, res intercept: {res.intercept}, res angle: {angle}, m1{m1}, m2 {m2}')
-
+  
   first_point = project_to_line(leftmost_point, res.slope, res.intercept)
   last_point = project_to_line(rightmost_point, res.slope, res.intercept)
 
-  distance = np.linalg.norm(np.asarray(first_point) - np.asarray(last_point))
-  t = distance / (none_points+1)
-  # res = stats.linregress(interpolation_points)
-  # return res.intercept + res.slope*np.array(interpolation_points)
   xs = np.linspace(first_point[0], last_point[0], none_points+2, endpoint=True)[1:-1]
   points = np.repeat(xs[:,None], 2, axis=1)
   points[:,1] = points[:,1]*res.slope + res.intercept
