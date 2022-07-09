@@ -6,28 +6,17 @@
  font-weight:normal
 }
 
-.photo {
-  height: 100vh;
-}
-
-#canvas {
-  cursor: crosshair;
-  background-size: contain;
-  background-repeat: no-repeat;
+.canvas {
   width: 50%;
 
-  /* Keep the image pixelated: https://css-tricks.com/keep-pixelated-images-pixelated-as-they-scale/ */
+  /* Keep the image pixelated: https://css-tricks.com/keep-pixelated-images-pixelated-as-they-scale/*/
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
 }
 
-#stats {
-  display: none;
-}
-
-.flashes {
-  color: red;
+#points-selector-canvas {
+  cursor: crosshair;
 }
 
 #undo, #redo {
@@ -35,4 +24,8 @@
   max-height: 32px;
   cursor: pointer;
   visibility: hidden;
+}
+
+#error {
+  color: red;
 }

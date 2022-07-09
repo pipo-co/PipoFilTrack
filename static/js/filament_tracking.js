@@ -1,89 +1,60 @@
-const POINT_SIZE = 2;
-const POINT_COLOR = '#ff0000';
-let selected_points = [];
-let redo_points = [];
+// Constants
+const CANVAS_RESOLUTION = 1000; // La resolucion horizontal, la vertical se calcula para mantener el aspect ratio
+const POINT_SIZE        = 10;
+const LINE_WIDTH        = 5;
+const POINT_COLOR       = '#ff0000';
 
-let form
-let canvas
-let toggle
+// Elementos de UI
+const canvas        = document.getElementById('points-selector-canvas');
+const form          = document.getElementById('tracking-form');
+const imgSelector   = document.getElementById('img-selector');
+const errors        = document.getElementById('errors');
+const undo          = document.getElementById('undo');
+const redo          = document.getElementById('redo');
+const resultImgs    = document.getElementById('result-imgs');
 
-const images = {}
+/* ------ Global data -------- */
+// Points info
+const selected_points   = [];
+const redo_points       = [];
 
-let img_height;
-let img_width;
+// Image and canvas info
+let imageData;
+let img_w;
+let img_h;
 
-let canvas_draw_width;
-let canvas_draw_height;
+(function () {
+    form.addEventListener('submit', executeTracking);
 
-const img = new Image();
+    imgSelector.addEventListener('change', handleImageSelection);
 
-window.addEventListener('load', () => {
+    canvas.addEventListener('click', onCanvasClick);
+    canvas.style.display = 'none';
+    canvas.width = CANVAS_RESOLUTION;
 
-    canvas = document.getElementById('canvas');
-    form = document.getElementById('tracking_form')
-    toggle = document.getElementById('toggle_filter');
+    // Undo/Redo selected points
+    undo.addEventListener('click', undoPoint);
+    redo.addEventListener('click', redoPoint);
+})();
 
-    img_height = canvas.dataset.img_height;
-    img_width = canvas.dataset.img_width;
-
-    // width dependiente del viewport. Hacemos que height respete el aspect ratio de la imagen
-    canvas.height = canvas.width / img_width * img_height;
-
-    canvas_draw_width = canvas.width;
-    canvas_draw_height = canvas.height;
-
-    const ctx = canvas.getContext('2d');
-    
-    // turn off image aliasing
-    // https://stackoverflow.com/a/19129822/12270520
-    ctx.msImageSmoothingEnabled = false;
-    ctx.mozImageSmoothingEnabled = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.imageSmoothingEnabled = false;
-
-    img.src = canvas.dataset.img_src;
-    img.addEventListener('load', () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height), false)
-
-    canvas.addEventListener('click', clickHandle);
-
-    document.getElementById('undo').addEventListener('click', undoPoint);
-
-    document.getElementById('redo').addEventListener('click', redoPoint);
-
-    form.addEventListener('submit', formSubmitHandler);
-
-    toggle.addEventListener('change', () => {
-        let imgURL = images['original']
-        
-        if(toggle.checked) {
-            imgURL = images['filtered']
-        }
-    })
-
-});
-
-function formSubmitHandler(ev) {
-    if (selected_points.length < 2) {
-        const div = document.createElement('div');
-        div.className = 'flashes mt-2';
-        div.innerHTML = '<p>Debe seleccionar el punto inicial y final del filamento</p>';
-        document.getElementById('section_tracking_form').appendChild(div);
-        ev.preventDefault();
-        return;
+function executeTracking(e) {
+    if(selected_points.length < 2) {
+        errors.innerText = 'Debe seleccionar el punto inicial y final del filamento';
+    } else {
+        // TODO(tobi): Request del form mediante fetch api. Incluirle los selected points.
     }
 
-    form['points'].value = JSON.stringify(selected_points);
-    form.submit();
+    e.preventDefault();
 }
 
 function canvasPos2Pixel(pos, canvas_len, img_len) {
     return Math.trunc(pos / canvas_len * img_len)
 }
-function canvasPos2PixelX(x, canvas_width) {
-    return canvasPos2Pixel(x, canvas_width, img_width);
+function canvasPos2PixelX(x, canvas_w) {
+    return canvasPos2Pixel(x, canvas_w, img_w);
 }
-function canvasPos2PixelY(y, canvas_height) {
-    return canvasPos2Pixel(y, canvas_height, img_height);
+function canvasPos2PixelY(y, canvas_h) {
+    return canvasPos2Pixel(y, canvas_h, img_h);
 }
 
 function pixel2CanvasPos(pixel, canvas_draw_len, img_len) {
@@ -91,19 +62,22 @@ function pixel2CanvasPos(pixel, canvas_draw_len, img_len) {
     return (pixel + 0.5) / img_len * canvas_draw_len;
 }
 function pixel2CanvasPosX(x) {
-    return pixel2CanvasPos(x, canvas_draw_width, img_width);
+    return pixel2CanvasPos(x, canvas.width, img_w);
 }
 function pixel2CanvasPosY(y) {
-    return pixel2CanvasPos(y, canvas_draw_height, img_height);
+    return pixel2CanvasPos(y, canvas.height, img_h);
 }
 
-function clickHandle(event) {
+function onCanvasClick(event) {
     let rect = canvas.getBoundingClientRect();
     let x = event.clientX - rect.left;
     let y = event.clientY - rect.top;
 
     let pixel_x = canvasPos2PixelX(x, rect.width);
     let pixel_y = canvasPos2PixelY(y, rect.height);
+
+    // Si agregas un punto, perdes los redo
+    redo_points.length = 0;
 
     addPoint({x: pixel_x, y: pixel_y});
 }
@@ -114,7 +88,7 @@ function addPoint(point) {
         : null
         ;
     selected_points.push(point);
-    
+
     updateInterface();
     drawPoint(point);
 }
@@ -131,58 +105,109 @@ function drawPoint(point) {
         ctx.beginPath();
         ctx.moveTo(pixel2CanvasPosX(previousPoint.x), pixel2CanvasPosY(previousPoint.y));
         ctx.lineTo(x, y);
+        ctx.lineWidth   = LINE_WIDTH;
         ctx.strokeStyle = POINT_COLOR;
         ctx.stroke();
     }
-    
+
     // Point
     ctx.beginPath();
     ctx.arc(x, y, POINT_SIZE, 0, Math.PI * 2);
     ctx.fillStyle = POINT_COLOR;
     ctx.fill();
-
-    let downloadButton = document.getElementById('download')
-    downloadButton.href = canvas.toDataURL("image/png");
-    downloadButton.download = "IMAGE.PNG";
-    // downloadButton.click(); 
 }
 
-function undoPoint(){
+function undoPoint() {
     let ctx = canvas.getContext("2d");
 
-    if (selected_points.length > 0) {
+    if(selected_points.length > 0) {
         redo_points.push(selected_points.pop());
-        
+
         // Clean canvas
-        ctx.clearRect(0, 0, canvas_draw_width, canvas_draw_height);
-        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Redraw image
+        // TODO(tobi): Pasarlo a una funcion auxiliar
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.height = img_h;
+        tmpCanvas.width = img_w;
+
+        const tmpCtx = tmpCanvas.getContext('2d');
+        tmpCtx.putImageData(imageData, 0, 0, 0, 0, img_w, img_h);
+
+        canvasDisableSmoothing(ctx);
+        ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height);
+
         // Redraw all poins
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
         selected_points.forEach(drawPoint)
         updateInterface();
     }
 }
 
-function redoPoint(){
-    if (redo_points.length > 0) {
+function redoPoint() {
+    if(redo_points.length > 0) {
         const point = redo_points.pop();
         addPoint(point)
     }
 }
 
 function updateInterface() {
-    
-    document.getElementById('undo').style.visibility = selected_points.length === 0 ? 'hidden' : 'visible';
-    document.getElementById('redo').style.visibility = redo_points.length === 0 ? 'hidden' : 'visible';
-    
-    let error_flashes = document.getElementById("section_tracking_form").getElementsByClassName("flashes")[0];
-    if (document.body.contains(error_flashes)) {
-        error_flashes.parentNode.removeChild(error_flashes);
-    }
+    undo.style.visibility = selected_points.length === 0 ? 'hidden' : 'visible';
+    redo.style.visibility = redo_points.length === 0 ? 'hidden' : 'visible';
+    errors.innerText = '';
 }
 
-function goBack() {
-    selected_points = [];
-    redo_points = [];
-    history.back();
+function canvasDisableSmoothing(ctx) {
+    // turn off image aliasing
+    // https://stackoverflow.com/a/19129822/12270520
+    ctx.msImageSmoothingEnabled     = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled       = false;
+}
+
+// Empty selected points and build canvas for point selection
+async function handleImageSelection() {
+    if(imgSelector.length === 0) {
+          // No nos subieron nada
+          errors.innerText = 'No image selected';
+          return;
+    }
+
+  let first = imgSelector.files[0];
+
+  if(first.type === 'image/tiff') {
+        const buffer = await first.arrayBuffer();
+        const ifds = UTIF.decode(buffer);
+    const ifd = ifds[0];
+    UTIF.decodeImage(buffer, ifd, ifds);
+
+    const rgbaData = UTIF.toRGBA8(ifd);
+    imageData = new ImageData(new Uint8ClampedArray(rgbaData), ifd.width, ifd.height);
+
+    img_w = ifd.width;
+    img_h = ifd.height;
+    canvas.height = canvas.width / img_w * img_h;
+
+    const tmpCanvas = document.createElement('canvas');
+    tmpCanvas.height = img_h;
+    tmpCanvas.width = img_w;
+
+    // Rendereamos la imagen en un canvas intermedio para luego poder escalar la imagen
+    const tmpCtx = tmpCanvas.getContext('2d');
+    tmpCtx.putImageData(imageData, 0, 0, 0, 0, img_w, img_h);
+
+    let ctx = canvas.getContext('2d');
+    canvasDisableSmoothing(canvas.getContext('2d'));
+    ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height);
+  } else {
+    errors.innerText = 'Image type not supports yet';
+    return;
+  }
+
+  // Show canvas
+  canvas.style.display = '';
+
+  // Reset selected points
+  selected_points.length    = 0;
+  redo_points.length        = 0;
 }

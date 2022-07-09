@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Filament Tracking</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1">
+  <link rel="icon" href="/static/images/favicon.png" type="image/x-icon"/>
+
+  <!-- UIkit -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.14.0/dist/css/uikit.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/uikit@3.14.0/dist/js/uikit.min.js" async></script>
+  <script src="https://cdn.jsdelivr.net/npm/uikit@3.14.0/dist/js/uikit-icons.min.js" async></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/static/css/filament_tracking.css">
+
+  <!-- TIFF Handling library -->
+  <script src="/static/js/libs/UTIF.js" defer></script>
+
+  <!-- Custom JS -->
+  <script src="/static/js/filament_tracking.js" defer></script>
+</head>
+<body style="background-color: #A2E2F8; height: 100vh;">
+  <main class="uk-container uk-text-center uk-padding">
+    <div id="selection">
+      <span id="undo" title="Undo"><img src="/static/images/undo.png" alt="undo"></span>
+      <span id="redo" title="Redo"><img src="/static/images/redo.png" alt="redo"></span>
+
+      {#TODO(tobi): Add zoom element #}
+      <canvas id="points-selector-canvas" class="canvas"></canvas>
+
+      <form id="tracking-form" enctype="multipart/form-data">
+        <label>
+          Seleccione las imágenes que desea trackear
+          <input id="img-selector" type="file" name="files[]" accept=".tif,.tiff,.avi,.jpg,.jpeg,.png" multiple required/>
+        </label>
+        <button id="tracking-submit">Track</button>
+      </form>
+
+      <a href="/"><button type="submit">Reset</button></a>
+
+      <p id="errors"></p>
+    </div>
+    <div id="results">
+      <div id="result-imgs"></div>
+    </div>
+  </main>
+</body>
+</html>

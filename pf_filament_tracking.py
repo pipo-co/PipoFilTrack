@@ -28,7 +28,7 @@ def add_header(response):
 
 @server.route('/')
 def index():
-    return render_template('upload.html')
+    return render_template('index.html')
 
 
 @server.route('/', methods=['POST'])
