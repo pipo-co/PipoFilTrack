@@ -1,8 +1,11 @@
-from typing import  List, Optional, Tuple
+from locale import MON_1
+from math import cos, sin
+from typing import List, Optional, Tuple
 
 import numpy as np
 import skimage as skimg
 from scipy.optimize import curve_fit
+from scipy import stats
 
 PIXEL_POINT_RATIO=1
 
@@ -18,36 +21,74 @@ def points_linear_interpolation(start: np.ndarray, end: np.ndarray) -> np.ndarra
     # Nota(tobi): Aca hay una bocha de truquito, lo podemos simplificar
     return np.stack(skimg.draw.line(*start.astype(int), *end.astype(int)), axis=-1)
 
+def project_to_line(point: Tuple[float, float], m1: float, b1: float) -> Tuple[float, float]:
+  m2 = -1/m1
+  b2 = point[1] - m2*point[0]
+  x = (b2 - b1) / (m1 - m2)
+  y =  m1*x + b1
+  
+  return x, y
+
+def interpolate_points(interpolation_points: List[Tuple[float, float]], none_points: int, leftmost_point: np.ndarray, rightmost_point: np.ndarray) -> np.ndarray:
+  
+  interpolation_points = np.asarray(interpolation_points)
+  res = stats.linregress(interpolation_points)
+
+  angle = np.arctan(res.slope)
+  m1 = (leftmost_point[1] - rightmost_point[1])/(leftmost_point[0] - rightmost_point[0])
+  m2 = (rightmost_point[1] - leftmost_point[1])/(rightmost_point[0] - leftmost_point[0])
+  print(f'res slope {res.slope}, res intercept: {res.intercept}, res angle: {angle}, m1{m1}, m2 {m2}')
+
+  first_point = project_to_line(leftmost_point, res.slope, res.intercept)
+  last_point = project_to_line(rightmost_point, res.slope, res.intercept)
+
+  distance = np.linalg.norm(np.asarray(first_point) - np.asarray(last_point))
+  t = distance / (none_points+1)
+  # res = stats.linregress(interpolation_points)
+  # return res.intercept + res.slope*np.array(interpolation_points)
+  xs = np.linspace(first_point[0], last_point[0], none_points+2, endpoint=True)[1:-1]
+  points = np.repeat(xs[:,None], 2, axis=1)
+  points[:,1] = points[:,1]*res.slope + res.intercept
+  return points, (first_point, last_point)
+  # return np.asarray([(t*i*cos(angle) + first_point[0], t*i*sin(angle) + first_point[1]) for i in range(1, none_points + 1)]), (first_point, last_point)
+
 def interpolate_missing(brightest_point_profile_index: np.ndarray, normal_lines: np.ndarray, prev_frame_points: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
   valid_values = []
   invalid_values = []
   none_flag = False
   left_pos = 0
+  point_amount = 0
   previous_index = 0
-  interpolation_points: List[Tuple[int, int]] = []
-  left_point = Tuple[int, int]
+  interpolation_points: List[Tuple[float, float]] = []
+  leftmost_point = Tuple[float, float]
+  rightmost_point = Tuple[float, float]
+  fyls = []
   """
   Si los primeros o ultimos n puntos son None, se descartan
   """
   converted_points = [index_to_point(bp, nl) for bp, nl in zip(brightest_point_profile_index, normal_lines)]
   
+  a=1
+
   for i, cp in enumerate(converted_points):
     if cp:
       if none_flag:
         interpolation_points.append(cp)
-        for j in range(1, 3):
+        rightmost_point = cp
+        for j in range(1, 4):
           new_pos = i + j
           if new_pos < len(converted_points) and converted_points[new_pos]:
             interpolation_points.append(converted_points[new_pos])
 
-          #interpolo entre previous_point y next_point, pero elimino lo que me corri, osea saco los primeros l_pos
-        interpolation = points_linear_interpolation(np.asarray(left_point), np.asarray(cp))[:]
-        print(f'Interpolation between: {left_point} and {cp}')
-        print(f'Ans: {interpolation}')
-          # print(len(interpolation), len(interpolation))
+        #interpolo entre previous_point y next_point, pero elimino lo que me corri, osea saco los primeros l_pos
+        point_amount = i - previous_index - 1
+        interpolation, fyl = interpolate_points(interpolation_points, point_amount, leftmost_point, rightmost_point)
+
+        fyls.append(fyl)
+
         valid_values.extend(interpolation)
         invalid_values.extend(interpolation)
-          
+        interpolation_points = []
         none_flag = False
       # else:
       #   # dejo el punto en converted como esta y lo appendeo a los valores validos
@@ -58,15 +99,13 @@ def interpolate_missing(brightest_point_profile_index: np.ndarray, normal_lines:
         # busco el indice del punto mas lejos que tenga para atras
         if len(valid_values) > 0:
           left_pos = min(len(valid_values), 3)
-          # print(left_pos, len(valid_values))
-          # me guardo ese punto valido como punto izq de la interpolacion
-          # interpolation_points.extend(valid_values[-left_pos:])
-          left_point = valid_values[-left_pos:]
+
+          interpolation_points.extend(valid_values[-left_pos:])
+          leftmost_point = interpolation_points[-1]
           #indice previo
-          previous_index = i
+          previous_index = i-1
           none_flag = True
-  print(np.array(valid_values))
-  print(np.array(invalid_values))
+
   return np.array(valid_values), np.array(invalid_values)
     
 # brightest_point = media y error
@@ -78,7 +117,7 @@ def index_to_point(brightest_point: Tuple[float, float], points: np.ndarray) -> 
     idx = brightest_point[0]
 
     # TODO(tobi): habilitarlo por config 
-    if brightest_point[1] > 0.2 or int(idx) < 0 or int(idx) + 1 >= len(points):
+    if brightest_point[1] > 0.1 or int(idx) < 0 or int(idx) + 1 >= len(points):
         return None
 
     start = points[int(idx)]

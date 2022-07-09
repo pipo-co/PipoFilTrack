@@ -35,7 +35,7 @@ def track_filament(frames: List[str], user_points: np.ndarray, config: Config) -
         
         intensity_profiles = map(lambda nl, img=img: read_line_from_img(img, nl), normal_lines)
         
-        brightest_point_profile_index = map(lambda ip, img=img: gauss_fitting(ip, img.max()), intensity_profiles)
+        brightest_point_profile_index = list(map(lambda ip, img=img: gauss_fitting(ip, img.max()), intensity_profiles))
         # La media (el punto mas alto) esta en el intervalo (0, len(profile)). 
         # Hay que encontrar las coordenadas del punto que representa la media.
         brightest_point, none_points = interpolate_missing(brightest_point_profile_index, normal_lines, prev_frame_points)
