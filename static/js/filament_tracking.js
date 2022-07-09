@@ -15,6 +15,8 @@ let img_width;
 let canvas_draw_width;
 let canvas_draw_height;
 
+const img = new Image();
+
 window.addEventListener('load', () => {
 
     canvas = document.getElementById('canvas');
@@ -39,7 +41,6 @@ window.addEventListener('load', () => {
     ctx.webkitImageSmoothingEnabled = false;
     ctx.imageSmoothingEnabled = false;
 
-    let img = new Image();
     img.src = canvas.dataset.img_src;
     img.addEventListener('load', () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height), false)
 
@@ -156,6 +157,7 @@ function undoPoint(){
         ctx.clearRect(0, 0, canvas_draw_width, canvas_draw_height);
         
         // Redraw all poins
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
         selected_points.forEach(drawPoint)
         updateInterface();
     }
