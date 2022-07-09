@@ -74,7 +74,7 @@ def track():
     up_to_step = TrackStep.from_str(request.form['up_to_step'])
     try:
         frames = get_frame_identifiers(folder)
-        r = track_filament(frames, np.array(points), Config(smooth_y=False, smooth_x=False, moving_average_count=15, max_tangent_length=15, normal_line_length=10, up_to_step=up_to_step))
+        r = track_filament(frames, np.array(points), Config())
         save_results(folder, r, DisplayConfig(scatter=True, normal_lines=up_to_step == TrackStep.NORMAL))
         results_folder = save_tracking_film(folder)
     except Exception as e:

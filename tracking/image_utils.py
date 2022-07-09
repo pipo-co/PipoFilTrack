@@ -39,7 +39,7 @@ def add_img_to_plot(img) -> None:
 
 
 def add_points_to_plot(points: np.ndarray, color='darkgrey', scatter: bool = False) -> None:
-    if points is None:
+    if points is None or points.size == 0:
         return
 
     if color == 'rainbow':

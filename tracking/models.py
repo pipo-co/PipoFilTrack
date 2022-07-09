@@ -24,9 +24,10 @@ class TrackStep(Enum):
 class Config:
     smooth_x: bool = False
     smooth_y: bool = False
+    cov_threshold: float = 0.1
     moving_average_count: int = 5
     max_tangent_length: int = 15  # Cantidad de puntos tomados para calcular la pendiente
-    normal_line_length: int = 10
+    normal_line_length: int = 20
     up_to_step: TrackStep = TrackStep.ALL
 
 @dataclass

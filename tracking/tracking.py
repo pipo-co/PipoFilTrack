@@ -43,7 +43,7 @@ def interpolate_points(interpolation_points: List[Tuple[float, float]], none_poi
   return points, (first_point, last_point)
   # return np.asarray([(t*i*cos(angle) + first_point[0], t*i*sin(angle) + first_point[1]) for i in range(1, none_points + 1)]), (first_point, last_point)
 
-def interpolate_missing(brightest_point_profile_index: np.ndarray, normal_lines: np.ndarray, prev_frame_points: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def interpolate_missing(brightest_point_profile_index: np.ndarray, normal_lines: np.ndarray, cov_threshold: float) -> Tuple[np.ndarray, np.ndarray]:
   valid_values = []
   invalid_values = []
   none_flag = False
@@ -57,13 +57,15 @@ def interpolate_missing(brightest_point_profile_index: np.ndarray, normal_lines:
   """
   Si los primeros o ultimos n puntos son None, se descartan
   """
-  converted_points = [index_to_point(bp, nl) for bp, nl in zip(brightest_point_profile_index, normal_lines)]
+  converted_points = [index_to_point(bp, nl, cov_threshold) for bp, nl in zip(brightest_point_profile_index, normal_lines)]
   
   a=1
 
   for i, cp in enumerate(converted_points):
     if cp:
       if none_flag:
+        if (i+1 != len(converted_points) and not (i+1 < len(converted_points) and converted_points[i+1])):
+          continue
         interpolation_points.append(cp)
         rightmost_point = cp
         for j in range(1, 4):
@@ -100,15 +102,14 @@ def interpolate_missing(brightest_point_profile_index: np.ndarray, normal_lines:
   return np.array(valid_values), np.array(invalid_values)
     
 # brightest_point = media y error
-def index_to_point(brightest_point: Tuple[float, float], points: np.ndarray) -> Optional[Tuple[float, float]]:
+def index_to_point(brightest_point: Tuple[float, float], points: np.ndarray, cov_threshold:float) -> Optional[Tuple[float, float]]:
     """
         Obtener las coordenadas de un punto ubicado entre otros dos.
         Si no esta contenido en la lista de puntos se ignora (None)
     """
     idx = brightest_point[0]
 
-    # TODO(tobi): habilitarlo por config 
-    if brightest_point[1] > 0.1 or int(idx) < 0 or int(idx) + 1 >= len(points):
+    if brightest_point[1] > cov_threshold or int(idx) < 0 or int(idx) + 1 >= len(points):
         return None
 
     start = points[int(idx)]

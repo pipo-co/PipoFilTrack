@@ -27,9 +27,10 @@ def track_filament(frames: List[str], user_points: np.ndarray, config: Config) -
         img, _ = get_frame(frame, invert)
         
         # interpolated_points = multi_point_linear_interpolation(prev_frame_points)
+        if len(prev_frame_points) < config.max_tangent_length/2:
+          break
 
         normal_lines_limits = generate_normal_line_bounds(prev_frame_points, config.max_tangent_length, config.normal_line_length)
-
         # No es un ndarray porque no todas salen con la misma longitud
         normal_lines = [points_linear_interpolation(start, end) for start, end in normal_lines_limits]
         
@@ -38,7 +39,7 @@ def track_filament(frames: List[str], user_points: np.ndarray, config: Config) -
         brightest_point_profile_index = list(map(lambda ip, img=img: gauss_fitting(ip, img.max()), intensity_profiles))
         # La media (el punto mas alto) esta en el intervalo (0, len(profile)). 
         # Hay que encontrar las coordenadas del punto que representa la media.
-        brightest_point, none_points = interpolate_missing(brightest_point_profile_index, normal_lines, prev_frame_points)
+        brightest_point, none_points = interpolate_missing(brightest_point_profile_index, normal_lines, config.cov_threshold)
         # brightest_point, none_points = [index_to_point(idx, nl, pfp) for idx, nl, pfp in zip(brightest_point_profile_index, normal_lines, prev_frame_points)]
         smooth_points = brightest_point
 
