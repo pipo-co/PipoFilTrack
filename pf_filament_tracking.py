@@ -8,7 +8,7 @@ from tracking.image_utils import frames_iterator
 from tracking.main import track_filament
 from tracking.models import Config, ApplicationError
 
-ALLOWED_IMAGE_EXT: List[str] = ['.tif', '.tiff', '.jpg', '.jpeg', '.avi', '.png']
+ALLOWED_IMAGE_TYPES: List[str] = ['.tif', '.tiff', '.jpg', '.jpeg', '.avi', '.png']
 
 app = Flask(
     __name__,
@@ -25,7 +25,7 @@ def add_header(response):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', allowed_image_types=ALLOWED_IMAGE_TYPES)
 
 @app.route('/track', methods=['POST'])
 def track():
@@ -46,7 +46,7 @@ def track():
     )
 
     try:
-        return make_response(jsonify(track_filament(frames_iterator(images, ALLOWED_IMAGE_EXT), np.array(points), config)))
+        return make_response(jsonify(track_filament(frames_iterator(images, ALLOWED_IMAGE_TYPES), np.array(points), config)))
     except ApplicationError as e:
         return make_response(jsonify(e), 400)
     except Exception as e:

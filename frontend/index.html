@@ -33,8 +33,7 @@
       <form id="tracking-form" enctype="multipart/form-data">
         <label>
           Seleccione las imágenes que desea trackear
-          {# TODO(tobi): Sacar los accept del server #}
-          <input id="img-input" type="file" name="images[]" accept=".tif,.tiff,.avi,.jpg,.jpeg,.png" multiple required/>
+          <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required/>
         </label>
 
         <button id="tracking-submit">Track</button>
