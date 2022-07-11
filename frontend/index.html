@@ -33,14 +33,23 @@
       <form id="tracking-form" enctype="multipart/form-data">
         <label>
           Seleccione las imágenes que desea trackear
-          <input id="img-selector" type="file" name="files[]" accept=".tif,.tiff,.avi,.jpg,.jpeg,.png" multiple required/>
+          {# TODO(tobi): Sacar los accept del server #}
+          <input id="img-selector" type="file" name="images[]" accept=".tif,.tiff,.avi,.jpg,.jpeg,.png" multiple required/>
         </label>
+
+        <div>
+          Execute up to step:
+          {% for step in steps %}
+            <label><input type="radio" name="up_to_step" value="{{ step }}" {% if loop.last %} checked {% endif %}>{{ step.capitalize() }}</label>
+          {% endfor %}
+        </div>
+
         <button id="tracking-submit">Track</button>
       </form>
 
       <a href="/"><button type="submit">Reset</button></a>
 
-      <p id="errors"></p>
+      <p id="errors" ></p>
     </div>
     <div id="results">
       <div id="result-imgs"></div>
