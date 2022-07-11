@@ -42,6 +42,7 @@ let selectorDrawable;
 
 function executeTracking(e) {
     e.preventDefault();
+    clearError();
 
     if(selected_points.length < 2) {
         errors.innerText = 'Debe seleccionar el punto inicial y final del filamento';
