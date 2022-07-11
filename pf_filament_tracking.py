@@ -35,8 +35,6 @@ def track():
     if 'images[]' not in request.files or len(images := request.files.getlist('images[]')) < 1:
         return make_response(jsonify(ApplicationError('No images provided for tracking. At least one image is required.')), 400)
 
-    up_to_step = TrackStep.from_str(request.form['up_to_step'])
-
     # TODO(tobi): Recibirlo
     config = Config(
         smooth_y=False,
@@ -45,7 +43,6 @@ def track():
         moving_average_count=15,
         max_tangent_length=15,
         normal_line_length=10,
-        up_to_step=up_to_step,
     )
 
     try:

@@ -2,17 +2,14 @@ from typing import Iterable
 
 import numpy as np
 
-from .models import Config, TrackingFrameResult, TrackStep, TrackingPoint, TrackingSegment, TrackingResult
+from .models import Config, TrackingFrameResult, TrackingPoint, TrackingSegment, TrackingResult
 from .tracking import interpolate_missing, gauss_fitting, generate_normal_line_bounds, multi_point_linear_interpolation, points_linear_interpolation
 
 
 def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config: Config) -> TrackingResult:
-    prev_frame_points = multi_point_linear_interpolation(user_points)
-
-    if config.up_to_step == TrackStep.INTERPOLATION:
-        return TrackingResult([TrackingFrameResult(TrackingPoint.from_arrays(prev_frame_points), [], [])])
-
     results = []
+
+    prev_frame_points = multi_point_linear_interpolation(user_points)
 
     for frame in frames:
         # interpolated_points = multi_point_linear_interpolation(prev_frame_points)

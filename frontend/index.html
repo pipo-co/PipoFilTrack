@@ -37,13 +37,6 @@
           <input id="img-input" type="file" name="images[]" accept=".tif,.tiff,.avi,.jpg,.jpeg,.png" multiple required/>
         </label>
 
-        <div>
-          Execute up to step:
-          {% for step in steps %}
-            <label><input type="radio" name="up_to_step" value="{{ step }}" {% if loop.last %} checked {% endif %}>{{ step.capitalize() }}</label>
-          {% endfor %}
-        </div>
-
         <button id="tracking-submit">Track</button>
       </form>
 

@@ -1,24 +1,7 @@
 from dataclasses import dataclass
-from enum import Enum
 from typing import List
 
 import numpy as np
-
-class TrackStep(Enum):
-    INTERPOLATION   = "interpolation"
-    FILTER          = "filter"
-    NORMAL          = "normal"
-    ALL             = "all"
-
-    @classmethod
-    def values(cls):
-        return list(map(lambda c: c.value, cls))
-
-    @classmethod
-    def from_str(cls, val: str):
-        if val is None or val not in cls.values():
-            return cls.ALL
-        return cls(val)
 
 @dataclass
 class Config:
@@ -28,7 +11,6 @@ class Config:
     moving_average_count: int = 5
     max_tangent_length: int = 15  # Cantidad de puntos tomados para calcular la pendiente
     normal_line_length: int = 20
-    up_to_step: TrackStep = TrackStep.ALL
 
 @dataclass
 class TrackingPoint:
