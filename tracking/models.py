@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import List
 
 import numpy as np
 
@@ -15,9 +15,9 @@ class TrackStep(Enum):
         return list(map(lambda c: c.value, cls))
 
     @classmethod
-    def from_str(cls, val):
-        if val not in cls.values():
-            raise ValueError(f'"{val}" is not a supported track step')
+    def from_str(cls, val: str):
+        if val is None or val not in cls.values():
+            return cls.ALL
         return cls(val)
 
 @dataclass
@@ -31,14 +31,38 @@ class Config:
     up_to_step: TrackStep = TrackStep.ALL
 
 @dataclass
-class Result:
-    points: np.ndarray
-    none_points: Optional[np.ndarray]
-    frame: str
-    normal_lines: Optional[np.ndarray] # Cada linea normal esta definida por sus dos extremos
+class TrackingPoint:
+    x: float
+    y: float
+
+    @classmethod
+    def from_arrays(cls, points: np.ndarray) -> List['TrackingPoint']:
+        return [cls.from_array(point) for point in points]
+
+    @classmethod
+    def from_array(cls, point: np.ndarray) -> 'TrackingPoint':
+        return cls(float(point[0]), float(point[1]))
 
 @dataclass
-class DisplayConfig:
-    scatter: bool = True
-    normal_lines: bool = False
-    invalid_values: bool = True
+class TrackingSegment:
+    start:  TrackingPoint
+    end:    TrackingPoint
+
+    @classmethod
+    def from_arrays(cls, segments: np.ndarray) -> List['TrackingSegment']:
+        return [cls.from_array(segment) for segment in segments]
+
+    @classmethod
+    def from_array(cls, segment: np.ndarray) -> 'TrackingSegment':
+        return cls(TrackingPoint.from_array(segment[0]), TrackingPoint.from_array(segment[1]))
+
+@dataclass
+class TrackingResult:
+    points:         List[TrackingPoint]
+    none_points:    List[TrackingPoint]
+    normal_lines:   List[TrackingSegment]  # Cada linea normal esta definida por sus dos extremos
+
+@dataclass
+class ApplicationError(Exception):
+    message: str
+    code: int = 50_000

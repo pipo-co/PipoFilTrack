@@ -1,6 +1,6 @@
+# TODO(tobi): Revisar dependencias. Actualizar viejas, borrar las que no usamos.
 flask==1.1.1
 opencv-python==4.5.5.64
-matplotlib~=3.3.4
 numpy~=1.20.1
 Pillow~=8.1.2
 Werkzeug~=1.0.1
