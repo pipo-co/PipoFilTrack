@@ -5,7 +5,7 @@ import numpy as np
 from flask import render_template, request, make_response, jsonify, Flask
 
 from tracking.image_utils import frames_iterator
-from tracking.main import TrackStep, track_filament
+from tracking.main import track_filament
 from tracking.models import Config, ApplicationError
 
 ALLOWED_IMAGE_EXT: List[str] = ['.tif', '.tiff', '.jpg', '.jpeg', '.avi', '.png']
@@ -25,7 +25,7 @@ def add_header(response):
 
 @app.route('/')
 def index():
-    return render_template('index.html', steps=TrackStep.values())
+    return render_template('index.html')
 
 @app.route('/track', methods=['POST'])
 def track():
