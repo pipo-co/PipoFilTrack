@@ -57,10 +57,14 @@ class TrackingSegment:
         return cls(TrackingPoint.from_array(segment[0]), TrackingPoint.from_array(segment[1]))
 
 @dataclass
-class TrackingResult:
+class TrackingFrameResult:
     points:         List[TrackingPoint]
     none_points:    List[TrackingPoint]
     normal_lines:   List[TrackingSegment]  # Cada linea normal esta definida por sus dos extremos
+
+@dataclass
+class TrackingResult:
+    frames: List[TrackingFrameResult]
 
 @dataclass
 class ApplicationError(Exception):
