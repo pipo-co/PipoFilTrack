@@ -1,16 +1,24 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, field, Field
 from typing import List
 
 import numpy as np
 
+def config_field(default, description) -> Field:
+    return field(default=default, metadata={'description': description})
+
 @dataclass
 class Config:
-    smooth_x: bool = False
-    smooth_y: bool = False
-    cov_threshold: float = 0.1
-    moving_average_count: int = 5
-    max_tangent_length: int = 15  # Cantidad de puntos tomados para calcular la pendiente
-    normal_line_length: int = 20
+    smooth_x: bool              = config_field(False,   'Post-procesamiento de suavizado en la coordenada Y')
+    smooth_y: bool              = config_field(False,   'Post-procesamiento de suavizado en la coordenada X')
+    cov_threshold: float        = config_field(0.1,     'Limite de tolerancia para el error en el ajuste gaussiano del perfil de intensidad')
+    moving_average_count: int   = config_field(5,       'Cantidad de puntos a tomar para el moving average durante la rutina de suavizado')
+    max_tangent_length: int     = config_field(15,      'Cantidad de puntos tomados para calcular la pendiente')
+    normal_line_length: int     = config_field(20,      'Longitud en pixeles del perfil de intensidad a tomar')
+
+    @classmethod
+    def from_dict(cls, env):
+        fields_dict = {f.name: f for f in fields(cls)}
+        return cls(**{k: fields_dict[k].type(v) for k, v in env.items() if k in fields_dict})
 
 @dataclass
 class TrackingPoint:

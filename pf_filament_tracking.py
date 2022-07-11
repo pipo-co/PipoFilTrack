@@ -1,5 +1,6 @@
+import dataclasses
 import json
-from typing import List
+from typing import List, Dict, Type
 
 import numpy as np
 from flask import render_template, request, make_response, jsonify, Flask
@@ -9,6 +10,11 @@ from tracking.main import track_filament
 from tracking.models import Config, ApplicationError
 
 ALLOWED_IMAGE_TYPES: List[str] = ['.tif', '.tiff', '.jpg', '.jpeg', '.avi', '.png']
+TYPE_TO_INPUT: Dict[Type, str] = {
+    bool:   'checkbox',
+    int:    'number',
+    float:  'number'
+}
 
 app = Flask(
     __name__,
@@ -25,7 +31,12 @@ def add_header(response):
 
 @app.route('/')
 def index():
-    return render_template('index.html', allowed_image_types=ALLOWED_IMAGE_TYPES)
+    return render_template(
+        'index.html',
+        config_fields=dataclasses.fields(Config),
+        type2input=TYPE_TO_INPUT,
+        allowed_image_types=ALLOWED_IMAGE_TYPES
+    )
 
 @app.route('/track', methods=['POST'])
 def track():
@@ -35,15 +46,7 @@ def track():
     if 'images[]' not in request.files or len(images := request.files.getlist('images[]')) < 1:
         return make_response(jsonify(ApplicationError('No images provided for tracking. At least one image is required.')), 400)
 
-    # TODO(tobi): Recibirlo
-    config = Config(
-        smooth_y=False,
-        smooth_x=False,
-        cov_threshold=0.1,
-        moving_average_count=15,
-        max_tangent_length=15,
-        normal_line_length=10,
-    )
+    config = Config.from_dict(request.form)
 
     try:
         return make_response(jsonify(track_filament(frames_iterator(images, ALLOWED_IMAGE_TYPES), np.array(points), config)))

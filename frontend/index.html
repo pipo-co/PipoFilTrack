@@ -33,8 +33,20 @@
       <form id="tracking-form" enctype="multipart/form-data">
         <label>
           Seleccione las imágenes que desea trackear
-          <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required/>
+          <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required />
         </label>
+
+        <fieldset>
+          <legend>Parametros extra del algoritmo de trackeo</legend>
+            {% for field in config_fields %}
+              <div>
+                <label>
+                  {{ field.metadata['description'] }}:
+                  <input name="{{ field.name }}" type="{{ type2input[field.type] }}" value="{{ field.default }}" />
+                </label>
+              </div>
+            {% endfor %}
+        </fieldset>
 
         <button id="tracking-submit">Track</button>
       </form>
