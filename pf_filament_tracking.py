@@ -12,8 +12,8 @@ from tracking.models import Config, ApplicationError
 ALLOWED_IMAGE_TYPES: List[str] = ['.tif', '.tiff', '.jpg', '.jpeg', '.avi', '.png']
 TYPE_TO_INPUT: Dict[Type, str] = {
     bool:   'checkbox',
-    int:    'number',
-    float:  'number'
+    int:    'text',
+    float:  'text'
 }
 
 app = Flask(
