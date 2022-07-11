@@ -4,10 +4,15 @@ const POINT_SIZE        = 10;
 const LINE_WIDTH        = 5;
 const POINT_COLOR       = '#ff0000';
 
+const TRACKING_POINT_SIZE   = 5;
+const TRACKING_POINT_COLOR  = '#0055ff';
+const INTER_POINT_COLOR     = '#ff0000';
+const NORMAL_LINE_COLOR     = 'rgba(0,255,255,0.22)'
+
 // Elementos de UI
 const selectorCanvas    = document.getElementById('points-selector-canvas');
 const form              = document.getElementById('tracking-form');
-const imgSelector       = document.getElementById('img-selector');
+const imgInput          = document.getElementById('img-input');
 const errors            = document.getElementById('errors');
 const undo              = document.getElementById('undo');
 const redo              = document.getElementById('redo');
@@ -24,11 +29,11 @@ let selectorDrawable;
 (function () {
     form.addEventListener('submit', executeTracking);
 
-    imgSelector.addEventListener('change', handleImageSelection);
+    imgInput.addEventListener('change', handleImageSelection);
 
-    selectorCanvas.addEventListener('click', onCanvasClick);
     selectorCanvas.style.display = 'none';
     selectorCanvas.width = CANVAS_RESOLUTION;
+    selectorCanvas.addEventListener('click', onCanvasClick);
 
     // Undo/Redo selected points
     undo.addEventListener('click', undoPoint);
@@ -43,7 +48,75 @@ function executeTracking(e) {
         return;
     }
 
-    // TODO(tobi): Request del form mediante fetch api. Incluirle los selected points.
+    const formData = new FormData(form);
+    formData.append('points', JSON.stringify(selected_points));
+
+    fetch('http://localhost:5000/track', {
+        method: 'POST',
+        body: formData,
+    })
+    .catch(error => showError('Server Connection Error: ' + error))
+    .then(async response => {
+        const body = await response.json();
+        if(response.ok) {
+            await renderTrackingResult(body);
+        } else {
+            showError(body.message);
+        }
+    })
+    ;
+}
+
+async function renderTrackingResult(trackingResult) {
+    console.log(trackingResult);
+    resultImgs.innerHTML = '';
+    resultImgs.style.display = 'none';
+
+    // We iterate frame results and images at the same time (should have same length)
+    const framesResultIter = trackingResult.frames[Symbol.iterator]();
+    for await (const frame of drawableIterator(imgInput.files)) {
+        const result = framesResultIter.next().value;
+        const canvas = buildCanvas(frame);
+        const ctx = canvas.getContext('2d');
+
+        for(const point of result.points) {
+            const [x, y] = trackingPoint2canvas(point, canvas, frame);
+            drawPoint(ctx, x, y, TRACKING_POINT_COLOR, TRACKING_POINT_SIZE);
+        }
+
+        for(const point of result.none_points) {
+            const [x, y] = trackingPoint2canvas(point, canvas, frame);
+            drawPoint(ctx, x, y, INTER_POINT_COLOR, TRACKING_POINT_SIZE);
+        }
+
+        for(const segment of result.normal_lines) {
+            const [x0, y0] = trackingPoint2canvas(segment.start, canvas, frame);
+            const [x1, y1] = trackingPoint2canvas(segment.end, canvas, frame);
+            drawLine(ctx, x0, y0, x1, y1, NORMAL_LINE_COLOR);
+        }
+
+        resultImgs.appendChild(canvas);
+    }
+
+    resultImgs.style.display = '';
+}
+
+function trackingPoint2canvas({x, y}, canvas, img) {
+    return [pixel2CanvasPosX(x, canvas, img), pixel2CanvasPosY(y, canvas, img)];
+}
+
+function buildCanvas(frame) {
+    const ret = document.createElement('canvas');
+    ret.classList.add('canvas');
+
+    ret.width = CANVAS_RESOLUTION;
+    ret.height = ret.width / frame.width * frame.height;
+
+    const ctx = ret.getContext('2d');
+    canvasDisableSmoothing(ctx);
+    ctx.drawImage(frame, 0, 0, ret.width, ret.height);
+
+    return ret;
 }
 
 // In case of error returns error message
@@ -55,6 +128,7 @@ async function* drawableIterator(images) {
         if(image.type === 'image/tiff') {
             const buffer = await image.arrayBuffer();
             const ifds = UTIF.decode(buffer);
+
             for(const ifd of ifds) {
                 UTIF.decodeImage(buffer, ifd, ifds);
 
@@ -96,31 +170,30 @@ function canvasPos2PixelY(y, canvas_h) {
 }
 
 function pixel2CanvasPos(pixel, canvas_draw_len, img_len) {
-    // Agregamos 0.5 para que se muestre en el medio del pixel, no en la esquina
-    return (pixel + 0.5) / img_len * canvas_draw_len;
+    return pixel / img_len * canvas_draw_len;
 }
-function pixel2CanvasPosX(x) {
-    return pixel2CanvasPos(x, selectorCanvas.width, selectorDrawable.width);
+function pixel2CanvasPosX(x, canvas, img) {
+    return pixel2CanvasPos(x, canvas.width, img.width);
 }
-function pixel2CanvasPosY(y) {
-    return pixel2CanvasPos(y, selectorCanvas.height, selectorDrawable.height);
+function pixel2CanvasPosY(y, canvas, img) {
+    return pixel2CanvasPos(y, canvas.height, img.height);
 }
 
 function onCanvasClick(event) {
-    let rect = selectorCanvas.getBoundingClientRect();
-    let x = event.clientX - rect.left;
-    let y = event.clientY - rect.top;
+    const rect = selectorCanvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
 
-    let pixel_x = canvasPos2PixelX(x, rect.width);
-    let pixel_y = canvasPos2PixelY(y, rect.height);
+    const pixel_x = canvasPos2PixelX(x, rect.width);
+    const pixel_y = canvasPos2PixelY(y, rect.height);
 
     // Si agregas un punto, perdes los redo
     redo_points.length = 0;
 
-    addPoint({x: pixel_x, y: pixel_y});
+    addPointSelection({x: pixel_x, y: pixel_y});
 }
 
-function addPoint(point) {
+function addPointSelection(point) {
     point.prev = selected_points.length > 0
         ? selected_points[selected_points.length - 1]
         : null
@@ -128,35 +201,45 @@ function addPoint(point) {
     selected_points.push(point);
 
     updateInterface();
-    drawPoint(point);
+    drawPointSelection(point);
 }
 
-function drawPoint(point) {
-    let ctx = selectorCanvas.getContext("2d");
+function drawPointSelection(point) {
+    const ctx = selectorCanvas.getContext("2d");
 
-    let x = pixel2CanvasPosX(point.x);
-    let y = pixel2CanvasPosY(point.y);
+    // Agregamos 0.5 para que se muestre en el medio del pixel, no en la esquina
+    const x = pixel2CanvasPosX(point.x + 0.5, selectorCanvas, selectorDrawable);
+    const y = pixel2CanvasPosY(point.y + 0.5, selectorCanvas, selectorDrawable);
 
     // Line
     if(point.prev) {
-        let previousPoint = point.prev;
-        ctx.beginPath();
-        ctx.moveTo(pixel2CanvasPosX(previousPoint.x), pixel2CanvasPosY(previousPoint.y));
-        ctx.lineTo(x, y);
-        ctx.lineWidth   = LINE_WIDTH;
-        ctx.strokeStyle = POINT_COLOR;
-        ctx.stroke();
+        const prev = point.prev;
+        const prevX = pixel2CanvasPosX(prev.x + 0.5, selectorCanvas, selectorDrawable);
+        const prevY = pixel2CanvasPosY(prev.y + 0.5, selectorCanvas, selectorDrawable);
+        drawLine(ctx, prevX, prevY, x, y, POINT_COLOR)
     }
 
-    // Point
+    drawPoint(ctx, x, y);
+}
+
+function drawLine(ctx, x0, y0, x1, y1, color = POINT_COLOR, width = LINE_WIDTH) {
     ctx.beginPath();
-    ctx.arc(x, y, POINT_SIZE, 0, Math.PI * 2);
-    ctx.fillStyle = POINT_COLOR;
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.lineWidth   = width;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+}
+
+function drawPoint(ctx, x, y, color = POINT_COLOR, size = POINT_SIZE) {
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, 2 * Math.PI);
+    ctx.fillStyle = color;
     ctx.fill();
 }
 
 function undoPoint() {
-    let ctx = selectorCanvas.getContext("2d");
+    const ctx = selectorCanvas.getContext("2d");
 
     if(selected_points.length > 0) {
         redo_points.push(selected_points.pop());
@@ -169,7 +252,7 @@ function undoPoint() {
         ctx.drawImage(selectorDrawable, 0, 0, selectorCanvas.width, selectorCanvas.height);
 
         // Redraw all poins
-        selected_points.forEach(drawPoint)
+        selected_points.forEach(drawPointSelection)
         updateInterface();
     }
 }
@@ -177,7 +260,7 @@ function undoPoint() {
 function redoPoint() {
     if(redo_points.length > 0) {
         const point = redo_points.pop();
-        addPoint(point)
+        addPointSelection(point)
     }
 }
 
@@ -197,17 +280,17 @@ function canvasDisableSmoothing(ctx) {
 
 // Empty selected points and build canvas for point selection
 async function handleImageSelection() {
-    if(imgSelector.files.length === 0) {
+    if(imgInput.files.length === 0) {
           // No nos subieron nada
           showError('No images selected');
-          imgSelector.value = '';
+          imgInput.value = '';
           return;
     }
 
-    const firstDrawable = await drawableIterator(imgSelector.files).next();
+    const firstDrawable = await drawableIterator(imgInput.files).next();
     if(!firstDrawable || firstDrawable.done) {
         showError('No valid image selected');
-        imgSelector.value = '';
+        imgInput.value = '';
         return;
     }
 
@@ -216,8 +299,8 @@ async function handleImageSelection() {
 
     // Update selector canvas with new drawable
     selectorCanvas.height = selectorCanvas.width / selectorDrawable.width * selectorDrawable.height;
-    let ctx = selectorCanvas.getContext('2d');
-    canvasDisableSmoothing(selectorCanvas.getContext('2d'));
+    const ctx = selectorCanvas.getContext('2d');
+    canvasDisableSmoothing(ctx);
     ctx.drawImage(selectorDrawable, 0, 0, selectorCanvas.width, selectorCanvas.height);
 
     // Show canvas
