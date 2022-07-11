@@ -22,6 +22,8 @@ const undo              = document.getElementById('undo');
 const redo              = document.getElementById('redo');
 const resultImgs        = document.getElementById('result-imgs');
 const results           = document.getElementById('results');
+const downloadJson      = document.getElementById('download-json');
+const downloadTsv       = document.getElementById('download-tsv');
 
 /* ------ Global data -------- */
 // Points info
@@ -101,8 +103,33 @@ async function renderTrackingResult(trackingResult) {
         resultImgs.appendChild(canvas);
     }
 
+    downloadJson.href   = URL.createObjectURL(new Blob([toJsonResults(trackingResult)], {type: 'application/json'}));
+    downloadTsv.href    = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'application/json'}));
+
     resultImgs.style.display = '';
     results.style.display = '';
+}
+
+function toJsonResults(results) {
+    const redactedResults = results.frames.map(frame => { return {
+        points: frame.points.map(point => { return {
+            x: point.x,
+            y: point.y,
+        }}),
+    }});
+    return JSON.stringify(redactedResults);
+}
+
+function toTsvResults(results) {
+    const ret = ['frame\tx\ty'];
+
+    let frame = 0;
+    for(const result of trackingResult.frames) {
+        result.points.forEach(point => ret.push([frame, point.x, point.y].join('\t')));
+        frame++;
+    }
+
+    return ret.join('\r\n');
 }
 
 function trackingPoint2canvas({x, y}, canvas, img) {
