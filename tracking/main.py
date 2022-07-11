@@ -2,7 +2,7 @@ from typing import Iterable
 
 import numpy as np
 
-from .models import Config, TrackingFrameResult, TrackingPoint, TrackingSegment, TrackingResult
+from .models import Config, TrackingFrameResult, TrackingPoint, TrackingSegment, TrackingResult, TrackingFrameMetadata, TrackingPointStatus
 from .tracking import interpolate_missing, gauss_fitting, generate_normal_line_bounds, multi_point_linear_interpolation, points_linear_interpolation
 
 
@@ -36,7 +36,14 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
             smooth_points[:, 1] = moving_average(brightest_point[:, 1], config.moving_average_count)
 
         prev_frame_points = smooth_points
-        results.append(TrackingFrameResult(TrackingPoint.from_arrays(brightest_point), TrackingPoint.from_arrays(none_points), TrackingSegment.from_arrays(normal_lines_limits)))
+
+        # TODO: No queremos perder el orden de los puntos. Tenemos que ver la manera de ir clasificando puntos sin perder su orden en la lista.
+        #   Esta solucion es temporal
+        #   Nos tenemos que sentar a pensar bien como es el modelo de la respuesta, porque no es sencillo
+        results.append(TrackingFrameResult(
+            TrackingPoint.from_arrays([(brightest_point, None), (none_points, TrackingPointStatus.INTERPOLATED)]),
+            TrackingFrameMetadata(TrackingSegment.from_arrays(normal_lines_limits))
+        ))
 
     return TrackingResult(results)
 

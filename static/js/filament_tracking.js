@@ -4,9 +4,13 @@ const POINT_SIZE        = 10;
 const LINE_WIDTH        = 5;
 const POINT_COLOR       = '#ff0000';
 
-const TRACKING_POINT_SIZE   = 5;
-const TRACKING_POINT_COLOR  = '#0055ff';
-const INTER_POINT_COLOR     = '#ff0000';
+const TRACKING_POINT_SIZE           = 5;
+const TRACKING_POINT_STATUS_COLOR   = {
+    'INTERPOLATED': '#ff0000',
+    'DELETED':      '#d608e5',
+    null:           '#0055ff',
+    undefined:      '#0055ff',
+}
 const NORMAL_LINE_COLOR     = 'rgba(0,255,255,0.22)'
 
 // Elementos de UI
@@ -17,6 +21,7 @@ const errors            = document.getElementById('errors');
 const undo              = document.getElementById('undo');
 const redo              = document.getElementById('redo');
 const resultImgs        = document.getElementById('result-imgs');
+const results           = document.getElementById('results');
 
 /* ------ Global data -------- */
 // Points info
@@ -27,6 +32,9 @@ const redo_points       = [];
 let selectorDrawable;
 
 (function () {
+    // Results initially not visible
+    results.style.display = 'none';
+
     form.addEventListener('submit', executeTracking);
 
     imgInput.addEventListener('change', handleImageSelection);
@@ -69,7 +77,6 @@ function executeTracking(e) {
 }
 
 async function renderTrackingResult(trackingResult) {
-    console.log(trackingResult);
     resultImgs.innerHTML = '';
     resultImgs.style.display = 'none';
 
@@ -82,15 +89,10 @@ async function renderTrackingResult(trackingResult) {
 
         for(const point of result.points) {
             const [x, y] = trackingPoint2canvas(point, canvas, frame);
-            drawPoint(ctx, x, y, TRACKING_POINT_COLOR, TRACKING_POINT_SIZE);
+            drawPoint(ctx, x, y, TRACKING_POINT_STATUS_COLOR[point.status], TRACKING_POINT_SIZE);
         }
 
-        for(const point of result.none_points) {
-            const [x, y] = trackingPoint2canvas(point, canvas, frame);
-            drawPoint(ctx, x, y, INTER_POINT_COLOR, TRACKING_POINT_SIZE);
-        }
-
-        for(const segment of result.normal_lines) {
+        for(const segment of result.metadata.normal_lines) {
             const [x0, y0] = trackingPoint2canvas(segment.start, canvas, frame);
             const [x1, y1] = trackingPoint2canvas(segment.end, canvas, frame);
             drawLine(ctx, x0, y0, x1, y1, NORMAL_LINE_COLOR);
@@ -100,6 +102,7 @@ async function renderTrackingResult(trackingResult) {
     }
 
     resultImgs.style.display = '';
+    results.style.display = '';
 }
 
 function trackingPoint2canvas({x, y}, canvas, img) {
