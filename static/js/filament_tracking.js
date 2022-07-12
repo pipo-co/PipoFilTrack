@@ -62,7 +62,7 @@ function executeTracking(e) {
     const formData = new FormData(form);
     formData.append('points', JSON.stringify(selected_points));
 
-    fetch('http://localhost:5000/track', {
+    fetch('/track', {
         method: 'POST',
         body: formData,
     })
