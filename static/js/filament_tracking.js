@@ -124,7 +124,7 @@ function toTsvResults(results) {
     const ret = ['frame\tx\ty'];
 
     let frame = 0;
-    for(const result of trackingResult.frames) {
+    for(const result of results.frames) {
         result.points.forEach(point => ret.push([frame, point.x, point.y].join('\t')));
         frame++;
     }
