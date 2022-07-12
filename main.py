@@ -1,5 +1,6 @@
 import dataclasses
 import json
+import os
 from typing import List, Dict, Type
 
 import numpy as np
@@ -11,7 +12,7 @@ from tracking.main import track_filament
 from tracking.models import Config, ApplicationError
 
 app = Flask(__name__, instance_relative_config=True)
-# app.secret_key = 'secret key'
+app.secret_key = os.getenv('SECRET_KEY')
 
 ALLOWED_IMAGE_TYPES: List[str] = ['.tif', '.tiff', '.jpg', '.jpeg', '.avi', '.png']
 TYPE_TO_INPUT: Dict[Type, str] = {
