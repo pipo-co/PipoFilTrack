@@ -10,12 +10,7 @@ from tracking.image_utils import frames_iterator
 from tracking.main import track_filament
 from tracking.models import Config, ApplicationError
 
-app = Flask(
-    __name__,
-    template_folder='frontend',
-    static_folder="static",
-    instance_relative_config=True
-)
+app = Flask(__name__, instance_relative_config=True)
 # app.secret_key = 'secret key'
 
 ALLOWED_IMAGE_TYPES: List[str] = ['.tif', '.tiff', '.jpg', '.jpeg', '.avi', '.png']
