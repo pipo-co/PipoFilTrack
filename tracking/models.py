@@ -19,7 +19,7 @@ class Config:
     cov_threshold: float        = config_field(0.2,     'Limite de tolerancia para el error en el ajuste gaussiano del perfil de intensidad')
     moving_average_count: int   = config_field(5,       'Cantidad de puntos a tomar para el moving average durante la rutina de suavizado')
     max_tangent_length: int     = config_field(15,      'Cantidad de puntos tomados para calcular la pendiente')
-    normal_line_length: int     = config_field(15,      'Longitud en pixeles del perfil de intensidad a tomar')
+    normal_line_length: int     = config_field(10,      'Longitud en pixeles del perfil de intensidad a tomar')
 
     @classmethod
     def from_dict(cls, env):
