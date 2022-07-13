@@ -40,12 +40,12 @@ def normalize(data: np.ndarray, as_type=np.uint8) -> np.ndarray:
     elif np.can_cast(data.dtype, np.uint8, casting='safe'):
         return data.astype(as_type, copy=False)
     else:
-        rng = data.max() - data.min()
-        if rng == 0:
+        amax = data.max()
+        amin = data.min()
+        if amax - amin == 0:
             return np.full(data.shape, min(abs(int(data[0, 0])), 255))
         else:
-            amin = data.min()
-            ret = (data - amin) * 255 // rng
+            ret = (data - amin) / (amax - amin) * 255
             return ret.astype(as_type, copy=False)
 
 def frames_iterator(files, allowed_ext: List[str]) -> Iterator[np.ndarray]:
@@ -63,4 +63,3 @@ def frames_iterator(files, allowed_ext: List[str]) -> Iterator[np.ndarray]:
                 yield normalize(np.asarray(frame), np.uint8) # noqa
         else:
             yield normalize(np.asarray(img), np.uint8) # noqa
-
