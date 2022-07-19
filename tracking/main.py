@@ -2,7 +2,8 @@ from typing import Iterable
 
 import numpy as np
 
-from .models import Config, TrackingFrameResult, TrackingPoint, TrackingSegment, TrackingResult, TrackingFrameMetadata, TrackingPointStatus
+from .models import Config, TrackingFrameResult, TrackingPoint, TrackingSegment, TrackingResult, TrackingFrameMetadata, \
+    TrackingPointStatus
 from .tracking import interpolate_missing, gauss_fitting, generate_normal_line_bounds, multi_point_linear_interpolation, \
     points_linear_interpolation, profile_pos_to_point, bezier_fitting, read_line_from_img
 
@@ -10,14 +11,15 @@ from .tracking import interpolate_missing, gauss_fitting, generate_normal_line_b
 def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config: Config) -> TrackingResult:
     results = []
 
+    # Obtenemos los puntos iniciales del tracking interpolando linealmente los puntos del usuario
     prev_frame_points = multi_point_linear_interpolation(user_points)
 
-    for frame in frames:
-        if len(prev_frame_points) < config.max_tangent_length/2:
-            break
+    # Si no hay suficientes puntos para la tangente configurada, bajamos la cantidada de puntos
+    max_tangent_length = config.max_tangent_length if len(prev_frame_points) < config.max_tangent_length / 2 else len(prev_frame_points) // 2
 
+    for frame in frames:
         # Calculamos los limites que definen los segmentos de las rectas normales
-        normal_lines_limits = generate_normal_line_bounds(prev_frame_points, config.max_tangent_length, config.normal_line_length)
+        normal_lines_limits = generate_normal_line_bounds(prev_frame_points, max_tangent_length, config.normal_line_length)
 
         # A partir de los limites obtenemos la lista de pixeles que representan a los segmentos de las rectas normales
         # No es un ndarray porque no todas salen con la misma longitud (diagonales, etc)
