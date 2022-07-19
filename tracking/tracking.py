@@ -2,8 +2,9 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 import skimage as skimg
-from scipy.optimize import curve_fit
 from scipy import stats
+from scipy.optimize import curve_fit
+from scipy.special import comb
 
 PIXEL_POINT_RATIO = 1
 
@@ -16,7 +17,6 @@ def multi_point_linear_interpolation(points: np.ndarray) -> np.ndarray:
 def points_linear_interpolation(start: np.ndarray, end: np.ndarray) -> np.ndarray:
     # line returns the pixels of the line described by the 2 points
     # https://scikit-image.org/docs/stable/api/skimage.draw.html#line
-    # Nota(tobi): Aca hay una bocha de truquito, lo podemos simplificar
     return np.stack(skimg.draw.line(*start.astype(int), *end.astype(int)), axis=-1)
 
 def project_to_line(point: Tuple[float, float], m1: float, b1: float) -> Tuple[float, float]:
@@ -26,7 +26,7 @@ def project_to_line(point: Tuple[float, float], m1: float, b1: float) -> Tuple[f
     y = m1*x + b1
     return x, y
 
-def interpolate_points(interpolation_points: List[Tuple[float, float]], none_points: int, leftmost_point: np.ndarray, rightmost_point: np.ndarray) -> np.ndarray:
+def interpolate_points(interpolation_points: List[Tuple[float, float]], none_points: int, leftmost_point: Tuple[float, float], rightmost_point: Tuple[float, float]) -> np.ndarray:
     interpolation_points = np.asarray(interpolation_points)
     res = stats.linregress(interpolation_points)
 
@@ -36,81 +36,79 @@ def interpolate_points(interpolation_points: List[Tuple[float, float]], none_poi
     xs = np.linspace(first_point[0], last_point[0], none_points + 2, endpoint=True)[1:-1]
     points = np.repeat(xs[:, None], 2, axis=1)
     points[:, 1] = points[:, 1] * res.slope + res.intercept
-    return points, (first_point, last_point)
-    # return np.asarray([(t*i*cos(angle) + first_point[0], t*i*sin(angle) + first_point[1]) for i in range(1, none_points + 1)]), (first_point, last_point)
 
-def interpolate_missing(brightest_point_profile_index: np.ndarray, normal_lines: np.ndarray, cov_threshold: float) -> Tuple[np.ndarray, np.ndarray]:
-    valid_values = []
-    invalid_values = []
+    return points
+
+# TODO: Emptrolijar metodo. Mucho no se usa o no queda claro
+def interpolate_missing(points: List[Optional[Tuple[float, float]]], inter_len: int) -> Tuple[np.ndarray, List[int], List[int]]:
+    """
+        Returns results with interpolated points included, and a list of the indices of the interpolated points
+    """
+    valid_points: List[Tuple[float, float]] = []
+    interpolated_points_idx: List[int]      = []
+    deleted_points_idx: List[int]           = []
+
     none_flag = False
-    left_pos = 0
-    point_amount = 0
     previous_index = 0
     interpolation_points: List[Tuple[float, float]] = []
-    leftmost_point = Tuple[float, float]
-    rightmost_point = Tuple[float, float]
-    fyls = []
-    """
-    Si los primeros o ultimos n puntos son None, se descartan
-    """
-    converted_points = [index_to_point(bp, nl, cov_threshold) for bp, nl in zip(brightest_point_profile_index, normal_lines)]
+    leftmost_point: Tuple[float, float]
+    rightmost_point: Tuple[float, float]
 
-    a = 1
-
-    for i, cp in enumerate(converted_points):
-        if cp:
+    for i, point in enumerate(points):
+        if point:
             if none_flag:
-                if i + 1 != len(converted_points) and not (i + 1 < len(converted_points) and converted_points[i + 1]):
+                if i + 1 != len(points) and not (i + 1 < len(points) and points[i + 1]):
                     continue
-                interpolation_points.append(cp)
-                rightmost_point = cp
-                for j in range(1, 4):
+
+                interpolation_points.append(point)
+                rightmost_point = point
+                for j in range(1, inter_len + 1):
                     new_pos = i + j
-                    if new_pos < len(converted_points) and converted_points[new_pos]:
-                        interpolation_points.append(converted_points[new_pos])
+                    if new_pos < len(points) and points[new_pos]:
+                        interpolation_points.append(points[new_pos])
 
                 # interpolo entre previous_point y next_point, pero elimino lo que me corri, osea saco los primeros l_pos
                 point_amount = i - previous_index - 1
-                interpolation, fyl = interpolate_points(interpolation_points, point_amount, leftmost_point, rightmost_point)
+                interpolation = interpolate_points(interpolation_points, point_amount, leftmost_point, rightmost_point)
 
-                fyls.append(fyl)
-
-                valid_values.extend(interpolation)
-                invalid_values.extend(interpolation)
+                valid_points.extend(interpolation)
+                interpolated_points_idx.extend(range(previous_index + 1, i))  # Le agregamos los indices de los puntos interpolados
                 interpolation_points = []
                 none_flag = False
             # else:
             #   # dejo el punto en converted como esta y lo appendeo a los valores validos
-            valid_values.append(cp)
+            valid_points.append(point)
         else:
             # no es valido el punto y vengo de uno valido
             if not none_flag:
                 # busco el indice del punto mas lejos que tenga para atras
-                if len(valid_values) > 0:
-                    left_pos = min(len(valid_values), 3)
+                if len(valid_points) > 0:
+                    left_pos = min(len(valid_points), inter_len)
 
-                    interpolation_points.extend(valid_values[-left_pos:])
+                    interpolation_points.extend(valid_points[-left_pos:])
                     leftmost_point = interpolation_points[-1]
                     # indice previo
                     previous_index = i - 1
                     none_flag = True
+                else:
+                    deleted_points_idx.append(i)
 
-    return np.array(valid_values), np.array(invalid_values)
-    
-# brightest_point = media y error
-def index_to_point(brightest_point: Tuple[float, float], points: np.ndarray, cov_threshold:float) -> Optional[Tuple[float, float]]:
-    """
-        Obtener las coordenadas de un punto ubicado entre otros dos.
-        Si no esta contenido en la lista de puntos se ignora (None)
-    """
-    idx = brightest_point[0]
 
-    if brightest_point[1] > cov_threshold or int(idx) < 0 or int(idx) + 1 >= len(points):
+
+    return np.array(valid_points), interpolated_points_idx, deleted_points_idx
+
+def profile_pos_to_point(pos: float, points: np.ndarray) -> Optional[Tuple[float, float]]:
+    """
+    A partir de una lista de puntos que representan el segmento de una recta, y una posicion (1D) dentro de esa recta,
+    se obtiene el punto en 2D de dicha posicion.
+    En caso de que la posicion no se encuentre en la recta, se retorna None.
+    """
+    if int(pos) < 0 or int(pos) + 1 >= len(points):
         return None
 
-    start = points[int(idx)]
-    end = points[int(idx)+1] 
-    delta = idx - int(idx)
+    start   = points[int(pos)]
+    end     = points[int(pos)+1]
+    delta   = pos - int(pos)
 
     new_x = start[0] + delta * (end[0] - start[0])
     new_y = start[1] + delta * (end[1] - start[1])
@@ -121,6 +119,9 @@ def gaussian(x, mu, sig):
     return 1./(np.sqrt(2.*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2.)/2)
 
 def gauss_fitting(intensity_profile: np.ndarray, max_color: int) -> Tuple[float, float]:
+    """
+    Ajusta los puntos a una distribucion gaussiana y retorna su maximo (la media) y su error.
+    """
     xdata = np.arange(len(intensity_profile))
     popt, pcov = curve_fit(lambda x, m, s: gaussian(x, m, s) * max_color, xdata, intensity_profile)
     p_error = np.square(np.diag(pcov))
@@ -138,7 +139,7 @@ def generate_normal_line_bounds(points: np.ndarray, angle_resolution: int, norma
     normal_angle = np.zeros(len(points))
     normal_angle[d//2:-d//2] = tangent_angle + np.pi/2
     normal_angle[:d//2] = normal_angle[d//2]
-    normal_angle[-d//2:] = normal_angle[-d//2 -1]
+    normal_angle[-d//2:] = normal_angle[-d//2 - 1]
 
     # Seno y coseno de la normal. Usados para generar los limites de la misma 
     component_multiplier = np.stack((np.cos(normal_angle), np.sin(normal_angle)), axis=1)
@@ -148,3 +149,21 @@ def generate_normal_line_bounds(points: np.ndarray, angle_resolution: int, norma
     bounds = np.stack((upper, lower), axis=1)
 
     return np.rint(bounds).astype(np.int64)
+
+# indices (n, 2) de la forma (x, y)
+def read_line_from_img(img: np.ndarray, indices: np.ndarray) -> np.ndarray:
+    return img[indices[:,1], indices[:,0]]
+
+def bezier_fitting(points: np.ndarray):
+    count = points.shape[0]
+    idx = np.arange(count).reshape((-1, 1))  # We make it of shape (count, 1) so it can later be broadcast to 2
+
+    n = count - 1
+    ts = np.linspace(0, 1, num=count)
+
+    ret = np.zeros((count, 2))
+    for i, t in enumerate(ts):
+        # Sum of points multiplied by the corresponding Bernstein polynomial
+        ret[i, :] = np.sum(points * comb(n, idx) * (t**idx) * ((1 - t)**(n - idx)), axis=0)
+
+    return ret

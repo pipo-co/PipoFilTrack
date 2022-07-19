@@ -1,6 +1,6 @@
 from dataclasses import dataclass, fields, field, Field
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import List, Optional, Dict, Iterable
 
 import numpy as np
 
@@ -15,7 +15,8 @@ def config_field(default, description) -> Field:
 @dataclass
 class Config:
     bezier_smoothing: bool      = config_field(False,   'Post-procesamiento de suavizado utilizando un ajuste a curva de bezier')
-    cov_threshold: float        = config_field(0.2,     'Limite de tolerancia para el error en el ajuste gaussiano del perfil de intensidad')
+    missing_inter_len: int      = config_field(3,       'Cantidad de puntos hacia ambos lados a tomar para interpolar los puntos faltantes (invalidos)')
+    max_fitting_error: float    = config_field(0.2,     'Limite de tolerancia para el error en el ajuste gaussiano del perfil de intensidad')
     moving_average_count: int   = config_field(5,       'Cantidad de puntos a tomar para el moving average durante la rutina de suavizado')
     max_tangent_length: int     = config_field(15,      'Cantidad de puntos tomados para calcular la pendiente')
     normal_line_length: int     = config_field(10,      'Longitud en pixeles del perfil de intensidad a tomar')
@@ -38,8 +39,15 @@ class TrackingPoint:
     status: Optional[TrackingPointStatus] = None
 
     @classmethod
-    def from_arrays(cls, points_by_status: List[Tuple[np.ndarray, Optional[TrackingPointStatus]]]) -> List['TrackingPoint']:
-        return [cls.from_array(point, status) for points, status in points_by_status for point in points]
+    def from_arrays(cls, points: np.ndarray, status_map: Dict[TrackingPointStatus, Iterable[int]]) -> List['TrackingPoint']:
+        ret = [cls.from_array(point) for point in points]
+
+        # Asignamos los status correspondientes segun el mapa
+        for status, points_idx in status_map.items():
+            for point_idx in points_idx:
+                ret[point_idx].status = status
+
+        return ret
 
     @classmethod
     def from_array(cls, point: np.ndarray, status: Optional[TrackingPointStatus] = None) -> 'TrackingPoint':
