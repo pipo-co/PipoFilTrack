@@ -28,6 +28,7 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
         # Obtenemos los perfiles de intensidad de la imagen de cada recta normal
         intensity_profiles = map(lambda nl, img=frame: read_line_from_img(img, nl), normal_lines)
 
+        # TODO(tobi): Falla si agarramos puntos muy al borde??
         # Obtenemos la posicion del maximo punto del perfil de intensidad, junto con su error
         points_profile_pos = list(map(lambda ip, img=frame: gauss_fitting(ip, img.max()), intensity_profiles))
 

@@ -39,7 +39,6 @@ def interpolate_points(interpolation_points: List[Tuple[float, float]], none_poi
 
     return points
 
-# TODO: Emptrolijar metodo. Mucho no se usa o no queda claro
 def interpolate_missing(points: List[Optional[Tuple[float, float]]], previous_points: np.ndarray, inter_len: int) -> Tuple[np.ndarray, List[int], List[int]]:
     """
         Returns results with interpolated points included, or previous points if interpolation couldn't be done.
@@ -167,10 +166,14 @@ def read_line_from_img(img: np.ndarray, indices: np.ndarray) -> np.ndarray:
     return img[indices[:,1], indices[:,0]]
 
 def bezier_fitting(points: np.ndarray):
+    # How many points we want from the bezier curve
+    # It could be a parameter, but we always want the same amount of points as the input
     count = points.shape[0]
-    idx = np.arange(count).reshape((-1, 1))  # We make it of shape (count, 1) so it can later be broadcast to 2
 
-    n = count - 1
+    size = points.shape[0]
+    n = size - 1
+
+    idx = np.arange(size).reshape((-1, 1))  # We make it of shape (count, 1) so it can later be broadcast to 2
     ts = np.linspace(0, 1, num=count)
 
     ret = np.zeros((count, 2))
