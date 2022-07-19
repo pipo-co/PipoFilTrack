@@ -14,8 +14,7 @@ def config_field(default, description) -> Field:
 
 @dataclass
 class Config:
-    smooth_x: bool              = config_field(False,   'Post-procesamiento de suavizado en la coordenada Y')
-    smooth_y: bool              = config_field(False,   'Post-procesamiento de suavizado en la coordenada X')
+    bezier_smoothing: bool      = config_field(False,   'Post-procesamiento de suavizado utilizando un ajuste a curva de bezier')
     cov_threshold: float        = config_field(0.2,     'Limite de tolerancia para el error en el ajuste gaussiano del perfil de intensidad')
     moving_average_count: int   = config_field(5,       'Cantidad de puntos a tomar para el moving average durante la rutina de suavizado')
     max_tangent_length: int     = config_field(15,      'Cantidad de puntos tomados para calcular la pendiente')
@@ -63,6 +62,7 @@ class TrackingSegment:
 @dataclass
 class TrackingFrameMetadata:
     normal_lines: List[TrackingSegment] = field(default_factory=list)
+
 
 @dataclass
 class TrackingFrameResult:

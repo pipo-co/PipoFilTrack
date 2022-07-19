@@ -1,6 +1,7 @@
 from typing import Iterable
 
 import numpy as np
+from scipy.special import comb
 
 from .models import Config, TrackingFrameResult, TrackingPoint, TrackingSegment, TrackingResult, TrackingFrameMetadata, TrackingPointStatus
 from .tracking import interpolate_missing, gauss_fitting, generate_normal_line_bounds, multi_point_linear_interpolation, points_linear_interpolation
@@ -29,11 +30,8 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
         # brightest_point, none_points = [index_to_point(idx, nl, pfp) for idx, nl, pfp in zip(brightest_point_profile_index, normal_lines, prev_frame_points)]
         smooth_points = brightest_point
 
-        if config.smooth_x:
-            smooth_points[:, 0] = moving_average(brightest_point[:, 0], config.moving_average_count)
-
-        if config.smooth_y:
-            smooth_points[:, 1] = moving_average(brightest_point[:, 1], config.moving_average_count)
+        if config.bezier_smoothing:
+            smooth_points = bezier_fitting(brightest_point)
 
         prev_frame_points = smooth_points
 
@@ -51,7 +49,16 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
 def read_line_from_img(img: np.ndarray, indices: np.ndarray) -> np.ndarray:
     return img[indices[:,1], indices[:,0]]
 
-def moving_average(values: np.ndarray, N: int) -> np.ndarray:
-    extended = np.append(np.repeat(values[0], N//2), values)
-    extended = np.append(extended, np.repeat(values[-1], N//2))
-    return np.correlate(extended, np.ones(N)/N, mode='valid')
+def bezier_fitting(points: np.ndarray):
+    count = points.shape[0]
+    idx = np.arange(count).reshape((-1, 1))  # We make it of shape (count, 1) so it can later be broadcast to 2
+
+    n = count - 1
+    ts = np.linspace(0, 1, num=count)
+
+    ret = np.zeros((count, 2))
+    for i, t in enumerate(ts):
+        # Sum of points multiplied by the corresponding Bernstein polynomial
+        ret[i, :] = np.sum(points*comb(n, idx)*(t**idx)*((1 - t)**(n - idx)), axis=0)
+
+    return ret
