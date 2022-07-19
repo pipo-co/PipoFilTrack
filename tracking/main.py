@@ -42,7 +42,7 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
         # Buscamos llenar los valores faltantes (None) mediante una interpolacion con los vecinos bien calculados.
         # En caso de que la interpolacion no pueda ser hecha, se descartan los valores.
         # Se informa la posicion de los valores interpolados o descartados.
-        raw_points, interpolated_points, deleted_points = interpolate_missing(raw_points_with_missing, config.missing_inter_len)
+        raw_points, interpolated_points, preserved_points = interpolate_missing(raw_points_with_missing, prev_frame_points, config.missing_inter_len)
 
         # Si fue seleccionado, suavizamos los puntos ajustando los mismos a una curva de bezier
         smoothed_points = bezier_fitting(raw_points) if config.bezier_smoothing else raw_points
@@ -53,7 +53,7 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
         # TODO: Nos tenemos que sentar a pensar bien como es el modelo de la respuesta, porque no es sencillo
         # Guardamos el resultado del frame
         results.append(TrackingFrameResult(
-            TrackingPoint.from_arrays(prev_frame_points, {TrackingPointStatus.INTERPOLATED: interpolated_points}),
+            TrackingPoint.from_arrays(prev_frame_points, {TrackingPointStatus.INTERPOLATED: interpolated_points, TrackingPointStatus.PRESERVED: preserved_points}),
             TrackingFrameMetadata(TrackingSegment.from_arrays(normal_lines_limits))
         ))
 

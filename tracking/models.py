@@ -29,7 +29,7 @@ class Config:
 # Encode tracking point extraordinary statuses
 class TrackingPointStatus(str, Enum):
     INTERPOLATED    = 'INTERPOLATED'
-    DELETED         = 'DELETED'
+    PRESERVED       = 'PRESERVED'
 
 @dataclass
 class TrackingPoint:

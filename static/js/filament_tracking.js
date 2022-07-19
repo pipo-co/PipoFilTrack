@@ -7,7 +7,7 @@ const POINT_COLOR       = '#ff0000';
 const TRACKING_POINT_SIZE           = 5;
 const TRACKING_POINT_STATUS_COLOR   = {
     'INTERPOLATED': '#ff0000',
-    'DELETED':      '#d608e5',
+    'PRESERVED':    '#d608e5',
     null:           '#0055ff',
     undefined:      '#0055ff',
 }

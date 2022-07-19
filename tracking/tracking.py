@@ -40,13 +40,15 @@ def interpolate_points(interpolation_points: List[Tuple[float, float]], none_poi
     return points
 
 # TODO: Emptrolijar metodo. Mucho no se usa o no queda claro
-def interpolate_missing(points: List[Optional[Tuple[float, float]]], inter_len: int) -> Tuple[np.ndarray, List[int], List[int]]:
+def interpolate_missing(points: List[Optional[Tuple[float, float]]], previous_points: np.ndarray, inter_len: int) -> Tuple[np.ndarray, List[int], List[int]]:
     """
-        Returns results with interpolated points included, and a list of the indices of the interpolated points
+        Returns results with interpolated points included, or previous points if interpolation couldn't be done.
+        Also, a list of the indices of the interpolated/preserved points is provided.
     """
     valid_points: List[Tuple[float, float]] = []
     interpolated_points_idx: List[int]      = []
-    deleted_points_idx: List[int]           = []
+    preserved_points_idx: List[int]         = []
+    initial_to_be_preserved                 = 0
 
     none_flag = False
     previous_index = 0
@@ -91,11 +93,21 @@ def interpolate_missing(points: List[Optional[Tuple[float, float]]], inter_len: 
                     previous_index = i - 1
                     none_flag = True
                 else:
-                    deleted_points_idx.append(i)
+                    initial_to_be_preserved += 1
 
+    # Calculamos los puntos que no pudimos interpolar al principio y les asignamos el punto previo (los "preservamos")
+    if initial_to_be_preserved > 0:
+        valid_points = list(previous_points[:initial_to_be_preserved]) + valid_points
+        preserved_points_idx.extend(range(initial_to_be_preserved))
 
+    # Lo mismo pero al final
+    points_count = len(points)
+    valid_count = len(valid_points)
+    if points_count - valid_count > 0:
+        valid_points.extend(previous_points[valid_count:])
+        preserved_points_idx.extend(range(valid_count, points_count))
 
-    return np.array(valid_points), interpolated_points_idx, deleted_points_idx
+    return np.array(valid_points), interpolated_points_idx, preserved_points_idx
 
 def profile_pos_to_point(pos: float, points: np.ndarray) -> Optional[Tuple[float, float]]:
     """
