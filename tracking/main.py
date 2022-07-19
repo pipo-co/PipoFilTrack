@@ -41,7 +41,7 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
         #   Esta solucion es temporal
         #   Nos tenemos que sentar a pensar bien como es el modelo de la respuesta, porque no es sencillo
         results.append(TrackingFrameResult(
-            TrackingPoint.from_arrays([(brightest_point, None), (none_points, TrackingPointStatus.INTERPOLATED)]),
+            TrackingPoint.from_arrays([(prev_frame_points, None)]),
             TrackingFrameMetadata(TrackingSegment.from_arrays(normal_lines_limits))
         ))
 
