@@ -63,7 +63,7 @@ def interpolate_missing(points: List[Optional[Tuple[float, float]]], previous_po
 
                 interpolation_points.append(point)
                 rightmost_point = point
-                for j in range(1, inter_len + 1):
+                for j in range(1, inter_len):
                     new_pos = i + j
                     if new_pos < len(points) and points[new_pos]:
                         interpolation_points.append(points[new_pos])
