@@ -130,3 +130,9 @@ cython_debug/
 # IDEs
 .idea/
 .vscode/
+.vscode-server/
+images/
+sta
+.bash_history
+.DS_Store
+.ssh/known_hosts
