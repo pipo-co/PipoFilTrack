@@ -59,5 +59,10 @@ def track():
 
     return make_response(jsonify(track_filament(frames_iterator(images, ALLOWED_IMAGE_TYPES), np.array(points), config)))
 
+@app.route('/health', methods=['GET'])
+def health():
+# Handle here any business logic for ensuring you're application is healthy (DB connections, etc...)
+    return "Healthy: OK"
+
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)

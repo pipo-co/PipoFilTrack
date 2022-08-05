@@ -1,11 +1,25 @@
-version: '3.5'
 services:
-  web:
-    build: .
-    ports:
-    - "5000:5000"
-    - "9022:22"
+  nginx-proxy:
+    build: nginx
     restart: always
-    volumes:
-    - .:/web
-
+    environment: 
+      - APP_ADDR=flask-app:8000
+    ports:
+      - "80:80"
+    depends_on:
+      - flask-app
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:80/health-check || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    command: /app/start.sh
+  flask-app:
+    build: .
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:8000/flask-health-check || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    command: gunicorn -w 3 -t 60 -b 0.0.0.0:8000 main:app
