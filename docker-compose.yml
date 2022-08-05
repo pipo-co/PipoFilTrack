@@ -2,18 +2,30 @@ services:
   nginx-proxy:
     build: nginx
     restart: always
-    environment: 
-      - APP_ADDR=flask-app:8000
-    ports:
-      - "80:80"
     depends_on:
       - flask-app
+    environment: 
+      - APP_ADDR=flask-app:8000
+      - SERVER_NAME=${SERVER_NAME}
+    ports:
+      - 80:80
+      - 443:443
+    volumes:  
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
     healthcheck:
       test: ["CMD-SHELL", "curl --silent --fail localhost:80/health-check || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 3
     command: /app/start.sh
+  
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+  
   flask-app:
     build: .
     restart: always
