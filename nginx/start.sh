@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-envsubst '$APP_ADDR $SERVER_NAME' < /tmp/default.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
+envsubst '$APP_ADDR SERVER_NAME' < /tmp/app.conf > /etc/nginx/conf.d/app.conf && nginx -g 'daemon off;'
