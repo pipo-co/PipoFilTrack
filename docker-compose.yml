@@ -7,6 +7,7 @@ services:
     environment: 
       - APP_ADDR=flask-app:8000
       - SERVER_NAME=${SERVER_NAME}
+      - CONF_TEMPLATE=${CONF_TEMPLATE}
     ports:
       - 80:80
       - 443:443
