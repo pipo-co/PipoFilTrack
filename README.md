@@ -1,11 +1,15 @@
 # Proyecto final Pipo
 
+## Ejecutar
+
+- Iniciar `docker compose up -d`. Si se hacen cambios y cachea la build se puede agregar `--build` para forzar una reconstruccion.
+- Apagar con `docker compose down`
+
 ## Env
 
-```env
-SERVER_NAME=
-CERTBOT_PATH=
-```
+- SERVER_NAME => nombre de dominio al cual se va a responder
+- CERTBOT_PATH => carpteta usada para comunicar archivos entre certbot y nginx
+- CONF_TEMPLATE => nombre del archivo de conf que se usa. Principalmente para alternar entre HTTPS y HTTP
 
 ## Generacion de certificado
 
