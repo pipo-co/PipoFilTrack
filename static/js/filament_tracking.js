@@ -14,22 +14,35 @@ const TRACKING_POINT_STATUS_COLOR   = {
 const NORMAL_LINE_COLOR     = 'rgba(0,255,255,0.22)'
 
 // Elementos de UI
-const selectorCanvas    = document.getElementById('points-selector-canvas');
-const form              = document.getElementById('tracking-form');
-const imgInput          = document.getElementById('img-input');
-const errors            = document.getElementById('errors');
-const undo              = document.getElementById('undo');
-const redo              = document.getElementById('redo');
-const resultImgs        = document.getElementById('result-imgs');
-const results           = document.getElementById('results');
-const downloadJson      = document.getElementById('download-json');
-const downloadTsv       = document.getElementById('download-tsv');
+const selectorCanvas        = document.getElementById('points-selector-canvas');
+const form                  = document.getElementById('tracking-form');
+const imgInput              = document.getElementById('img-input');
+const errors                = document.getElementById('errors');
+const undo                  = document.getElementById('undo');
+const redo                  = document.getElementById('redo');
+const resultImgs            = document.getElementById('result-imgs');
+const results               = document.getElementById('results');
+const downloadJson          = document.getElementById('download-json');
+const downloadTsv           = document.getElementById('download-tsv');
+
+const rc_loop               = document.getElementById('rc-loop');
+const rc_frame              = document.getElementById('rc-frame');
+const rc_frame_rate_up      = document.getElementById('rc-frame-rate-up');
+const rc_frame_rate_down    = document.getElementById('rc-frame-rate-down');
+const rc_frame_rate_value   = document.getElementById('rc-frame-rate-value');
 
 /* ------ Global data -------- */
 // Points info
-const selected_points   = [];
-const redo_points       = [];
-
+const selected_points       = [];
+const redo_points           = [];
+const result_viewer         = {
+    frames: [],
+    index: 0,
+    loop: true,
+    fps: 4,
+    inter_id: null,
+    canvas: null
+}
 // Image and canvas info
 let selectorDrawable;
 
@@ -48,6 +61,9 @@ let selectorDrawable;
     // Undo/Redo selected points
     undo.addEventListener('click', undoPoint);
     redo.addEventListener('click', redoPoint);
+    rc_loop.addEventListener('click', rcLoop);
+    rc_frame_rate_up.addEventListener('click', () => rcFrameRateChange(1));
+    rc_frame_rate_down.addEventListener('click', () => rcFrameRateChange(-1));
 })();
 
 function executeTracking(e) {
@@ -100,9 +116,13 @@ async function renderTrackingResult(trackingResult) {
             drawLine(ctx, x0, y0, x1, y1, NORMAL_LINE_COLOR);
         }
 
-        resultImgs.appendChild(canvas);
-        closeFrame(frame)
+        result_viewer.frames.push(canvas);
+        closeFrame(frame);
     }
+
+    result_viewer.canvas = buildCanvas(result_viewer.frames[0]);
+    restartResultsAnimation();
+    resultImgs.appendChild(result_viewer.canvas);
 
     if(downloadJson.href) {
         URL.revokeObjectURL(downloadJson.href);
@@ -116,6 +136,28 @@ async function renderTrackingResult(trackingResult) {
 
     resultImgs.style.display = '';
     results.style.display = '';
+}
+
+function restartResultsAnimation() {
+    if(result_viewer.inter_id) {
+        clearInterval(result_viewer.inter_id)
+    }
+    result_viewer.inter_id = setInterval(nextFrame, 1000 / result_viewer.fps)
+}
+
+function nextFrame() {
+    if(!result_viewer.loop && result_viewer.index == result_viewer.frames.length-1) {
+        clearInterval(result_viewer.inter_id)
+        result_viewer.inter_id = null
+        return
+    }
+    updateResultInterface()
+}
+
+function updateResultInterface() {
+    result_viewer.index = (result_viewer.index + 1) % result_viewer.frames.length
+    rc_frame.innerHTML = `${result_viewer.index +1}/${result_viewer.frames.length}`
+    drawIntoCanvas(result_viewer.canvas, result_viewer.frames[result_viewer.index])
 }
 
 function toJsonResults(results) {
@@ -148,14 +190,18 @@ function buildCanvas(frame) {
     const ret = document.createElement('canvas');
     ret.classList.add('canvas');
 
-    ret.width = CANVAS_RESOLUTION;
-    ret.height = ret.width / frame.width * frame.height;
+    return drawIntoCanvas(ret, frame);
+}
 
-    const ctx = ret.getContext('2d');
+function drawIntoCanvas(canvas, frame) {
+    canvas.width = CANVAS_RESOLUTION;
+    canvas.height = canvas.width / frame.width * frame.height;
+
+    const ctx = canvas.getContext('2d');
     canvasDisableSmoothing(ctx);
-    ctx.drawImage(frame, 0, 0, ret.width, ret.height);
+    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
 
-    return ret;
+    return canvas;
 }
 
 // In case of error returns error message
@@ -313,6 +359,15 @@ function redoPoint() {
         const point = redo_points.pop();
         addPointSelection(point)
     }
+}
+
+function rcLoop() {
+    result_viewer.loop = !result_viewer.loop
+}
+
+function rcFrameRateChange(delta) {
+    result_viewer.fps += delta
+    restartResultsAnimation()
 }
 
 function updateInterface() {

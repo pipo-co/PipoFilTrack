@@ -20,6 +20,9 @@
 
   <!-- Custom JS -->
   <script src="/static/js/filament_tracking.js" defer></script>
+
+  <!-- Material Design Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body style="background-color: #A2E2F8">
   <main class="uk-container uk-text-center uk-padding">
@@ -60,6 +63,16 @@
         <p>Descarga los resultados de las posiciones en formato <a id="download-json" download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a></p>
       </div>
       <div id="result-imgs"></div>
+      <div id="result-controlls">
+        <span id="rc-frame"></span>
+        <span id="rc-frame-rate">
+          <i class="material-icons" id="rc-frame-rate-up">add</i>
+          <span id="rc-frame-rate-value"></span>
+          <i class="material-icons" id="rc-frame-rate-down">remove</i>
+
+        </span>
+        <i class="material-icons" id="rc-loop">autorenew</i>
+      </div>
     </div>
   </main>
 </body>
