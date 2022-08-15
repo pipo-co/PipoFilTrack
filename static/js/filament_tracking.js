@@ -104,7 +104,7 @@ async function renderTrackingResult(trackingResult) {
     }
 
     downloadJson.href   = URL.createObjectURL(new Blob([toJsonResults(trackingResult)], {type: 'application/json'}));
-    downloadTsv.href    = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'application/json'}));
+    downloadTsv.href    = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
 
     resultImgs.style.display = '';
     results.style.display = '';
