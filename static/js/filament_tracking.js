@@ -172,6 +172,7 @@ async function renderTrackingResult(trackingResult) {
 
     resultImgs.style.display = '';
     results.style.display = '';
+    results.scrollIntoView({behavior: "smooth"});
 }
 
 async function updatePreview(previewResults) {
