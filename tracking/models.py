@@ -14,7 +14,7 @@ def config_field(default, description) -> Field:
 
 @dataclass
 class Config:
-    bezier_smoothing: bool      = config_field(False,   'Post-procesamiento de suavizado utilizando un ajuste a curva de bezier')
+    bezier_smoothing: bool      = config_field(True,   'Post-procesamiento de suavizado utilizando un ajuste a curva de bezier')
     missing_inter_len: int      = config_field(3,       'Cantidad de puntos hacia ambos lados a tomar para interpolar los puntos faltantes (invalidos)')
     max_fitting_error: float    = config_field(0.2,     'Limite de tolerancia para el error en el ajuste gaussiano del perfil de intensidad')
     moving_average_count: int   = config_field(5,       'Cantidad de puntos a tomar para el moving average durante la rutina de suavizado')
