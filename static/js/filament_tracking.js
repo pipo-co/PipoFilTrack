@@ -41,7 +41,11 @@ const result_viewer         = {
     loop: true,
     fps: 4,
     inter_id: null,
-    canvas: null
+    canvas: null,
+    fps: {
+        value: 4,
+        update: () => rc_frame_rate_value.innerText = `${result_viewer.fps.value}`
+    }
 }
 // Image and canvas info
 let selectorDrawable;
@@ -142,7 +146,7 @@ function restartResultsAnimation() {
     if(result_viewer.inter_id) {
         clearInterval(result_viewer.inter_id)
     }
-    result_viewer.inter_id = setInterval(nextFrame, 1000 / result_viewer.fps)
+    result_viewer.inter_id = setInterval(nextFrame, 1000 / result_viewer.fps.value)
 }
 
 function nextFrame() {
@@ -366,8 +370,12 @@ function rcLoop() {
 }
 
 function rcFrameRateChange(delta) {
-    result_viewer.fps += delta
-    restartResultsAnimation()
+    result_viewer.fps.value += delta;
+    if(result_viewer.fps.value <= 0) {
+        result_viewer.fps.value = 1;
+    }
+    result_viewer.fps.update();
+    restartResultsAnimation();
 }
 
 function updateInterface() {
