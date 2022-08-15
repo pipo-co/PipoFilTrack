@@ -15,6 +15,7 @@ const NORMAL_LINE_COLOR     = 'rgba(0,255,255,0.22)'
 
 // Elementos de UI
 const selectorCanvas        = document.getElementById('points-selector-canvas');
+const previewCanvas         = document.getElementById('preview');
 const form                  = document.getElementById('tracking-form');
 const imgInput              = document.getElementById('img-input');
 const errors                = document.getElementById('errors');
@@ -50,11 +51,23 @@ const result_viewer         = {
 // Image and canvas info
 let selectorDrawable;
 
+const debouncedPreview = debounce(trackingPreview)
+
+// https://www.freecodecamp.org/news/javascript-debounce-example/
+function debounce(func, timeout = 500) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    };
+}
+
 (function () {
     // Results initially not visible
     results.style.display = 'none';
 
     form.addEventListener('submit', executeTracking);
+    form.addEventListener('input', debouncedPreview);
 
     imgInput.addEventListener('change', handleImageSelection);
 
@@ -70,16 +83,26 @@ let selectorDrawable;
     rc_frame_rate_down.addEventListener('click', () => rcFrameRateChange(-1));
 })();
 
-function executeTracking(e) {
+function fullTracking(e) {
     e.preventDefault();
     clearError();
 
+    const formData = new FormData(form);
+    executeTracking(formData, renderTrackingResult)
+}
+
+function trackingPreview() {
+    const formData = new FormData(form);
+    formData.set('images[]', formData.getAll('images[]').sort((f1, f2) => f1.name > f2.name)[0]) 
+    executeTracking(formData, updatePreview)
+}
+
+async function executeTracking(formData, callback) {
     if(selected_points.length < 2) {
         errors.innerText = 'Debe seleccionar el punto inicial y final del filamento';
         return;
     }
 
-    const formData = new FormData(form);
     formData.append('points', JSON.stringify(selected_points));
 
     fetch('/track', {
@@ -90,7 +113,7 @@ function executeTracking(e) {
     .then(async response => {
         const body = await response.json();
         if(response.ok) {
-            await renderTrackingResult(body);
+            await callback(body);
         } else {
             showError(body.message);
         }
@@ -98,14 +121,13 @@ function executeTracking(e) {
     ;
 }
 
-async function renderTrackingResult(trackingResult) {
-    resultImgs.innerHTML = '';
-    resultImgs.style.display = 'none';
+async function resultsToCanvas(trackingResult) {
+    const frames = []
 
     // We iterate frame results and images at the same time (should have same length)
-    const framesResultIter = trackingResult.frames[Symbol.iterator]();
-    for await (const frame of drawableIterator(imgInput.files)) {
-        const result = framesResultIter.next().value;
+    const framesIter = drawableIterator(imgInput.files);
+    for (const result of trackingResult.frames[Symbol.iterator]()) {
+        const {value: frame} = await framesIter.next();
         const canvas = buildCanvas(frame);
         const ctx = canvas.getContext('2d');
 
@@ -120,12 +142,22 @@ async function renderTrackingResult(trackingResult) {
             drawLine(ctx, x0, y0, x1, y1, NORMAL_LINE_COLOR);
         }
 
-        result_viewer.frames.push(canvas);
+        frames.push(canvas);
         closeFrame(frame);
     }
 
+    return frames
+}
+
+async function renderTrackingResult(trackingResult) {
+    resultImgs.innerHTML = '';
+    resultImgs.style.display = 'none';
+
+    result_viewer.frames = await resultsToCanvas(trackingResult)
+
     result_viewer.canvas = buildCanvas(result_viewer.frames[0]);
     restartResultsAnimation();
+    result_viewer.fps.update();
     resultImgs.appendChild(result_viewer.canvas);
 
     if(downloadJson.href) {
@@ -140,6 +172,11 @@ async function renderTrackingResult(trackingResult) {
 
     resultImgs.style.display = '';
     results.style.display = '';
+}
+
+async function updatePreview(previewResults) {
+    const [frame] = await resultsToCanvas(previewResults)
+    drawIntoCanvas(previewCanvas, frame)
 }
 
 function restartResultsAnimation() {
@@ -292,6 +329,7 @@ function onCanvasClick(event) {
     redo_points.length = 0;
 
     addPointSelection({x: pixel_x, y: pixel_y});
+    debouncedPreview()
 }
 
 function addPointSelection(point) {
@@ -356,6 +394,7 @@ function undoPoint() {
         selected_points.forEach(drawPointSelection)
         updateInterface();
     }
+    debouncedPreview()
 }
 
 function redoPoint() {
@@ -363,6 +402,7 @@ function redoPoint() {
         const point = redo_points.pop();
         addPointSelection(point)
     }
+    debouncedPreview()
 }
 
 function rcLoop() {

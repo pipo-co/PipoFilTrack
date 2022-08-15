@@ -25,14 +25,15 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body style="background-color: #A2E2F8">
-  <main class="uk-container uk-text-center uk-padding">
+  <main class="uk-text-center uk-padding">
     <div id="selection">
       <span id="undo" title="Undo"><img src="/static/images/undo.png" alt="undo"></span>
       <span id="redo" title="Redo"><img src="/static/images/redo.png" alt="redo"></span>
 
       {#TODO(tobi): Add zoom element #}
       <canvas id="points-selector-canvas" class="canvas"></canvas>
-
+      <canvas id="preview" class="canvas"></canvas>
+      
       <form id="tracking-form" enctype="multipart/form-data">
         <label>
           Seleccione las imágenes que desea trackear
@@ -66,12 +67,12 @@
       <div id="result-controlls">
         <span id="rc-frame"></span>
         <span id="rc-frame-rate">
-          <i class="material-icons" id="rc-frame-rate-up">add</i>
-          <span id="rc-frame-rate-value"></span>
           <i class="material-icons" id="rc-frame-rate-down">remove</i>
+          <span id="rc-frame-rate-value"></span>
+          <i class="material-icons" id="rc-frame-rate-up">add</i>
 
         </span>
-        <i class="material-icons" id="rc-loop">autorenew</i>
+        <i class="material-icons" id="rc-loop">repeat</i>
       </div>
     </div>
   </main>
