@@ -66,7 +66,7 @@ function debounce(func, timeout = 500) {
     // Results initially not visible
     results.style.display = 'none';
 
-    form.addEventListener('submit', executeTracking);
+    form.addEventListener('submit', fullTracking);
     form.addEventListener('input', debouncedPreview);
 
     imgInput.addEventListener('change', handleImageSelection);
