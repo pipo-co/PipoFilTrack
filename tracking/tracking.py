@@ -129,15 +129,18 @@ def profile_pos_to_point(pos: float, points: np.ndarray) -> Optional[Tuple[float
 def gaussian(x, mu, sig):
     return 1./(np.sqrt(2.*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2.)/2)
 
-def gauss_fitting(intensity_profile: np.ndarray, max_color: int) -> Tuple[float, float]:
+def gauss_fitting(intensity_profile: np.ndarray, max_color: int, max_error: float) -> Optional[float]:
     """
     Ajusta los puntos a una distribucion gaussiana y retorna su maximo (la media) y su error.
     """
     xdata = np.arange(len(intensity_profile))
-    popt, pcov = curve_fit(lambda x, m, s: gaussian(x, m, s) * max_color, xdata, intensity_profile)
-    p_error = np.square(np.diag(pcov))
-
-    return popt[0], p_error[0]
+    try:
+        popt, pcov = curve_fit(lambda x, m, s: gaussian(x, m, s) * max_color, xdata, intensity_profile)
+        p_error = np.square(np.diag(pcov))
+        return popt[0] if p_error[0] < max_error else None
+    except RuntimeError:
+        # Intensity profile failed to be fitted by a gaussian curve
+        return None
 
 def generate_normal_line_bounds(points: np.ndarray, angle_resolution: int, normal_len: float) -> np.ndarray:
     d = angle_resolution

@@ -29,16 +29,14 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
         intensity_profiles = map(lambda nl, img=frame: read_line_from_img(img, nl), normal_lines)
 
         # TODO(tobi): Falla si agarramos puntos muy al borde??
-        # Obtenemos la posicion del maximo punto del perfil de intensidad, junto con su error
-        points_profile_pos = list(map(lambda ip, img=frame: gauss_fitting(ip, img.max()), intensity_profiles))
+        # Obtenemos la posicion del maximo punto del perfil de intensidad.
+        # Puede retornar None en caso de que no se pueda fittear la curva de intensidad, o si el error es mayor al maximo permitido.
+        points_profile_pos = list(map(lambda ip, img=frame: gauss_fitting(ip, img.max(), config.max_fitting_error), intensity_profiles))
 
         # A partir de las posiciones, obtenemos los puntos que representan.
         # En caso de que el error de la posicion fuese muy alto,
         #  o la posicion no estuviese dentro del perfil de intesidad, obtenemos None en vez del punto.
-        raw_points_with_missing = [
-            profile_pos_to_point(pos, nl) if error < config.max_fitting_error else None
-            for (pos, error), nl in zip(points_profile_pos, normal_lines)
-        ]
+        raw_points_with_missing = [profile_pos_to_point(pos, nl) if pos else None for pos, nl in zip(points_profile_pos, normal_lines)]
 
         # Buscamos llenar los valores faltantes (None) mediante una interpolacion con los vecinos bien calculados.
         # En caso de que la interpolacion no pueda ser hecha, se descartan los valores.
