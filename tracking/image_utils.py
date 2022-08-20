@@ -75,7 +75,7 @@ def frames_iterator(files, allowed_ext: List[str]) -> Iterator[np.ndarray]:
             raise ApplicationError(f'avi files are not yet supported')
 
         img = Image.open(file)
-        if img.n_frames > 1:  # If there is more than 1 frame, it's a multi tiff image
+        if img.format == 'TIFF' and img.n_frames > 1:  # If there is more than 1 frame, it's a multi tiff image
             for frame in ImageSequence.Iterator(img):
                 yield pil_to_8bit_array(frame)
         else:
