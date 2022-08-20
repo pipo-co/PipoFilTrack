@@ -101,9 +101,17 @@ async function renderTrackingResult(trackingResult) {
         }
 
         resultImgs.appendChild(canvas);
+        closeFrame(frame)
     }
 
+    if(downloadJson.href) {
+        URL.revokeObjectURL(downloadJson.href);
+    }
     downloadJson.href   = URL.createObjectURL(new Blob([toJsonResults(trackingResult)], {type: 'application/json'}));
+
+    if(downloadTsv.href) {
+        URL.revokeObjectURL(downloadTsv.href);
+    }
     downloadTsv.href    = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
 
     resultImgs.style.display = '';
@@ -154,31 +162,44 @@ function buildCanvas(frame) {
 async function* drawableIterator(images) {
     // Files is not iterable
     for(const image of images) {
+        // TODO(tobi): Agregar soporte para avi
+        switch(image.type) {
+            case 'image/tiff': {
+                const buffer = await image.arrayBuffer();
+                const ifds = UTIF.decode(buffer);
 
-        // TODO(tobi): Agregar soporte para avi, png, jpg, etc
-        if(image.type === 'image/tiff') {
-            const buffer = await image.arrayBuffer();
-            const ifds = UTIF.decode(buffer);
+                for(const ifd of ifds) {
+                    UTIF.decodeImage(buffer, ifd, ifds);
 
-            for(const ifd of ifds) {
-                UTIF.decodeImage(buffer, ifd, ifds);
+                    const rgbaData = UTIF.toRGBA8(ifd);
+                    const imageData = new ImageData(new Uint8ClampedArray(rgbaData), ifd.width, ifd.height);
 
-                const rgbaData = UTIF.toRGBA8(ifd);
-                const imageData = new ImageData(new Uint8ClampedArray(rgbaData), ifd.width, ifd.height);
+                    const drawable = document.createElement('canvas');
+                    drawable.width = ifd.width;
+                    drawable.height = ifd.height;
 
-                const drawable = document.createElement('canvas');
-                drawable.width = ifd.width;
-                drawable.height = ifd.height;
+                    // Rendereamos la imagen en un canvas intermedio para luego poder escalar la imagen
+                    const ctx = drawable.getContext('2d');
+                    ctx.putImageData(imageData, 0, 0, 0, 0, ifd.width, ifd.height);
 
-                // Rendereamos la imagen en un canvas intermedio para luego poder escalar la imagen
-                const ctx = drawable.getContext('2d');
-                ctx.putImageData(imageData, 0, 0, 0, 0, ifd.width, ifd.height);
-
-                yield drawable;
-            }
-        } else {
-            // Ignoramos tipos que no conocemos
+                    yield drawable;
+                }
+            } break;
+            case 'image/jpeg':
+            case 'image/jpg':
+            case 'image/png': {
+                let ret = await createImageBitmap(image)
+                yield ret
+            } break;
+            default:
+                // Ignoramos tipos que no conocemos
         }
+    }
+}
+
+function closeFrame(frame) {
+    if(frame instanceof ImageBitmap) {
+        frame.close()
     }
 }
 
@@ -326,6 +347,9 @@ async function handleImageSelection() {
     }
 
     // Get selector drawable value
+    if(selectorDrawable) {
+        closeFrame(selectorDrawable)
+    }
     selectorDrawable = firstDrawable.value;
 
     // Update selector canvas with new drawable
