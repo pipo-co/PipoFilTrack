@@ -179,6 +179,9 @@ def bezier_fitting(points: np.ndarray):
     size = points.shape[0]
     n = size - 1
 
+    if np.isinf(comb(n, n // 2)):
+        raise ValueError('Too many points in curve for bezier smoothing')
+
     idx = np.arange(size).reshape((-1, 1))  # We make it of shape (count, 1) so it can later be broadcast to 2
     ts = np.linspace(0, 1, num=count)
 
