@@ -48,6 +48,17 @@ def normalize(data: np.ndarray, as_type=np.uint8) -> np.ndarray:
             ret = (data - amin) / (amax - amin) * 255
             return ret.astype(as_type, copy=False)
 
+# b = r/3 + g/3 + b/3
+def to_bw(data: np.ndarray) -> np.ndarray:
+    shape = data.shape
+    if len(shape) == 3 and shape[2] == 3:
+        return np.sum(data/3, axis=2)
+    else:
+        return data
+
+def pil_to_8bit_array(img: Image) -> np.ndarray:
+    return normalize(to_bw(np.asarray(img)), np.uint8)
+
 def frames_iterator(files, allowed_ext: List[str]) -> Iterator[np.ndarray]:
     for file in files:
         ext = os.path.splitext(file.filename)[1].lower()
@@ -60,6 +71,6 @@ def frames_iterator(files, allowed_ext: List[str]) -> Iterator[np.ndarray]:
         img = Image.open(file)
         if img.n_frames > 1:  # If there is more than 1 frame, it's a multi tiff image
             for frame in ImageSequence.Iterator(img):
-                yield normalize(np.asarray(frame), np.uint8) # noqa
+                yield pil_to_8bit_array(frame)
         else:
-            yield normalize(np.asarray(img), np.uint8) # noqa
+            yield pil_to_8bit_array(img)
