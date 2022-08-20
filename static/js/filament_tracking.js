@@ -188,8 +188,7 @@ async function* drawableIterator(images) {
             case 'image/jpeg':
             case 'image/jpg':
             case 'image/png': {
-                let ret = await createImageBitmap(image)
-                yield ret
+                yield await createImageBitmap(image);
             } break;
             default:
                 // Ignoramos tipos que no conocemos

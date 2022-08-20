@@ -14,7 +14,7 @@ from tracking.models import Config, ApplicationError
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = os.getenv('SECRET_KEY')
 
-ALLOWED_IMAGE_TYPES: List[str] = ['.tif', '.tiff', '.jpg', '.jpeg', '.avi', '.png']
+ALLOWED_IMAGE_TYPES: List[str] = ['.tif', '.tiff', '.jpg', '.jpeg', '.png']
 TYPE_TO_INPUT: Dict[Type, str] = {
     bool:   'checkbox',
     int:    'text',
