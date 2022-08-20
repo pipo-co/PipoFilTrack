@@ -48,13 +48,19 @@ def normalize(data: np.ndarray, as_type=np.uint8) -> np.ndarray:
             ret = (data - amin) / (amax - amin) * 255
             return ret.astype(as_type, copy=False)
 
-# b = r/3 + g/3 + b/3
 def to_bw(data: np.ndarray) -> np.ndarray:
     shape = data.shape
-    if len(shape) == 3 and shape[2] == 3:
-        return np.sum(data/3, axis=2)
-    else:
+    if len(shape) == 1:
         return data
+    elif len(shape) == 3:
+        if shape[2] == 4:
+            # rgba -> Ignoramos alpha
+            data = np.delete(data, 3, axis=2)
+        if shape[2] == 3 or shape[2] == 4:
+            # b = r/3 + g/3 + b/3
+            return np.sum(data / 3, axis=2)
+
+    raise ValueError(f'Unknown image shape: {shape}')
 
 def pil_to_8bit_array(img: Image) -> np.ndarray:
     return normalize(to_bw(np.asarray(img)), np.uint8)
