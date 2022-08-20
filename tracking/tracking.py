@@ -20,6 +20,9 @@ def points_linear_interpolation(start: np.ndarray, end: np.ndarray) -> np.ndarra
     return np.stack(skimg.draw.line(*start.astype(int), *end.astype(int)), axis=-1)
 
 def project_to_line(point: Tuple[float, float], m1: float, b1: float) -> Tuple[float, float]:
+    if m1 == 0:
+        # Proyección a línea horizontal
+        return point[0], b1
     m2 = -1 / m1
     b2 = point[1] - m2 * point[0]
     x = (b2 - b1) / (m1 - m2)
