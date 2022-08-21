@@ -15,6 +15,11 @@
   image-rendering: crisp-edges;
 }
 
+.uk-form-label {
+  width: initial !important;
+  margin-top: initial !important;
+}
+
 #points-selector-canvas {
   cursor: crosshair;
 }

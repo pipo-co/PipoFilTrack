@@ -25,27 +25,27 @@
   <script src="/static/js/filament_tracking.js" defer></script>
 
 </head>
-<body class="uk-background-cover">
+<body class="uk-background-cover" style="background-size:cover;min-height:900px;background-image: url('static/images/background.jpg');">
   <main class="uk-text-center uk-padding">
     <form id="tracking-form" enctype="multipart/form-data" class="uk-form-horizontal uk-margin-large">
       <div id="selection" class="uk-flex">
         <div class="uk-width-1-2 uk-flex-last">
           <div class="uk-flex uk-flex-center uk-flex-column uk-text-center uk-margin" id="preview-section" hidden>
-            <div>
-              <h1>Preview</h1>
-              <canvas id="preview" class="loader canvas uk-text-center"></canvas>
+            <div class="uk-card uk-card-default" style="background-color: initial;">
+              <h1 style="color:#FFFFFF" class="">Preview</h1>
+              <canvas id="preview" style="text-align: center !important;" class="loader canvas uk-text-center"></canvas>
             </div>
           </div>
-          <div>
+          <div class="uk-card uk-card-default uk-padding-small">
             <fieldset class="uk-fieldset">
-              <legend class="uk-legend uk-margin-small">Parametros extra del algoritmo de trackeo</legend>
+              <legend class="uk-legend">Parametros extra del algoritmo de trackeo</legend>
               {% for field in config_fields %}
-              <div class="uk-margin-small">
-                <label class="uk-form-label uk-text-break">{{ field.metadata['description'] }}:</label>
-                <div style="display: flex; justify-content: flex-end">
-                  <input name="{{ field.name }}" class="uk-{{ type2input[field.type] }}" type="{{ type2input[field.type] }}" value="{{ field.default }}" />
+                <div class="uk-margin-small">
+                  <label class="uk-form-label uk-text-break">{{ field.metadata['description'] }}:</label>
+                  <div style="display: flex; justify-content: flex-end">
+                    <input name="{{ field.name }}" class="uk-{{ type2input[field.type] }}" type="{{ type2input[field.type] }}" value="{{ field.default }}" />
+                  </div>
                 </div>
-              </div>
               {% endfor %}
             </fieldset>
           </div>
