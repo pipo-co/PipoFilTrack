@@ -112,7 +112,10 @@ input[type="button"] {
   width: 30px;
   margin: 0 0 2px 0;
 }
-.tooltip {
+
+button {
+  cursor: pointer;
+}.tooltip {
   position: relative;
   color: #00b4ab;
 }
