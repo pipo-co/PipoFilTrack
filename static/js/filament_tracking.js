@@ -18,7 +18,11 @@ const selectorCanvas        = document.getElementById('points-selector-canvas');
 const previewCanvas         = document.getElementById('preview');
 const form                  = document.getElementById('tracking-form');
 const imgInput              = document.getElementById('img-input');
+const resetButton           = document.getElementById('reset-button');
 const errors                = document.getElementById('errors');
+const actionButtons         = document.getElementById('action-buttons');
+const previewSection        = document.getElementById('preview-section');
+const imgButtons            = document.getElementById('img-buttons');
 const undo                  = document.getElementById('undo');
 const redo                  = document.getElementById('redo');
 const resultImgs            = document.getElementById('result-imgs');
@@ -420,6 +424,8 @@ function rcFrameRateChange(delta) {
 }
 
 function updateInterface() {
+    actionButtons.hidden = selected_points.length === 0 && redo_points.length === 0 ? true : false  
+    previewSection.hidden = selected_points.length < 2 ? true : false  
     undo.style.visibility = selected_points.length === 0 ? 'hidden' : 'visible';
     redo.style.visibility = redo_points.length === 0 ? 'hidden' : 'visible';
     clearError();
@@ -441,7 +447,7 @@ async function handleImageSelection() {
           imgInput.value = '';
           return;
     }
-
+    imgButtons.hidden = false
     const firstDrawable = await drawableIterator(imgInput.files).next();
     if(!firstDrawable || firstDrawable.done) {
         showError('No valid image selected');

@@ -26,39 +26,65 @@
 </head>
 <body style="background-color: #A2E2F8">
   <main class="uk-text-center uk-padding">
-    <div id="selection">
-      <span id="undo" title="Undo"><img src="/static/images/undo.png" alt="undo"></span>
-      <span id="redo" title="Redo"><img src="/static/images/redo.png" alt="redo"></span>
-
-      {#TODO(tobi): Add zoom element #}
-      <canvas id="points-selector-canvas" class="canvas"></canvas>
-      <canvas id="preview" class="canvas"></canvas>
-      
-      <form id="tracking-form" enctype="multipart/form-data">
-        <label>
-          Seleccione las imágenes que desea trackear
-          <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required />
-        </label>
-
-        <fieldset>
-          <legend>Parametros extra del algoritmo de trackeo</legend>
-            {% for field in config_fields %}
+    <form id="tracking-form" enctype="multipart/form-data">
+      <div id="selection">
+        <div>
+          <div id="preview-section" hidden>
+            <div>
+              <h1>Preview</h1>
+              <canvas id="preview" class="canvas"></canvas>
+            </div>
+          </div>
+          <div>
+            <fieldset>
+              <legend>Parametros extra del algoritmo de trackeo</legend>
+              {% for field in config_fields %}
+                <div>
+                  <label>{{ field.metadata['description'] }}:</label>
+                  <div>
+                    <input name="{{ field.name }}" class="uk-{{ type2input[field.type] }}" type="{{ type2input[field.type] }}" value="{{ field.default }}" />
+                  </div>
+                </div>
+              {% endfor %}
+            </fieldset>
+          </div>
+        </div>
+        <div>
+          <div>
+            <div>
               <div>
-                <label>
-                  {{ field.metadata['description'] }}:
-                  <input name="{{ field.name }}" type="{{ type2input[field.type] }}" value="{{ field.default }}" />
-                </label>
+                Seleccione las imágenes que desea trackear
+                <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required />
               </div>
-            {% endfor %}
-        </fieldset>
-
-        <button id="tracking-submit">Track</button>
-      </form>
-
-      <a href="/"><button type="submit">Reset</button></a>
-
-      <p id="errors" ></p>
-    </div>
+            </div>
+          </div>
+          <div>
+            <div>
+              {#TODO(tobi): Add zoom element #}
+              <canvas id="points-selector-canvas" class="canvas"></canvas>
+            </div>
+          </div>
+          <div id="action-buttons" hidden>
+            <div>
+              <span id="undo" title="Undo"><img src="/static/images/undo.png" alt="undo"></span>
+            </div>
+            <div>
+              <span id="redo" title="Redo"><img src="/static/images/redo.png" alt="redo"></span>
+            </div>
+          </div>
+          <div id="img-buttons" hidden>
+            <div>
+              <button id="tracking-submit">Track</button>
+            </div>
+            <div>
+              <a href="/"><button type="submit">Reset</button></a>
+            </div>
+          </div>
+            <p id="errors" ></p>
+          </div>
+        </div>
+      </div>
+    </form>
     <div id="results">
        <div id="downloads">
         <p>Descarga los resultados de las posiciones en formato <a id="download-json" download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a></p>
