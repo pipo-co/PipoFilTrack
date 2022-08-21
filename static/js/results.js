@@ -1,9 +1,9 @@
 "use strict";
 
 class ResultsViewer {
-    constructor(canvas, templateId) {
-        this.canvas     = canvas;
+    constructor(templateId) {
         this.templateId = templateId;
+        this.canvas     = document.createElement('canvas');
         this.frames     = [];
         this.index      = 0;
         this.inter_id   = null;

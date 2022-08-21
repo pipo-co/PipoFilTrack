@@ -41,7 +41,7 @@ const redoPoints        = [];
 let selectorDrawable;
 
 // Results viewer controller
-let resultsViewer;
+const resultsViewer = new ResultsViewer('result-controls');
 
 (function () {
     form.addEventListener('submit', fullTracking);
@@ -53,10 +53,7 @@ let resultsViewer;
     selectorCanvas.width = CANVAS_RESOLUTION;
     selectorCanvas.addEventListener('click', onCanvasClick);
 
-    // Result viewer
-    let rvCanvas = document.createElement('canvas');
-    rvCanvas.classList.add('canvas');
-    resultsViewer = new ResultsViewer(rvCanvas, 'result-controls');
+    // Bind result viewer
     resultsViewer.bindViewer(resultsViewerUI);
 
     // Undo/Redo selected points
