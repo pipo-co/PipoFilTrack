@@ -19,16 +19,23 @@ const NORMAL_LINE_COLOR     = 'rgba(0,255,255,0.22)'
 
 // Elementos de UI
 const selectorCanvas        = document.getElementById('points-selector-canvas');
+const selectorWrapper       = document.getElementById('selector-wrapper');
+const selectorZone          = document.getElementById('selector-zone');
+const previewZone           = document.getElementById('preview-zone');
 const previewCanvas         = document.getElementById('preview');
 const form                  = document.getElementById('tracking-form');
 const imgInput              = document.getElementById('img-input');
 const errors                = document.getElementById('errors');
 const actionButtons         = document.getElementById('action-buttons');
+const pointsButtons         = document.getElementById('point-buttons');
+const arrowUpButton         = document.getElementById('arrow-up');
+const arrowDownButton       = document.getElementById('arrow-down');
 const previewSection        = document.getElementById('preview-section');
 const imgButtons            = document.getElementById('img-buttons');
 const undo                  = document.getElementById('undo');
 const redo                  = document.getElementById('redo');
 const resultsViewerUI       = document.getElementById('results-viewer');
+const resultsLoader         = document.getElementById('results-loader');
 const results               = document.getElementById('results');
 const downloadJson          = document.getElementById('download-json');
 const downloadWebM          = document.getElementById('download-webm');
@@ -40,6 +47,10 @@ const downloadTsv           = document.getElementById('download-tsv');
 const selectedPoints    = [];
 const redoPoints        = [];
 let selectorDrawable;
+let pointSize = POINT_SIZE;
+let scale       = 1;
+let scaleFactor = 1.1;
+let selectorCanvasWidth = 65;
 
 // Results viewer controller
 const resultsViewer = new ResultsViewer('result-controls');
@@ -60,6 +71,12 @@ const resultsViewer = new ResultsViewer('result-controls');
     // Undo/Redo selected points
     undo.addEventListener('click', undoPoint);
     redo.addEventListener('click', redoPoint);
+
+    plus.addEventListener('click', addZoom);
+    minus.addEventListener('click', reduceZoom);
+
+    arrowUpButton.addEventListener('click', increasePointDiameter);
+    arrowDownButton.addEventListener('click', decreasePointDiameter);  
 })();
 
 async function fullTracking(e) {
@@ -71,6 +88,8 @@ async function fullTracking(e) {
     results.scrollIntoView({behavior: "smooth"});
 
     try {
+        resultsViewerUI.hidden = true;
+        resultsLoader.hidden = false;
         const result = await executeTracking(formData);
         await renderTrackingResult(result);
     } catch(error) {
@@ -91,6 +110,10 @@ function trackingPreview() {
             .catch(showError)
             ;
     }
+}
+
+function debouncedPreview() {
+    debounce(trackingPreview)();
 }
 
 function debouncedPreview() {
@@ -154,8 +177,9 @@ async function resultsToCanvas(trackingResult, drawNormalLines = false, colorSup
 }
 
 async function renderTrackingResult(trackingResult) {
-    const frames = await resultsToCanvas(trackingResult);
-    resultsViewerUI.classList.remove("loader");
+  const frames = await resultsToCanvas(trackingResult);
+  resultsLoader.hidden = true;
+  resultsViewerUI.hidden = false;
 
     resultsViewer.loadResults(frames);
 
@@ -343,7 +367,7 @@ function drawPointSelection(point) {
         drawLine(ctx, prevX, prevY, x, y, POINT_COLOR)
     }
 
-    drawPoint(ctx, x, y);
+    drawPoint(ctx, x, y, POINT_COLOR, pointSize);
 }
 
 function undoPoint() {
@@ -374,9 +398,55 @@ function redoPoint() {
     debouncedPreview()
 }
 
+function rcLoop() {
+    result_viewer.loop = !result_viewer.loop
+}
+
+function rcFrameRateChange(delta) {
+    result_viewer.fps.value += delta;
+    if(result_viewer.fps.value <= 0) {
+        result_viewer.fps.value = 1;
+    }
+    result_viewer.fps.update();
+    restartResultsAnimation();
+}
+
+function addZoom() {
+  if (selectorCanvasWidth > 100) {
+    //si pase los 100, tengo que darle toda la pantalla, para eso se desplaza abajo
+    // la seccion de preview y de parametros
+    selectorZone.classList.remove("uk-width-3-5")
+    selectorZone.classList.add("uk-width-1-1")
+    previewZone.classList.remove("uk-width-2-5")
+    previewZone.classList.add("uk-width-1-1")
+  }
+  selectorCanvasWidth = selectorCanvasWidth * scaleFactor
+  selectorCanvas.style.width = selectorCanvasWidth + "vh" 
+}
+
+function reduceZoom() {
+  if (selectorCanvasWidth <= 100) {
+    selectorZone.classList.remove("uk-width-1-1")
+    selectorZone.classList.add("uk-width-3-5")
+    previewZone.classList.remove("uk-width-1-1")
+    previewZone.classList.add("uk-width-2-5")
+  }
+  selectorCanvasWidth = selectorCanvasWidth * (1/scaleFactor)
+  selectorCanvas.style.width = selectorCanvasWidth + "vh"
+}
+
+function increasePointDiameter() {
+  pointSize = pointSize + 1
+}
+
+function decreasePointDiameter() {
+  if (pointSize > 1) pointSize = pointSize - 1;
+}
+
 function updateInterface() {
-    actionButtons.hidden  = selectedPoints.length === 0 && redoPoints.length === 0;
-    previewSection.hidden = selectedPoints.length < 2  ;
+    actionButtons.hidden = selectedPoints.length === 0 && redoPoints.length === 0 ? true : false  
+    pointsButtons.hidden = selectedPoints.length === 0 && redoPoints.length === 0 ? true : false 
+    previewSection.hidden = selectedPoints.length < 2 ? true : false  
     undo.style.visibility = selectedPoints.length === 0 ? 'hidden' : 'visible';
     redo.style.visibility = redoPoints.length === 0 ? 'hidden' : 'visible';
     clearError();
@@ -411,7 +481,9 @@ async function handleImageSelection() {
     ctx.drawImage(selectorDrawable, 0, 0, selectorCanvas.width, selectorCanvas.height);
 
     // Show canvas
+    selectorWrapper.hidden = false;
     selectorCanvas.style.display = '';
+    pointsButtons.hidden = false;
 
     // Reset selected points
     selectedPoints.length    = 0;

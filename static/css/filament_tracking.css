@@ -16,6 +16,9 @@ body {
 h1 {
   color: white;
 }
+p {
+  color: white !important;
+}
 legend {
   color: white !important;
 }
@@ -23,7 +26,7 @@ label {
   color: white !important;
 }
 .canvas {
-  width: 85vh;
+  width: 65vh;
 
   /* Keep the image pixelated: https://css-tricks.com/keep-pixelated-images-pixelated-as-they-scale/*/
   image-rendering: pixelated;
@@ -65,7 +68,7 @@ label {
   100% { transform: rotate(360deg); }
 }
 
-#wrapper {
+#selector-wrapper {
   position: relative;
 }
 

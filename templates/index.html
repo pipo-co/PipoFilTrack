@@ -29,8 +29,8 @@
 <body class="uk-background-cover" onmousedown="return false;">
   <main class="uk-text-center uk-padding">
     <form id="tracking-form" enctype="multipart/form-data" class="uk-form-horizontal uk-margin-large">
-      <div id="selection" class="uk-flex">
-        <div class="uk-width-1-2 uk-flex-last">
+      <div id="selection" class="uk-flex uk-flex-wrap">
+        <div id="preview-zone" class="uk-width-2-5 uk-flex-last">
           <div class="uk-flex uk-flex-center uk-flex-column uk-text-center uk-margin" id="preview-section" hidden>
             <div>
               <h1>Preview</h1>
@@ -41,7 +41,7 @@
             <fieldset class="uk-fieldset">
               <legend class="uk-legend uk-margin-small">Parametros extra del algoritmo de trackeo</legend>
               {% for field in config_fields %}
-              <div class="uk-margin-small">
+              <div class="uk-margin">
               <label for="config-{{ field.name }}" class="uk-form-label uk-text-break">{{ field.metadata['display'] }} <span uk-icon="info" title="{{ field.metadata['description'] }}"></span></label>
                 <div style="display: flex; justify-content: flex-end">
                   <input id="config-{{ field.name }}" name="{{ field.name }}" class="uk-{{ type2input[field.type] }}" type="{{ type2input[field.type] }}" value="{{ field.default }}" />
@@ -51,7 +51,7 @@
             </fieldset>
           </div>
         </div>
-        <div class="uk-width-1-2 uk-text-center">
+        <div id="selector-zone" class="uk-width-3-5 uk-text-center">
           <div class="uk-flex">
             <div class="uk-margin uk-width-1-1">
               <div uk-form-custom>
@@ -62,7 +62,7 @@
           </div>
           <div class="uk-flex">
             <div class="uk-margin uk-width-1-1">
-              <div id="wrapper">
+              <div id="selector-wrapper" class="uk-margin-right" hidden>
                 <canvas id="points-selector-canvas" class="canvas"></canvas>
                 <div id="buttonWrapper">
                   <input type="button" id="plus" value="+"><input type="button" id="minus" value="-">
@@ -76,6 +76,15 @@
             </div>
             <div>
               <span id="redo" title="Redo"><img src="/static/images/redo.png" alt="redo"></span>
+            </div>
+          </div>
+          <div class="uk-flex uk-flex-center" id="point-buttons" hidden>
+            <div class="uk-width-3-5">
+              <p class="uk-margin-top uk-text-lead">Adjust point diameter</p>
+            </div>
+            <div class="uk-width-2-5 uk-margin-top">
+              <button class="uk-button uk-button-primary" id="arrow-up"><span title="Increase diameter" uk-icon="icon: arrow-up"></span></button>
+              <button class="uk-button uk-button-primary" id="arrow-down"><span title="Decrease diameter" uk-icon="icon: arrow-down"></span></button>
             </div>
           </div>
           <div class="uk-flex uk-flex-center uk-margin" id="img-buttons" hidden>
@@ -98,7 +107,8 @@
         <p>Descarga los resultados de las posiciones en formato <a id="download-json" download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a></p>
         <p>Descarga el video en formato <a id="download-webm">WebM</a></p>
       </div>
-      <div id="results-viewer" class="uk-margin-auto loader"></div>
+      <div id="results-loader" class="uk-margin-auto loader"></div>
+      <div id="results-viewer" class="uk-margin-auto" hidden></div>
     </div>
   </main>
 </body>
