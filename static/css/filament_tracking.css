@@ -65,9 +65,19 @@ label {
   100% { transform: rotate(360deg); }
 }
 
-.center {
-  margin: auto;
-  /* width: 50%;
-  border: 3px solid green;
-  padding: 10px; */
+#wrapper {
+  position: relative;
+}
+
+#buttonWrapper {
+  position: absolute;
+  width: 30px;
+  top: 2px;
+  right: 2px;
+}
+
+input[type="button"] {
+  padding: 5px;
+  width: 30px;
+  margin: 0px 0px 2px 0px;
 }

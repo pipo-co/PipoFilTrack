@@ -26,7 +26,7 @@
   <script src="/static/js/filament_tracking.js" defer></script>
 
 </head>
-<body class="uk-background-cover">
+<body class="uk-background-cover" onmousedown="return false;">
   <main class="uk-text-center uk-padding">
     <form id="tracking-form" enctype="multipart/form-data" class="uk-form-horizontal uk-margin-large">
       <div id="selection" class="uk-flex">
@@ -42,7 +42,7 @@
               <legend class="uk-legend uk-margin-small">Parametros extra del algoritmo de trackeo</legend>
               {% for field in config_fields %}
               <div class="uk-margin-small">
-                <label for="config-{{ field.name }}" class="uk-form-label uk-text-break">{{ field.metadata['description'] }}:</label>
+              <label for="config-{{ field.name }}" class="uk-form-label uk-text-break">{{ field.metadata['display'] }} <span uk-icon="info" title="{{ field.metadata['description'] }}"></span></label>
                 <div style="display: flex; justify-content: flex-end">
                   <input id="config-{{ field.name }}" name="{{ field.name }}" class="uk-{{ type2input[field.type] }}" type="{{ type2input[field.type] }}" value="{{ field.default }}" />
                 </div>
@@ -62,7 +62,12 @@
           </div>
           <div class="uk-flex">
             <div class="uk-margin uk-width-1-1">
-              <canvas id="points-selector-canvas" class="canvas"></canvas>
+              <div id="wrapper">
+                <canvas id="points-selector-canvas" class="canvas"></canvas>
+                <div id="buttonWrapper">
+                  <input type="button" id="plus" value="+"><input type="button" id="minus" value="-">
+                </div>
+              </div>
             </div>
           </div>
           <div class="uk-flex uk-flex-center" id="action-buttons" hidden>
