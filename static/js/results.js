@@ -21,6 +21,7 @@ class ResultsViewer {
         this.controls = {
             frame:              document.getElementById('rc-frame'),
             play:               document.getElementById('rc-play'),
+            pause:              document.getElementById('rc-pause'),
             stop:               document.getElementById('rc-stop'),
             nextFrame:          document.getElementById('rc-next_frame'),
             prevFrame:          document.getElementById('rc-prev_frame'),
@@ -30,6 +31,7 @@ class ResultsViewer {
         };
 
         this.controls.play              .addEventListener('click', () => this.resumeAnimation());
+        this.controls.pause             .addEventListener('click', () => this.pauseAnimation());
         this.controls.stop              .addEventListener('click', () => this.stopAnimation());
         this.controls.nextFrame         .addEventListener('click', () => this.drawNextFrame());
         this.controls.prevFrame         .addEventListener('click', () => this.drawPrevFrame());
@@ -47,18 +49,23 @@ class ResultsViewer {
     }
 
     resumeAnimation() {
-        this.pauseAnimation();
+        if(this.inter_id) {
+            clearInterval(this.inter_id);
+        }
         this.inter_id = setInterval(() => this.drawNextFrame(), 1000 / this.fps);
+        this.controls.play.hidden = true;
+        this.controls.pause.hidden = false;
     }
 
     pauseAnimation() {
         if(this.inter_id) {
             clearInterval(this.inter_id);
+            this.controls.play.hidden = false;
+            this.controls.pause.hidden = true;
         }
     }
 
     updateFrameRate(delta) {
-        console.log(this.fps, delta, Math.max(this.fps + delta, 1))
         this.fps = Math.max(this.fps + delta, 1);
         this.resumeAnimation();
         this.updateFrameRateNumberDisplay();
