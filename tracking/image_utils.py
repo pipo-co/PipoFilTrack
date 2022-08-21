@@ -23,7 +23,7 @@ def normalize(data: np.ndarray, as_type=np.uint8) -> np.ndarray:
 
 def to_bw(data: np.ndarray) -> np.ndarray:
     shape = data.shape
-    if len(shape) == 1:
+    if len(shape) == 2:
         return data
     elif len(shape) == 3:
         if shape[2] == 4:
