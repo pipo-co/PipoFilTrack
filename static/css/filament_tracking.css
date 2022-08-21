@@ -15,6 +15,12 @@ body {
   color: white;
 }
 
+p {
+  color: white !important;
+}
+h1 {
+  color: white !important;
+}
 .primary {
   color: white !important;
 }
@@ -117,7 +123,7 @@ input[type="button"] {
   font-size: 1em;
   line-height: 3em;
   visibility: hidden;
-  width: 65vh;
+  width: max-content;
   background-color: #000000;
   color: #fff;
   text-align: left;
