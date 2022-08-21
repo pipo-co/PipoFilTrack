@@ -178,6 +178,15 @@ async function renderTrackingResult(trackingResult) {
     }
     downloadTsv.href    = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
 
+    const vid = new Whammy.Video(1, 1); //TODO(nacho): poner valores de verdad
+	frames.forEach(frame => vid.add(frame));
+	vid.compile(false, video => {
+        if(downloadWebM.href) {
+            URL.revokeObjectURL(downloadWebM.href);
+        }
+        downloadWebM.href = URL.createObjectURL(video);
+    });
+
     resultImgs.style.display = '';
     results.style.display = '';
     results.scrollIntoView({behavior: "smooth"});
