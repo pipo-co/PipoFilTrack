@@ -106,3 +106,46 @@ input[type="button"] {
   width: 30px;
   margin: 0px 0px 2px 0px;
 }
+
+.tooltip {
+  position: relative;
+  color: #00b4ab;
+}
+
+.tooltip .tooltip-text {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1em;
+  line-height: 3em;
+  visibility: hidden;
+  width: 65vh;
+  background-color: #000000;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 10px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -30px;
+  opacity: 0;
+  transition: .3s;
+  transform: translate3d(0px, 20px, 0px);
+}
+
+.tooltip .tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #00b4ab transparent transparent transparent;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+  transform: translate3d(0px, 0px, 0px);
+}
