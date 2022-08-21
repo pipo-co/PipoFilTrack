@@ -197,11 +197,11 @@ async function processTrackingresults(trackingResult) {
 
     rvRenderingProps.addEventListener('input', () => renderTrackingResult(trackingResult));
 
+    await renderTrackingResult(trackingResult);
+    
     resultsViewerUI.classList.remove("loader");
     resultsLoader.hidden = true;
     resultsContainer.hidden = false;
-
-    renderTrackingResult(trackingResult);
     
     resultsViewerUI.style.display = '';
     results.style.display = '';
