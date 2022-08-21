@@ -417,6 +417,7 @@ function addZoom() {
     // la seccion de preview y de parametros
     selectorZone.classList.remove("uk-width-3-5")
     selectorZone.classList.add("uk-width-1-1")
+    previewZone.classList.add("uk-flex-last")
     previewZone.classList.remove("uk-width-2-5")
     previewZone.classList.add("uk-width-1-1")
   }
@@ -428,6 +429,7 @@ function reduceZoom() {
   if (selectorCanvasWidth <= 100) {
     selectorZone.classList.remove("uk-width-1-1")
     selectorZone.classList.add("uk-width-3-5")
+    previewZone.classList.remove("uk-flex-last")
     previewZone.classList.remove("uk-width-1-1")
     previewZone.classList.add("uk-width-2-5")
   }
