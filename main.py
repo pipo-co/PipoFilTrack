@@ -1,7 +1,6 @@
 import dataclasses
 import json
 import os
-from typing import List, Dict, Type
 
 import numpy as np
 from flask import render_template, request, make_response, jsonify, Flask
@@ -14,12 +13,7 @@ from tracking.models import Config, ApplicationError
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = os.getenv('SECRET_KEY')
 
-ALLOWED_IMAGE_TYPES: List[str] = ['.tif', '.tiff', '.jpg', '.jpeg', '.png']
-TYPE_TO_INPUT: Dict[Type, str] = {
-    bool:   'checkbox',
-    int:    'text',
-    float:  'text'
-}
+ALLOWED_IMAGE_TYPES = ['.tif', '.tiff', '.jpg', '.jpeg', '.png']
 
 @app.after_request
 def add_header(response):
@@ -43,7 +37,6 @@ def index():
     return render_template(
         'index.html',
         config_fields=dataclasses.fields(Config),
-        type2input=TYPE_TO_INPUT,
         allowed_image_types=ALLOWED_IMAGE_TYPES
     )
 

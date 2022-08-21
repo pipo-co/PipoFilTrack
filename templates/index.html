@@ -39,14 +39,20 @@
           </div>
           <div>
             <fieldset class="uk-fieldset">
-              <legend class="uk-legend uk-margin-small">Parametros extra del algoritmo de trackeo</legend>
+              <legend class="uk-legend uk-margin-small">Parámetros del algoritmo de tracking</legend>
               {% for field in config_fields %}
-              <div class="uk-margin">
-                <label for="config-{{ field.name }}" class="uk-form-label uk-text-break">{{ field.metadata['display'] }} <span uk-icon="info" class="tooltip"><span class="tooltip-text">{{ field.metadata['description'] }}</span></span></label>
-                <div style="display: flex; justify-content: flex-end">
-                  <input id="config-{{ field.name }}" name="{{ field.name }}" class="uk-{{ type2input[field.type] }}" type="{{ type2input[field.type] }}" value="{{ field.default }}" />
+                <div class="uk-margin">
+                <label for="config-{{ field.name }}" class="uk-form-label uk-text-break">{{ field.metadata['name'] }} <span uk-icon="info" title="{{ field.metadata['desc'] }}"></span></label>
+                  <div style="display: flex; justify-content: flex-end">
+                    {% if field.type.__name__ == 'bool' %}
+                      <input id="config-{{ field.name }}" name="{{ field.name }}" type="checkbox" class="uk-checkbox" {% if field.default %} checked {% endif %} required />
+                    {% elif field.type.__name__ == 'int' %}
+                      <input id="config-{{ field.name }}" name="{{ field.name }}" type="number" value="{{ field.default }}" step="1" min="{{ field.metadata['min'] }}" max="{{ field.metadata['max'] }}" required />
+                    {% elif field.type.__name__ == 'float' %}
+                      <input id="config-{{ field.name }}" name="{{ field.name }}" type="number" value="{{ field.default }}" step="{{ field.metadata['step'] }}" min="{{ field.metadata['min'] }}" max="{{ field.metadata['max'] }}" required />
+                    {% endif %}
+                  </div>
                 </div>
-              </div>
               {% endfor %}
             </fieldset>
           </div>

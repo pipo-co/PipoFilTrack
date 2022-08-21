@@ -9,17 +9,22 @@ class ApplicationError(Exception):
     message: str
     code: int = 50_000
 
-def config_field(default, display, description) -> Field:
-    return field(default=default, metadata={'display': display, 'description': description})
+def bool_config_field(default: bool, name: str, desc: str) -> bool:
+    return field(default=default, metadata={'name': name, 'desc': desc})
+
+def int_config_field(default: int, name: str, desc: str, min_: int, max_: int) -> int:
+    return field(default=default, metadata={'min': min_, 'max': max_, 'name': name, 'desc': desc})
+
+def float_config_field(default: float, name: str, desc: str, step: float, min_: float, max_: float) -> float:
+    return field(default=default, metadata={'step': step, 'min': min_, 'max': max_, 'name': name, 'desc': desc})
 
 @dataclass
 class Config:
-    bezier_smoothing: bool      = config_field('check', 'Ajuste de Bezier', 'Post-procesamiento de suavizado utilizando un ajuste a curva de bezier')
-    missing_inter_len: int      = config_field(3, 'Cantidad de puntos para interpolar', 'Cantidad de puntos hacia ambos lados para interpolar los faltantes')
-    max_fitting_error: float    = config_field(0.2, 'Tolerancia del error', 'Limite de tolerancia para el error en el ajuste gaussiano del perfil de intensidad')
-    moving_average_count: int   = config_field(5, 'Puntos para media movil', 'Cantidad de puntos a tomar para el moving average durante la rutina de suavizado')
-    max_tangent_length: int     = config_field(15, 'Puntos para calcular pendiente', 'Cantidad de puntos tomados para calcular la pendiente')
-    normal_line_length: int     = config_field(10, 'Pixeles para perfil de intensidad', 'Longitud en pixeles del perfil de intensidad a tomar')
+    max_fitting_error: float    = float_config_field(0.2, 'Tolerancia de error', 'Limite de tolerancia en el error del ajuste gaussiano del perfil de intensidad', step=0.01, min_=0, max_=100)
+    normal_line_length: int     = int_config_field(10, 'Longitud del perfil de intensidad', 'Longitud en pixeles del perfil de intensidad a tomar perpendicularmente a cada punto', min_=2, max_=100)
+    bezier_smoothing: bool      = bool_config_field(True, 'Suavizado final', 'Post-procesamiento de suavizado del filamento ajustando a una curva de Bezier')
+    missing_inter_len: int      = int_config_field(3, 'Cantidad de puntos para interpolar', 'Cantidad de puntos vecinos a tomar hacia ambos lados para interpolar los puntos considerados inválidos (rojos)', min_=1, max_=20)
+    max_tangent_length: int     = int_config_field(15, 'Puntos para calcular tangente', 'Cantidad de puntos vecinos tomados para calcular la pendiente de cada punto', min_=1, max_=100)
 
     @classmethod
     def from_dict(cls, env):
@@ -35,7 +40,6 @@ class TrackingPointStatus(str, Enum):
 class TrackingPoint:
     x: float
     y: float
-    # TODO: Se manda siempre como null :((. No puede quedar asi. O sacarlo de aca, o libreria con mejor deserializacion.
     status: Optional[TrackingPointStatus] = None
 
     @classmethod
