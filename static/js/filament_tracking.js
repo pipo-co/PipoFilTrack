@@ -68,7 +68,6 @@ function debounce(func, timeout = 500) {
 
 (function () {
     // Results initially not visible
-    results.style.display = 'none';
 
     form.addEventListener('submit', fullTracking);
     form.addEventListener('input', debouncedPreview);
@@ -92,6 +91,8 @@ function fullTracking(e) {
     clearError();
 
     const formData = new FormData(form);
+    results.hidden = false;
+    results.scrollIntoView({behavior: "smooth"});
     executeTracking(formData, renderTrackingResult)
 }
 
@@ -120,6 +121,8 @@ async function executeTracking(formData, callback) {
             await callback(body);
         } else {
             showError(body.message);
+            results.hidden = true;
+            selectorCanvas.scrollIntoView({behavior: "smooth"});
         }
     })
     ;
@@ -155,11 +158,12 @@ async function resultsToCanvas(trackingResult) {
 
 async function renderTrackingResult(trackingResult) {
     resultImgs.innerHTML = '';
-    resultImgs.style.display = 'none';
 
-    result_viewer.frames = await resultsToCanvas(trackingResult)
+    result_viewer.frames = await resultsToCanvas(trackingResult);
+    resultImgs.classList.remove("loader");
 
     result_viewer.canvas = buildCanvas(result_viewer.frames[0]);
+
     restartResultsAnimation();
     result_viewer.fps.update();
     resultImgs.appendChild(result_viewer.canvas);
@@ -180,15 +184,16 @@ async function renderTrackingResult(trackingResult) {
 }
 
 async function updatePreview(previewResults) {
-    const [frame] = await resultsToCanvas(previewResults)
-    drawIntoCanvas(previewCanvas, frame)
+    const [frame] = await resultsToCanvas(previewResults);
+    previewCanvas.classList.remove("loader");
+    drawIntoCanvas(previewCanvas, frame);
 }
 
 function restartResultsAnimation() {
     if(result_viewer.inter_id) {
-        clearInterval(result_viewer.inter_id)
+        clearInterval(result_viewer.inter_id);
     }
-    result_viewer.inter_id = setInterval(nextFrame, 1000 / result_viewer.fps.value)
+    result_viewer.inter_id = setInterval(nextFrame, 1000 / result_viewer.fps.value);
 }
 
 function nextFrame() {
