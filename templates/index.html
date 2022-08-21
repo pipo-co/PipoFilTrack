@@ -9,8 +9,8 @@
 
   <!-- UIkit -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.14.0/dist/css/uikit.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/uikit@3.14.0/dist/js/uikit.min.js" async></script>
-  <script src="https://cdn.jsdelivr.net/npm/uikit@3.14.0/dist/js/uikit-icons.min.js" async></script>
+  <script src="https://cdn.jsdelivr.net/npm/uikit@3.14.0/dist/js/uikit.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/uikit@3.14.0/dist/js/uikit-icons.min.js" defer></script>
 
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/static/css/filament_tracking.css">
@@ -20,10 +20,10 @@
   <script src="/static/js/libs/whammy.js" defer></script>
 
   <!-- Custom JS -->
+  <script src="/static/js/canvas_utils.js" defer></script>
+  <script src="/static/js/results.js" defer></script>
   <script src="/static/js/filament_tracking.js" defer></script>
 
-  <!-- Material Design Icons -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body class="uk-background-cover">
   <main class="uk-text-center uk-padding">
@@ -96,17 +96,24 @@
         <legend>Descarga el video en formato <a id="download-webm" download="result.webm">WebM</a></legend>
       </div>
       <div id="result-viewer" class="uk-margin-auto loader"></div>
-      <div id="result-controlls">
-        <span id="rc-frame"></span>
-        <span id="rc-frame-rate">
-          <i class="material-icons" id="rc-frame-rate-down">remove</i>
-          <span id="rc-frame-rate-value"></span>
-          <i class="material-icons" id="rc-frame-rate-up">add</i>
-
-        </span>
-        <i class="material-icons" id="rc-loop">repeat</i>
-      </div>
     </div>
   </main>
 </body>
 </html>
+
+<template id="result-controlls">
+  <div>
+    <span id="rc_play" uk-icon="icon: play"></span>
+    <span id="rc_stop" uk-icon="icon: ban"></span>
+    <span id="rc_prev_frame" uk-icon="icon: arrow-left"></span>
+    <span id="rc-frame"></span>
+    <span id="rc_next_frame" uk-icon="icon: arrow-right"></span>
+
+    <span id="rc_frame_rate">
+      <span id="rc_frame_rate_down" uk-icon="icon: minus-circle"></span>
+      <span id="rc_frame_rate_value"></span>
+      <span id="rc_frame_rate_up" uk-icon="icon: plus-circle"></span>
+    </span>
+    <i class="material-icons" id="rc-loop">repeat</i>
+  </div>
+</template>

@@ -7,7 +7,7 @@
 }
 
 .canvas {
-  width: 40%;
+  width: 85vh;
 
   /* Keep the image pixelated: https://css-tricks.com/keep-pixelated-images-pixelated-as-they-scale/*/
   image-rendering: pixelated;

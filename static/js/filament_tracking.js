@@ -1,5 +1,4 @@
 // Constants
-const CANVAS_RESOLUTION = 1000; // La resolucion horizontal, la vertical se calcula para mantener el aspect ratio
 const POINT_SIZE        = 10;
 const LINE_WIDTH        = 5;
 const POINT_COLOR       = '#ff0000';
@@ -11,6 +10,8 @@ const TRACKING_POINT_STATUS_COLOR   = {
     null:           '#0055ff',
     undefined:      '#0055ff',
 }
+const TRACKING_POINT_COLOR          = '#0055ff'
+
 const NORMAL_LINE_COLOR     = 'rgba(0,255,255,0.22)'
 
 // Elementos de UI
@@ -28,30 +29,14 @@ const redo                  = document.getElementById('redo');
 const resultImgs            = document.getElementById('result-viewer');
 const results               = document.getElementById('results');
 const downloadJson          = document.getElementById('download-json');
+const downloadWebM          = document.getElementById('download-webm');
 const downloadTsv           = document.getElementById('download-tsv');
-
-const rc_loop               = document.getElementById('rc-loop');
-const rc_frame              = document.getElementById('rc-frame');
-const rc_frame_rate_up      = document.getElementById('rc-frame-rate-up');
-const rc_frame_rate_down    = document.getElementById('rc-frame-rate-down');
-const rc_frame_rate_value   = document.getElementById('rc-frame-rate-value');
 
 /* ------ Global data -------- */
 // Points info
 const selected_points       = [];
 const redo_points           = [];
-const result_viewer         = {
-    frames: [],
-    index: 0,
-    loop: true,
-    fps: 4,
-    inter_id: null,
-    canvas: null,
-    fps: {
-        value: 4,
-        update: () => rc_frame_rate_value.innerText = `${result_viewer.fps.value}`
-    }
-}
+const result_viewer         = new ResultsViewer();
 // Image and canvas info
 let selectorDrawable;
 
@@ -78,12 +63,12 @@ function debounce(func, timeout = 500) {
     selectorCanvas.width = CANVAS_RESOLUTION;
     selectorCanvas.addEventListener('click', onCanvasClick);
 
+    // Bind result viewer
+    result_viewer.bindViewer(resultImgs)
+
     // Undo/Redo selected points
     undo.addEventListener('click', undoPoint);
     redo.addEventListener('click', redoPoint);
-    rc_loop.addEventListener('click', rcLoop);
-    rc_frame_rate_up.addEventListener('click', () => rcFrameRateChange(1));
-    rc_frame_rate_down.addEventListener('click', () => rcFrameRateChange(-1));
 })();
 
 function fullTracking(e) {
@@ -93,60 +78,64 @@ function fullTracking(e) {
     const formData = new FormData(form);
     results.hidden = false;
     results.scrollIntoView({behavior: "smooth"});
-    executeTracking(formData, renderTrackingResult)
+    executeTracking(formData)
+        .then(renderTrackingResult)
+        .catch((error) => {
+            showError(error);
+            results.hidden = true;
+            selectorCanvas.scrollIntoView({behavior: "smooth"});
+        });
 }
 
 function trackingPreview() {
     const formData = new FormData(form);
     formData.set('images[]', formData.getAll('images[]').sort((f1, f2) => f1.name > f2.name)[0]) 
-    executeTracking(formData, updatePreview)
+    if(selected_points.length >= 2) {
+        executeTracking(formData).then(updatePreview).catch()
+    }
 }
 
-async function executeTracking(formData, callback) {
+async function executeTracking(formData) {
     if(selected_points.length < 2) {
-        errors.innerText = 'Debe seleccionar el punto inicial y final del filamento';
-        return;
+        return Promise.reject('Debe seleccionar el punto inicial y final del filamento');
     }
 
     formData.append('points', JSON.stringify(selected_points));
 
-    fetch('/track', {
-        method: 'POST',
-        body: formData,
-    })
-    .catch(error => showError('Server Connection Error: ' + error))
-    .then(async response => {
+    try {
+        const response = await fetch('/track', {method: 'POST', body: formData})
         const body = await response.json();
         if(response.ok) {
-            await callback(body);
+            return Promise.resolve(body);
         } else {
-            showError(body.message);
-            results.hidden = true;
-            selectorCanvas.scrollIntoView({behavior: "smooth"});
+            return Promise.reject(body.message);
         }
-    })
-    ;
+    } catch(error) {
+        return Promise.reject('Server Connection Error: ' + error);
+    }
 }
 
-async function resultsToCanvas(trackingResult) {
+async function resultsToCanvas(trackingResult, drawNormalLines = false, colorSupplier = () => TRACKING_POINT_COLOR) {
     const frames = []
 
     // We iterate frame results and images at the same time (should have same length)
     const framesIter = drawableIterator(imgInput.files);
-    for (const result of trackingResult.frames[Symbol.iterator]()) {
+    for(const result of trackingResult.frames[Symbol.iterator]()) {
         const {value: frame} = await framesIter.next();
         const canvas = buildCanvas(frame);
         const ctx = canvas.getContext('2d');
 
         for(const point of result.points) {
             const [x, y] = trackingPoint2canvas(point, canvas, frame);
-            drawPoint(ctx, x, y, TRACKING_POINT_STATUS_COLOR[point.status], TRACKING_POINT_SIZE);
+            drawPoint(ctx, x, y, colorSupplier(point.status), TRACKING_POINT_SIZE);
         }
 
-        for(const segment of result.metadata.normal_lines) {
-            const [x0, y0] = trackingPoint2canvas(segment.start, canvas, frame);
-            const [x1, y1] = trackingPoint2canvas(segment.end, canvas, frame);
-            drawLine(ctx, x0, y0, x1, y1, NORMAL_LINE_COLOR);
+        if(drawNormalLines) {
+            for(const segment of result.metadata.normal_lines) {
+                const [x0, y0] = trackingPoint2canvas(segment.start, canvas, frame);
+                const [x1, y1] = trackingPoint2canvas(segment.end, canvas, frame);
+                drawLine(ctx, x0, y0, x1, y1, NORMAL_LINE_COLOR);
+            }
         }
 
         frames.push(canvas);
@@ -157,16 +146,11 @@ async function resultsToCanvas(trackingResult) {
 }
 
 async function renderTrackingResult(trackingResult) {
-    resultImgs.innerHTML = '';
 
-    result_viewer.frames = await resultsToCanvas(trackingResult);
+    const frames = await resultsToCanvas(trackingResult);
     resultImgs.classList.remove("loader");
 
-    result_viewer.canvas = buildCanvas(result_viewer.frames[0]);
-
-    restartResultsAnimation();
-    result_viewer.fps.update();
-    resultImgs.appendChild(result_viewer.canvas);
+    result_viewer.loadResults(frames);
 
     if(downloadJson.href) {
         URL.revokeObjectURL(downloadJson.href);
@@ -193,31 +177,9 @@ async function renderTrackingResult(trackingResult) {
 }
 
 async function updatePreview(previewResults) {
-    const [frame] = await resultsToCanvas(previewResults);
+    const [frame] = await resultsToCanvas(previewResults, true, (status) => TRACKING_POINT_STATUS_COLOR[status]);
     previewCanvas.classList.remove("loader");
     drawIntoCanvas(previewCanvas, frame);
-}
-
-function restartResultsAnimation() {
-    if(result_viewer.inter_id) {
-        clearInterval(result_viewer.inter_id);
-    }
-    result_viewer.inter_id = setInterval(nextFrame, 1000 / result_viewer.fps.value);
-}
-
-function nextFrame() {
-    if(!result_viewer.loop && result_viewer.index == result_viewer.frames.length-1) {
-        clearInterval(result_viewer.inter_id)
-        result_viewer.inter_id = null
-        return
-    }
-    updateResultInterface()
-}
-
-function updateResultInterface() {
-    result_viewer.index = (result_viewer.index + 1) % result_viewer.frames.length
-    rc_frame.innerHTML = `${result_viewer.index +1}/${result_viewer.frames.length}`
-    drawIntoCanvas(result_viewer.canvas, result_viewer.frames[result_viewer.index])
 }
 
 function toJsonResults(results) {
@@ -244,24 +206,6 @@ function toTsvResults(results) {
 
 function trackingPoint2canvas({x, y}, canvas, img) {
     return [pixel2CanvasPosX(x, canvas, img), pixel2CanvasPosY(y, canvas, img)];
-}
-
-function buildCanvas(frame) {
-    const ret = document.createElement('canvas');
-    ret.classList.add('canvas');
-
-    return drawIntoCanvas(ret, frame);
-}
-
-function drawIntoCanvas(canvas, frame) {
-    canvas.width = CANVAS_RESOLUTION;
-    canvas.height = canvas.width / frame.width * frame.height;
-
-    const ctx = canvas.getContext('2d');
-    canvasDisableSmoothing(ctx);
-    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
-
-    return canvas;
 }
 
 // In case of error returns error message
@@ -378,22 +322,6 @@ function drawPointSelection(point) {
     }
 
     drawPoint(ctx, x, y);
-}
-
-function drawLine(ctx, x0, y0, x1, y1, color = POINT_COLOR, width = LINE_WIDTH) {
-    ctx.beginPath();
-    ctx.moveTo(x0, y0);
-    ctx.lineTo(x1, y1);
-    ctx.lineWidth   = width;
-    ctx.strokeStyle = color;
-    ctx.stroke();
-}
-
-function drawPoint(ctx, x, y, color = POINT_COLOR, size = POINT_SIZE) {
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, 2 * Math.PI);
-    ctx.fillStyle = color;
-    ctx.fill();
 }
 
 function undoPoint() {
