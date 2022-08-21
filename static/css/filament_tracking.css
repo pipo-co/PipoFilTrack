@@ -11,14 +11,36 @@ html {
 }
 body {
   min-height: 100%;
-  background-color: #058582;
-}
-h1 {
+  background-color: #003837;
   color: white;
 }
-p {
+
+.primary {
   color: white !important;
 }
+
+.full-pill {
+  border-radius: 25px;
+  
+}
+
+.pill {
+  padding: 0 10px;
+  border: 1px solid #e5e5e5;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.right-pill {
+  border-radius: 0 25px 25px 0;
+}
+
+.left-pill {
+  border-radius: 25px 0 0 25px;
+}
+
 legend {
   color: white !important;
 }

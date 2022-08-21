@@ -115,18 +115,31 @@
 </html>
 
 <template id="result-controls">
-  <div>
-    <span id="rc-play" uk-icon="icon: play"></span>
-    <span id="rc-pause" uk-icon="icon: pause" hidden></span>
-    <span id="rc-stop" uk-icon="icon: stop"></span>
-    <span id="rc-prev_frame" uk-icon="icon: arrow-left"></span>
-    <span id="rc-frame"></span>
-    <span id="rc-next_frame" uk-icon="icon: arrow-right"></span>
-
-    <span id="rc-frame_rate">
-      <span id="rc-frame_rate_down" uk-icon="icon: minus-circle"></span>
-      <span id="rc-frame_rate_value"></span>
-      <span id="rc-frame_rate_up" uk-icon="icon: plus-circle"></span>
-    </span>
+  <div class="uk-flex uk-flex-between uk-margin-top uk-margin-bottom">
+    <div class="uk-flex">
+      <button id="rc-play" class="primary pill full-pill">
+        <span uk-icon="icon: play"></span>
+        <span>PLAY</span>
+      </button>
+      <button id="rc-pause" class="primary pill full-pill" hidden>
+        <span uk-icon="icon: pause"></span>
+        <span>PAUSE</span>
+      </button>
+      <button id="rc-stop" class="primary pill full-pill uk-margin-small-left">
+        <span uk-icon="icon: stop"></span>
+        <span>STOP</span>
+      </button>
+    </div>
+    <div class="uk-flex">
+      <span class="primary pill left-pill" id="rc-prev_frame" uk-icon="icon: arrow-left"></span>
+      <span class="primary pill" id="rc-frame"></span>
+      <span class="primary pill right-pill" id="rc-next_frame" uk-icon="icon: arrow-right"></span>
+    </div>
+    <div id="rc-frame_rate" class="uk-flex">
+      <span class="primary pill left-pill" id="rc-frame_rate_down" uk-icon="icon: minus"></span>
+      <span class="primary pill" id="rc-frame_rate_value"></span>
+      <span class="primary pill right-pill" id="rc-frame_rate_up" uk-icon="icon: plus"></span>
+    </div>
+    </div>
   </div>
 </template>
