@@ -160,7 +160,7 @@ async function renderTrackingResult(trackingResult) {
     resultsViewer.loadResults(frames);
 
     const dateString = new Date().toISOString().split('.')[0].replace(/:/g, '.');
-    const resultsFileName = `${imgInput.files.name.split('.')[0]}_results_${dateString}`
+    const resultsFileName = `${imgInput.files[0].name.split('.')[0]}_results_${dateString}`
 
     if(downloadJson.href) {
         URL.revokeObjectURL(downloadJson.href);
