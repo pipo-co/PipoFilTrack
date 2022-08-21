@@ -23,7 +23,7 @@ const selectorWrapper       = document.getElementById('selector-wrapper');
 const selectorZone          = document.getElementById('selector-zone');
 const previewZone           = document.getElementById('preview-zone');
 const previewCanvas         = document.getElementById('preview');
-const form                  = document.getElementById('tracking-form');
+const trackingForm          = document.getElementById('tracking-form');
 const imgInput              = document.getElementById('img-input');
 const errors                = document.getElementById('errors');
 const actionButtons         = document.getElementById('action-buttons');
@@ -35,11 +35,13 @@ const imgButtons            = document.getElementById('img-buttons');
 const undo                  = document.getElementById('undo');
 const redo                  = document.getElementById('redo');
 const resultsViewerUI       = document.getElementById('results-viewer');
+const resultsContainer      = document.getElementById('results-container');
 const resultsLoader         = document.getElementById('results-loader');
 const results               = document.getElementById('results');
 const downloadJson          = document.getElementById('download-json');
 const downloadWebM          = document.getElementById('download-webm');
 const downloadTsv           = document.getElementById('download-tsv');
+const rvRenderingProps      = document.getElementById('rv-rendering-properties');
 
 /* ------ Global data -------- */
 
@@ -51,13 +53,14 @@ let pointSize = POINT_SIZE;
 let scale       = 1;
 let scaleFactor = 1.1;
 let selectorCanvasWidth = 65;
+let currentResults;
 
 // Results viewer controller
 const resultsViewer = new ResultsViewer('result-controls');
 
 (function () {
-    form.addEventListener('submit', fullTracking);
-    form.addEventListener('input', debouncedPreview);
+    trackingForm.addEventListener('submit', fullTracking);
+    trackingForm.addEventListener('input', debouncedPreview);
 
     imgInput.addEventListener('change', handleImageSelection);
 
@@ -83,15 +86,15 @@ async function fullTracking(e) {
     e.preventDefault();
     clearError();
 
-    const formData = new FormData(form);
+    const formData = new FormData(trackingForm);
     results.hidden = false;
     results.scrollIntoView({behavior: "smooth"});
 
     try {
-        resultsViewerUI.hidden = true;
+        resultsContainer.hidden = true;
         resultsLoader.hidden = false;
-        const result = await executeTracking(formData);
-        await renderTrackingResult(result);
+        currentResults = await executeTracking(formData);
+        await processTrackingresults(currentResults);
     } catch(error) {
         showError(error);
         results.hidden = true;
@@ -100,7 +103,7 @@ async function fullTracking(e) {
 }
 
 function trackingPreview() {
-    const formData = new FormData(form);
+    const formData = new FormData(trackingForm);
     
     formData.set('images[]', imgInput.files[0]);
 
@@ -146,7 +149,7 @@ async function executeTracking(formData) {
     }
 }
 
-async function resultsToCanvas(trackingResult, drawNormalLines = false, colorSupplier = () => TRACKING_POINT_COLOR) {
+async function resultsToCanvas(trackingResult, renderParams) {
     const frames = []
 
     // We iterate frame results and images at the same time (should have same length)
@@ -158,10 +161,10 @@ async function resultsToCanvas(trackingResult, drawNormalLines = false, colorSup
 
         for(const point of result.points) {
             const [x, y] = trackingPoint2canvas(point, canvas, frame);
-            drawPoint(ctx, x, y, colorSupplier(point.status), TRACKING_POINT_SIZE);
+            drawPoint(ctx, x, y, renderParams.colorSupplier(point.status), TRACKING_POINT_SIZE);
         }
 
-        if(drawNormalLines) {
+        if(renderParams.normalLines) {
             for(const segment of result.metadata.normal_lines) {
                 const [x0, y0] = trackingPoint2canvas(segment.start, canvas, frame);
                 const [x1, y1] = trackingPoint2canvas(segment.end, canvas, frame);
@@ -176,13 +179,7 @@ async function resultsToCanvas(trackingResult, drawNormalLines = false, colorSup
     return frames
 }
 
-async function renderTrackingResult(trackingResult) {
-  const frames = await resultsToCanvas(trackingResult);
-  resultsLoader.hidden = true;
-  resultsViewerUI.hidden = false;
-
-    resultsViewer.loadResults(frames);
-
+async function processTrackingresults(trackingResult) {
     const dateString = new Date().toISOString().split('.')[0].replace(/:/g, '.');
     const resultsFileName = `${imgInput.files[0].name.split('.')[0]}_results_${dateString}`
 
@@ -198,8 +195,26 @@ async function renderTrackingResult(trackingResult) {
     downloadTsv.href        = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
     downloadTsv.download    = `${resultsFileName}.tsv`
 
+    rvRenderingProps.addEventListener('input', () => renderTrackingResult(trackingResult));
+
+    resultsViewerUI.classList.remove("loader");
+    resultsLoader.hidden = true;
+    resultsContainer.hidden = false;
+
+    renderTrackingResult(trackingResult);
+    
+    resultsViewerUI.style.display = '';
+    results.style.display = '';
+    results.scrollIntoView({behavior: "smooth"});
+}
+
+async function renderTrackingResult(trackingResult) {
+    const frames = await resultsToCanvas(trackingResult, formToRenderParams(rvRenderingProps));
+    resultsViewer.loadResults(frames);
+
     downloadWebM.addEventListener('click', () => {
         const vid = new Whammy.Video(resultsViewer.fps, WEBM_QUALITY);
+        UIkit.notification('Download started');
         frames.forEach(frame => vid.add(frame));
         vid.compile(false, video => {
             if(downloadWebM.href) {
@@ -208,10 +223,6 @@ async function renderTrackingResult(trackingResult) {
             download(URL.createObjectURL(video), `${resultsFileName}.webm`);
         });
     });
-
-    resultsViewerUI.style.display = '';
-    results.style.display = '';
-    results.scrollIntoView({behavior: "smooth"});
 }
 
 function download(url, fileName) {
@@ -224,13 +235,13 @@ function download(url, fileName) {
   }
 
 async function updatePreview(previewResults) {
-    const [frame] = await resultsToCanvas(previewResults, true, (status) => TRACKING_POINT_STATUS_COLOR[status]);
+    const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}));
     previewCanvas.classList.remove("loader");
     drawIntoCanvas(previewCanvas, frame);
 }
 
-function toJsonResults(results) {
-    const redactedResults = results.frames.map(frame => { return {
+function toJsonResults(resultData) {
+    const redactedResults = resultData.frames.map(frame => { return {
         points: frame.points.map(point => { return {
             x: point.x,
             y: point.y,
@@ -239,11 +250,11 @@ function toJsonResults(results) {
     return JSON.stringify(redactedResults);
 }
 
-function toTsvResults(results) {
+function toTsvResults(resultData) {
     const ret = ['frame\tx\ty'];
 
     let frame = 0;
-    for(const result of results.frames) {
+    for(const result of resultData.frames) {
         result.points.forEach(point => ret.push([frame, point.x, point.y].join('\t')));
         frame++;
     }
@@ -490,4 +501,23 @@ async function handleImageSelection() {
     // Reset selected points
     selectedPoints.length    = 0;
     redoPoints.length        = 0;
+}
+
+function formToRenderParams(form) {
+    return new RenderParams({
+        normalLines: form['normal-lines'].checked, 
+        colorCoding: form['color-coding'].checked
+    });
+}
+
+class RenderParams {
+    constructor({normalLines, colorCoding}) {
+        this.normalLines = normalLines;
+        
+        if(colorCoding) {
+            this.colorSupplier = (status) => TRACKING_POINT_STATUS_COLOR[status];
+        } else {
+            this.colorSupplier = () => TRACKING_POINT_COLOR;
+        }
+    }
 }

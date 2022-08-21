@@ -26,6 +26,7 @@
   <script src="/static/js/filament_tracking.js" defer></script>
 
 </head>
+
 <body class="uk-background-cover" onmousedown="return false;">
   <main class="uk-text-center uk-padding">
     <form id="tracking-form" enctype="multipart/form-data" class="uk-form-horizontal uk-margin-large">
@@ -103,12 +104,18 @@
       <h1>
         Resultados
       </h1>
-      <div id="downloads">
-        <p>Descarga los resultados de las posiciones en formato <a id="download-json" download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a></p>
-        <p>Descarga el video en formato <a id="download-webm">WebM</a></p>
-      </div>
       <div id="results-loader" class="uk-margin-auto loader"></div>
-      <div id="results-viewer" class="uk-margin-auto" hidden></div>
+      <div id="results-container" class="uk-flex" hidden>
+        <div id="results-viewer" class="uk-width-1-2 uk-margin-auto loader"></div>
+        <div class="uk-width-1-2">
+          <p>Descarga los resultados de las posiciones en formato <a id="download-json" download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a></p>
+          <p>Descarga el video en formato <a id="download-webm">WebM</a></p>
+          <form id="rv-rendering-properties">
+            <label>Puntos codificados con colores<input name="color-coding" type="checkbox"></input></label>
+            <label>Perfiles de intensidad<input name="normal-lines" type="checkbox"></input></label>
+          </form>
+        </div>
+      </div>
     </div>
   </main>
 </body>
