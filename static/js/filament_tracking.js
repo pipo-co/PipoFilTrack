@@ -73,11 +73,11 @@ const resultsViewer = new ResultsViewer('result-controls');
     redo.addEventListener('click', redoPoint);
 
     plus.addEventListener('click', addZoom);
-    minus.addEventListener('click', reduceZoom);
-
-    arrowUpButton.addEventListener('click', increasePointDiameter);
-    arrowDownButton.addEventListener('click', decreasePointDiameter);  
+    minus.addEventListener('click', reduceZoom); 
 })();
+
+arrowUpButton.addEventListener('click', increasePointDiameter);
+arrowDownButton.addEventListener('click', decreasePointDiameter); 
 
 async function fullTracking(e) {
     e.preventDefault();
