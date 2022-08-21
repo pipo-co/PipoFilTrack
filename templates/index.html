@@ -72,10 +72,10 @@
           </div>
           <div class="uk-flex uk-flex-center" id="action-buttons" hidden>
             <div>
-              <span id="undo" title="Undo"><img src="/static/images/undo.png" alt="undo"></span>
+              <button id="undo" type="button" class="uk-button uk-button-primary"><span title="Undo" uk-icon="icon: history"></span></button>
             </div>
             <div>
-              <span id="redo" title="Redo"><img src="/static/images/redo.png" alt="redo"></span>
+              <button id="redo" type="button" class="uk-button uk-button-primary"><span title="Redo" uk-icon="icon: future"></span></button>
             </div>
           </div>
           <div class="uk-flex uk-flex-center" id="point-buttons" hidden>
@@ -110,8 +110,8 @@
           <p>Descarga los resultados de las posiciones en formato <a id="download-json" download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a></p>
           <p>Descarga el video en formato <a id="download-webm">WebM</a></p>
           <form id="rv-rendering-properties">
-            <label>Puntos codificados con colores<input name="color-coding" type="checkbox"></input></label>
-            <label>Perfiles de intensidad<input name="normal-lines" type="checkbox"></input></label>
+            <label>Puntos codificados con colores<input name="color-coding" type="checkbox" /></label>
+            <label>Perfiles de intensidad<input name="normal-lines" type="checkbox" /></label>
           </form>
         </div>
       </div>
