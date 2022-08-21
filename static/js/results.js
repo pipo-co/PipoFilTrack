@@ -6,7 +6,6 @@ class ResultsViewer {
         this.templateId = templateId;
         this.frames     = [];
         this.index      = 0;
-        this.loop       = true;
         this.inter_id   = null;
         this.fps        = 1;
 
@@ -20,7 +19,6 @@ class ResultsViewer {
         const template = document.getElementById(this.templateId);
         bindElement.appendChild(template.content.cloneNode(true));
 
-        this.controls['loop']               = document.getElementById('rc-loop');
         this.controls['frame']              = document.getElementById('rc-frame');
         this.controls['play']               = document.getElementById('rc-play');
         this.controls['stop']               = document.getElementById('rc-stop');
@@ -30,7 +28,6 @@ class ResultsViewer {
         this.controls['frame_rate_down']    = document.getElementById('rc-frame_rate_down');
         this.controls['frame_rate']         = document.getElementById('rc-frame_rate_value');
 
-        this.controls['loop']           .addEventListener('click', () => this.rcLoop()); // TODO: Esto esta en filament_tracking y no queremos que dependa de el
         this.controls['play']           .addEventListener('click', () => this.resumeAnimation());
         this.controls['stop']           .addEventListener('click', () => this.stopAnimation());
         this.controls['next_frame']     .addEventListener('click', () => this.drawNextFrame());
@@ -39,24 +36,18 @@ class ResultsViewer {
         this.controls['frame_rate_down'].addEventListener('click', () => this.updateFrameRate(-1));
     }
 
-    setResolution(width, height) {
-        this.canvas.width = 1000; //TODO(nacho)
-        this.canvas.height = this.canvas.width / width * height;
-    }
-
     loadResults(frames) {
         this.frames = frames
         
-        this.setResolution(frames[0].width, frames[0].height);
+        setResolution(this.canvas, frames[0].width, frames[0].height);
 
         this.drawFrame();
         this.updateFrameRateNumberDisplay();
-        // this.resumeAnimation();
     }
 
     resumeAnimation() {
         this.pauseAnimation();
-        this.inter_id = setInterval(() => this.animationHandler(), 1000 / this.fps);
+        this.inter_id = setInterval(() => this.drawNextFrame(), 1000 / this.fps);
     }
 
     pauseAnimation() {
@@ -65,33 +56,11 @@ class ResultsViewer {
         }
     }
 
-    rcLoop() {
-        this.loop = !this.loop;
-    }
-
-    rcFrameRateChange(delta) {
-        resultsViewer.fps.value += delta;
-        if(resultsViewer.fps.value <= 0) {
-            resultsViewer.fps.value = 1;
-        }
-        resultsViewer.fps.update();
-        restartResultsAnimation();
-    }
-
     updateFrameRate(delta) {
         console.log(this.fps, delta, Math.max(this.fps + delta, 1))
         this.fps = Math.max(this.fps + delta, 1);
         this.resumeAnimation();
         this.updateFrameRateNumberDisplay();
-    }
-
-    animationHandler() {
-        if(!this.loop && this.index === this.frames.length-1) {
-            clearInterval(this.inter_id)
-            this.inter_id = null
-            return
-        }
-        this.drawNextFrame();
     }
 
     updateFrameNumberDisplay() {
@@ -103,30 +72,24 @@ class ResultsViewer {
     }
 
     nextFrame() {
-        if(this.loop) {
-            this.index = (this.index + 1) % this.frames.length;
-        } else {
-            this.index = Math.min(this.index + 1, this.frames.length - 1);
-        }
+        this.index = (this.index + 1) % this.frames.length;
     }
 
     prevFrame() {
-        this.index = Math.max(this.index - 1, 0);
+        this.index = this.index === 0 ? this.frames.length - 1 : this.index - 1;
     }
 
     drawFrame() {
-        this.controls['frame'].innerHTML = `${this.index+1}/${this.frames.length}`
+        this.updateFrameNumberDisplay()
         drawIntoCanvas(this.canvas, this.frames[this.index]);
     }
 
     drawNextFrame() {
-        console.log("Next");
         this.nextFrame();
         this.drawFrame();
     }
 
     drawPrevFrame() {
-        console.log("Preev");
         this.prevFrame();
         this.drawFrame();
     }

@@ -26,14 +26,18 @@ function buildCanvas(frame) {
 }
 
 function drawIntoCanvas(canvas, frame) {
-    canvas.width = CANVAS_RESOLUTION;
-    canvas.height = canvas.width / frame.width * frame.height;
+    setResolution(canvas, frame.width, frame.height);
 
     const ctx = canvas.getContext('2d');
     canvasDisableSmoothing(ctx);
     ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
 
     return canvas;
+}
+
+function setResolution(canvas, width, height) {
+    canvas.width = CANVAS_RESOLUTION;
+    canvas.height = canvas.width / width * height;
 }
 
 function canvasDisableSmoothing(ctx) {
