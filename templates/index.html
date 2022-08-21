@@ -42,9 +42,9 @@
               <legend class="uk-legend uk-margin-small">Parametros extra del algoritmo de trackeo</legend>
               {% for field in config_fields %}
               <div class="uk-margin-small">
-                <label class="uk-form-label uk-text-break">{{ field.metadata['description'] }}:</label>
+                <label for="config-{{ field.name }}" class="uk-form-label uk-text-break">{{ field.metadata['description'] }}:</label>
                 <div style="display: flex; justify-content: flex-end">
-                  <input name="{{ field.name }}" class="uk-{{ type2input[field.type] }}" type="{{ type2input[field.type] }}" value="{{ field.default }}" />
+                  <input id="config-{{ field.name }}" name="{{ field.name }}" class="uk-{{ type2input[field.type] }}" type="{{ type2input[field.type] }}" value="{{ field.default }}" />
                 </div>
               </div>
               {% endfor %}
@@ -54,7 +54,6 @@
         <div class="uk-width-1-2 uk-text-center">
           <div class="uk-flex">
             <div class="uk-margin uk-width-1-1">
-              <!-- <label class="uk-form-label uk-margin-top" for="form-horizontal-text"></label> -->
               <div uk-form-custom>
                 <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required />
                 <button class="uk-button uk-button-primary uk-width-1-1 uk-margin-small-bottom" type="button" tabindex="-1">Seleccione las imágenes que desea trackear</button>
@@ -63,7 +62,6 @@
           </div>
           <div class="uk-flex">
             <div class="uk-margin uk-width-1-1">
-              {#TODO(tobi): Add zoom element #}
               <canvas id="points-selector-canvas" class="canvas"></canvas>
             </div>
           </div>
@@ -83,8 +81,7 @@
               <a href="/"><button class="uk-button uk-button-secondary" type="submit">Reset</button></a>
             </div>
           </div>
-            <p id="errors" ></p>
-          </div>
+          <p id="errors" ></p>
         </div>
       </div>
     </form>
@@ -93,8 +90,8 @@
         Resultados
       </h1>
       <div id="downloads">
-        <legend>Descarga los resultados de las posiciones en formato <a id="download-json" download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a></legend>
-        <legend>Descarga el video en formato <a id="download-webm" download="result.webm">WebM</a></legend>
+        <p>Descarga los resultados de las posiciones en formato <a id="download-json" download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a></p>
+        <p>Descarga el video en formato <a id="download-webm" download="result.webm">WebM</a></p>
       </div>
       <div id="results-viewer" class="uk-margin-auto loader"></div>
     </div>
@@ -115,6 +112,5 @@
       <span id="rc-frame_rate_value"></span>
       <span id="rc-frame_rate_up" uk-icon="icon: plus-circle"></span>
     </span>
-    <i class="material-icons" id="rc-loop">repeat</i>
   </div>
 </template>
