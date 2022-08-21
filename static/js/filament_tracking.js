@@ -4,6 +4,7 @@
 const POINT_SIZE        = 10;
 const LINE_WIDTH        = 5;
 const POINT_COLOR       = '#00ff00';
+const WEBM_QUALITY      = 1;
 
 const TRACKING_POINT_SIZE           = 5;
 const TRACKING_POINT_STATUS_COLOR   = {
@@ -81,16 +82,9 @@ async function fullTracking(e) {
 
 function trackingPreview() {
     const formData = new FormData(form);
-    formData.set('images[]',
-        formData
-            .getAll('images[]')
-            .sort((f1, f2) => {
-                if(f1.name > f2.name) return 1;
-                else if(f1.name < f2.name) return -1;
-                else return 0;
-            })
-            [0]
-    )
+    
+    formData.set('images[]', imgInput.files[0]);
+
     if(selectedPoints.length >= 2) {
         executeTracking(formData)
             .then(updatePreview)
@@ -165,29 +159,45 @@ async function renderTrackingResult(trackingResult) {
 
     resultsViewer.loadResults(frames);
 
+    const dateString = new Date().toISOString().split('.')[0].replace(/:/g, '.');
+    const resultsFileName = `${imgInput.files.name.split('.')[0]}_results_${dateString}`
+
     if(downloadJson.href) {
         URL.revokeObjectURL(downloadJson.href);
     }
-    downloadJson.href   = URL.createObjectURL(new Blob([toJsonResults(trackingResult)], {type: 'application/json'}));
+    downloadJson.href       = URL.createObjectURL(new Blob([toJsonResults(trackingResult)], {type: 'application/json'}));
+    downloadJson.download   = `${resultsFileName}.json`
 
     if(downloadTsv.href) {
         URL.revokeObjectURL(downloadTsv.href);
     }
-    downloadTsv.href    = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
+    downloadTsv.href        = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
+    downloadTsv.download    = `${resultsFileName}.tsv`
 
-    const vid = new Whammy.Video(1, 1); //TODO(nacho): poner valores de verdad
-	frames.forEach(frame => vid.add(frame));
-	vid.compile(false, video => {
-        if(downloadWebM.href) {
-            URL.revokeObjectURL(downloadWebM.href);
-        }
-        downloadWebM.href = URL.createObjectURL(video);
+    downloadWebM.addEventListener('click', () => {
+        const vid = new Whammy.Video(resultsViewer.fps, WEBM_QUALITY);
+        frames.forEach(frame => vid.add(frame));
+        vid.compile(false, video => {
+            if(downloadWebM.href) {
+                URL.revokeObjectURL(downloadWebM.href);
+            }
+            download(URL.createObjectURL(video), `${resultsFileName}.webm`);
+        });
     });
 
     resultsViewerUI.style.display = '';
     results.style.display = '';
     results.scrollIntoView({behavior: "smooth"});
 }
+
+function download(url, fileName) {
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  }
 
 async function updatePreview(previewResults) {
     const [frame] = await resultsToCanvas(previewResults, true, (status) => TRACKING_POINT_STATUS_COLOR[status]);
