@@ -1,14 +1,14 @@
 // Constants
 const POINT_SIZE        = 10;
 const LINE_WIDTH        = 5;
-const POINT_COLOR       = '#ff0000';
+const POINT_COLOR       = '#00ff00';
 
 const TRACKING_POINT_SIZE           = 5;
 const TRACKING_POINT_STATUS_COLOR   = {
-    'INTERPOLATED': '#ff0000',
-    'PRESERVED':    '#d608e5',
-    null:           '#0055ff',
-    undefined:      '#0055ff',
+    'INTERPOLATED': '#0055ff',
+    'PRESERVED':    '#ff0000',
+    null:           '#00ff00',
+    undefined:      '#00ff00',
 }
 const TRACKING_POINT_COLOR          = '#0055ff'
 
