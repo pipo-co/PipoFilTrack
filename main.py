@@ -61,7 +61,6 @@ def track():
 
 @app.route('/health', methods=['GET'])
 def health():
-# Handle here any business logic for ensuring you're application is healthy (DB connections, etc...)
     return "Healthy: OK"
 
 if __name__ == '__main__':
