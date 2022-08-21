@@ -1,3 +1,5 @@
+"use strict";
+
 // Constants
 const POINT_SIZE        = 10;
 const LINE_WIDTH        = 5;
@@ -10,7 +12,7 @@ const TRACKING_POINT_STATUS_COLOR   = {
     null:           '#00ff00',
     undefined:      '#00ff00',
 }
-const TRACKING_POINT_COLOR          = '#0055ff'
+const TRACKING_POINT_COLOR  = '#0055ff'
 
 const NORMAL_LINE_COLOR     = 'rgba(0,255,255,0.22)'
 
@@ -19,41 +21,29 @@ const selectorCanvas        = document.getElementById('points-selector-canvas');
 const previewCanvas         = document.getElementById('preview');
 const form                  = document.getElementById('tracking-form');
 const imgInput              = document.getElementById('img-input');
-const resetButton           = document.getElementById('reset-button');
 const errors                = document.getElementById('errors');
 const actionButtons         = document.getElementById('action-buttons');
 const previewSection        = document.getElementById('preview-section');
 const imgButtons            = document.getElementById('img-buttons');
 const undo                  = document.getElementById('undo');
 const redo                  = document.getElementById('redo');
-const resultImgs            = document.getElementById('result-viewer');
+const resultsViewerUI       = document.getElementById('results-viewer');
 const results               = document.getElementById('results');
 const downloadJson          = document.getElementById('download-json');
 const downloadWebM          = document.getElementById('download-webm');
 const downloadTsv           = document.getElementById('download-tsv');
 
 /* ------ Global data -------- */
-// Points info
-const selected_points       = [];
-const redo_points           = [];
-const result_viewer         = new ResultsViewer();
-// Image and canvas info
+
+// Preview and point selection
+const selectedPoints    = [];
+const redoPoints        = [];
 let selectorDrawable;
 
-const debouncedPreview = debounce(trackingPreview)
-
-// https://www.freecodecamp.org/news/javascript-debounce-example/
-function debounce(func, timeout = 500) {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => { func.apply(this, args); }, timeout);
-    };
-}
+// Results viewer controller
+let resultsViewer;
 
 (function () {
-    // Results initially not visible
-
     form.addEventListener('submit', fullTracking);
     form.addEventListener('input', debouncedPreview);
 
@@ -63,47 +53,74 @@ function debounce(func, timeout = 500) {
     selectorCanvas.width = CANVAS_RESOLUTION;
     selectorCanvas.addEventListener('click', onCanvasClick);
 
-    // Bind result viewer
-    result_viewer.bindViewer(resultImgs)
+    // Result viewer
+    let rvCanvas = document.createElement('canvas');
+    rvCanvas.classList.add('canvas');
+    resultsViewer = new ResultsViewer(rvCanvas, 'result-controls');
+    resultsViewer.bindViewer(resultsViewerUI);
 
     // Undo/Redo selected points
     undo.addEventListener('click', undoPoint);
     redo.addEventListener('click', redoPoint);
 })();
 
-function fullTracking(e) {
+async function fullTracking(e) {
     e.preventDefault();
     clearError();
 
     const formData = new FormData(form);
     results.hidden = false;
     results.scrollIntoView({behavior: "smooth"});
-    executeTracking(formData)
-        .then(renderTrackingResult)
-        .catch((error) => {
-            showError(error);
-            results.hidden = true;
-            selectorCanvas.scrollIntoView({behavior: "smooth"});
-        });
+
+    try {
+        const result = await executeTracking(formData);
+        await renderTrackingResult(result);
+    } catch(error) {
+        showError(error);
+        results.hidden = true;
+        selectorCanvas.scrollIntoView({behavior: "smooth"});
+    }
 }
 
 function trackingPreview() {
     const formData = new FormData(form);
-    formData.set('images[]', formData.getAll('images[]').sort((f1, f2) => f1.name > f2.name)[0]) 
-    if(selected_points.length >= 2) {
-        executeTracking(formData).then(updatePreview).catch()
+    formData.set('images[]',
+        formData
+            .getAll('images[]')
+            .sort((f1, f2) => {
+                if(f1.name > f2.name) return 1;
+                else if(f1.name < f2.name) return -1;
+                else return 0;
+            })
+            [0]
+    )
+    if(selectedPoints.length >= 2) {
+        executeTracking(formData)
+            .then(updatePreview)
+            .catch(showError)
+            ;
     }
 }
 
+function debouncedPreview() {
+    debounce(trackingPreview)();
+}
+
 async function executeTracking(formData) {
-    if(selected_points.length < 2) {
+    if(selectedPoints.length < 2) {
         return Promise.reject('Debe seleccionar el punto inicial y final del filamento');
     }
 
-    formData.append('points', JSON.stringify(selected_points));
+    formData.append('points', JSON.stringify(selectedPoints));
+
+    let response;
+    try {
+        response = await fetch('/track', {method: 'POST', body: formData})
+    } catch(error) {
+        return Promise.reject('Server Connection Error: ' + error);
+    }
 
     try {
-        const response = await fetch('/track', {method: 'POST', body: formData})
         const body = await response.json();
         if(response.ok) {
             return Promise.resolve(body);
@@ -111,7 +128,7 @@ async function executeTracking(formData) {
             return Promise.reject(body.message);
         }
     } catch(error) {
-        return Promise.reject('Server Connection Error: ' + error);
+        return Promise.reject(error);
     }
 }
 
@@ -146,11 +163,10 @@ async function resultsToCanvas(trackingResult, drawNormalLines = false, colorSup
 }
 
 async function renderTrackingResult(trackingResult) {
-
     const frames = await resultsToCanvas(trackingResult);
-    resultImgs.classList.remove("loader");
+    resultsViewerUI.classList.remove("loader");
 
-    result_viewer.loadResults(frames);
+    resultsViewer.loadResults(frames);
 
     if(downloadJson.href) {
         URL.revokeObjectURL(downloadJson.href);
@@ -171,7 +187,7 @@ async function renderTrackingResult(trackingResult) {
         downloadWebM.href = URL.createObjectURL(video);
     });
 
-    resultImgs.style.display = '';
+    resultsViewerUI.style.display = '';
     results.style.display = '';
     results.scrollIntoView({behavior: "smooth"});
 }
@@ -212,7 +228,6 @@ function trackingPoint2canvas({x, y}, canvas, img) {
 async function* drawableIterator(images) {
     // Files is not iterable
     for(const image of images) {
-        // TODO(tobi): Agregar soporte para avi
         switch(image.type) {
             case 'image/tiff': {
                 const buffer = await image.arrayBuffer();
@@ -289,18 +304,18 @@ function onCanvasClick(event) {
     const pixel_y = canvasPos2PixelY(y, rect.height);
 
     // Si agregas un punto, perdes los redo
-    redo_points.length = 0;
+    redoPoints.length = 0;
 
     addPointSelection({x: pixel_x, y: pixel_y});
     debouncedPreview()
 }
 
 function addPointSelection(point) {
-    point.prev = selected_points.length > 0
-        ? selected_points[selected_points.length - 1]
+    point.prev = selectedPoints.length > 0
+        ? selectedPoints[selectedPoints.length - 1]
         : null
         ;
-    selected_points.push(point);
+    selectedPoints.push(point);
 
     updateInterface();
     drawPointSelection(point);
@@ -327,8 +342,8 @@ function drawPointSelection(point) {
 function undoPoint() {
     const ctx = selectorCanvas.getContext("2d");
 
-    if(selected_points.length > 0) {
-        redo_points.push(selected_points.pop());
+    if(selectedPoints.length > 0) {
+        redoPoints.push(selectedPoints.pop());
 
         // Clean canvas
         ctx.clearRect(0, 0, selectorCanvas.width, selectorCanvas.height);
@@ -338,47 +353,26 @@ function undoPoint() {
         ctx.drawImage(selectorDrawable, 0, 0, selectorCanvas.width, selectorCanvas.height);
 
         // Redraw all poins
-        selected_points.forEach(drawPointSelection)
+        selectedPoints.forEach(drawPointSelection)
         updateInterface();
     }
     debouncedPreview()
 }
 
 function redoPoint() {
-    if(redo_points.length > 0) {
-        const point = redo_points.pop();
+    if(redoPoints.length > 0) {
+        const point = redoPoints.pop();
         addPointSelection(point)
     }
     debouncedPreview()
 }
 
-function rcLoop() {
-    result_viewer.loop = !result_viewer.loop
-}
-
-function rcFrameRateChange(delta) {
-    result_viewer.fps.value += delta;
-    if(result_viewer.fps.value <= 0) {
-        result_viewer.fps.value = 1;
-    }
-    result_viewer.fps.update();
-    restartResultsAnimation();
-}
-
 function updateInterface() {
-    actionButtons.hidden = selected_points.length === 0 && redo_points.length === 0 ? true : false  
-    previewSection.hidden = selected_points.length < 2 ? true : false  
-    undo.style.visibility = selected_points.length === 0 ? 'hidden' : 'visible';
-    redo.style.visibility = redo_points.length === 0 ? 'hidden' : 'visible';
+    actionButtons.hidden  = selectedPoints.length === 0 && redoPoints.length === 0;
+    previewSection.hidden = selectedPoints.length < 2  ;
+    undo.style.visibility = selectedPoints.length === 0 ? 'hidden' : 'visible';
+    redo.style.visibility = redoPoints.length === 0 ? 'hidden' : 'visible';
     clearError();
-}
-
-function canvasDisableSmoothing(ctx) {
-    // turn off image aliasing
-    // https://stackoverflow.com/a/19129822/12270520
-    ctx.msImageSmoothingEnabled     = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.imageSmoothingEnabled       = false;
 }
 
 // Empty selected points and build canvas for point selection
@@ -389,7 +383,7 @@ async function handleImageSelection() {
           imgInput.value = '';
           return;
     }
-    imgButtons.hidden = false
+    imgButtons.hidden = false;
     const firstDrawable = await drawableIterator(imgInput.files).next();
     if(!firstDrawable || firstDrawable.done) {
         showError('No valid image selected');
@@ -399,7 +393,7 @@ async function handleImageSelection() {
 
     // Get selector drawable value
     if(selectorDrawable) {
-        closeFrame(selectorDrawable)
+        closeFrame(selectorDrawable);
     }
     selectorDrawable = firstDrawable.value;
 
@@ -413,6 +407,6 @@ async function handleImageSelection() {
     selectorCanvas.style.display = '';
 
     // Reset selected points
-    selected_points.length    = 0;
-    redo_points.length        = 0;
+    selectedPoints.length    = 0;
+    redoPoints.length        = 0;
 }

@@ -35,3 +35,11 @@ function drawIntoCanvas(canvas, frame) {
 
     return canvas;
 }
+
+function canvasDisableSmoothing(ctx) {
+    // turn off image aliasing
+    // https://stackoverflow.com/a/19129822/12270520
+    ctx.msImageSmoothingEnabled     = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled       = false;
+}

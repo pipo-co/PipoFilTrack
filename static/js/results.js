@@ -1,16 +1,14 @@
 "use strict";
 
 class ResultsViewer {
-
-    constructor() {
-        this.frames = [];
-        this.index = 0;
-        this.loop = true;
-        this.inter_id = null;
-        this.fps = 1;
-
-        this.canvas = document.createElement('canvas');
-        this.canvas.classList.add('canvas');
+    constructor(canvas, templateId) {
+        this.canvas     = canvas;
+        this.templateId = templateId;
+        this.frames     = [];
+        this.index      = 0;
+        this.loop       = true;
+        this.inter_id   = null;
+        this.fps        = 1;
 
         this.controls = {};
     }
@@ -18,25 +16,26 @@ class ResultsViewer {
     bindViewer(bindElement) {
         bindElement.appendChild(this.canvas);
 
-        const resultControls = document.getElementById('result-controlls').content.cloneNode(true);
-        bindElement.appendChild(resultControls);
+        // TODO(tobi): Porque deep copy?
+        const template = document.getElementById(this.templateId);
+        bindElement.appendChild(template.content.cloneNode(true));
 
         this.controls['loop']               = document.getElementById('rc-loop');
         this.controls['frame']              = document.getElementById('rc-frame');
-        this.controls['play']               = document.getElementById('rc_play');
-        this.controls['stop']               = document.getElementById('rc_stop');
-        this.controls['next_frame']         = document.getElementById('rc_next_frame');
-        this.controls['prev_frame']         = document.getElementById('rc_prev_frame');
-        this.controls['frame_rate_up']      = document.getElementById('rc_frame_rate_up');
-        this.controls['frame_rate_down']    = document.getElementById('rc_frame_rate_down');
-        this.controls['frame_rate']         = document.getElementById('rc_frame_rate_value');
+        this.controls['play']               = document.getElementById('rc-play');
+        this.controls['stop']               = document.getElementById('rc-stop');
+        this.controls['next_frame']         = document.getElementById('rc-next_frame');
+        this.controls['prev_frame']         = document.getElementById('rc-prev_frame');
+        this.controls['frame_rate_up']      = document.getElementById('rc-frame_rate_up');
+        this.controls['frame_rate_down']    = document.getElementById('rc-frame_rate_down');
+        this.controls['frame_rate']         = document.getElementById('rc-frame_rate_value');
 
-        this.controls['loop'].addEventListener('click', rcLoop);
-        this.controls['play'].addEventListener('click', () => this.resumeAnimation());
-        this.controls['stop'].addEventListener('click', () => this.stopAnimation());
-        this.controls['next_frame'].addEventListener('click', () => this.drawNextFrame());
-        this.controls['prev_frame'].addEventListener('click', () => this.drawPrevFrame());
-        this.controls['frame_rate_up'].addEventListener('click', () => this.updateFrameRate(1));
+        this.controls['loop']           .addEventListener('click', () => this.rcLoop()); // TODO: Esto esta en filament_tracking y no queremos que dependa de el
+        this.controls['play']           .addEventListener('click', () => this.resumeAnimation());
+        this.controls['stop']           .addEventListener('click', () => this.stopAnimation());
+        this.controls['next_frame']     .addEventListener('click', () => this.drawNextFrame());
+        this.controls['prev_frame']     .addEventListener('click', () => this.drawPrevFrame());
+        this.controls['frame_rate_up']  .addEventListener('click', () => this.updateFrameRate(1));
         this.controls['frame_rate_down'].addEventListener('click', () => this.updateFrameRate(-1));
     }
 
@@ -57,7 +56,6 @@ class ResultsViewer {
 
     resumeAnimation() {
         this.pauseAnimation();
-
         this.inter_id = setInterval(() => this.animationHandler(), 1000 / this.fps);
     }
 
@@ -65,6 +63,19 @@ class ResultsViewer {
         if(this.inter_id) {
             clearInterval(this.inter_id);
         }
+    }
+
+    rcLoop() {
+        this.loop = !this.loop;
+    }
+
+    rcFrameRateChange(delta) {
+        resultsViewer.fps.value += delta;
+        if(resultsViewer.fps.value <= 0) {
+            resultsViewer.fps.value = 1;
+        }
+        resultsViewer.fps.update();
+        restartResultsAnimation();
     }
 
     updateFrameRate(delta) {
@@ -75,7 +86,7 @@ class ResultsViewer {
     }
 
     animationHandler() {
-        if(!this.loop && this.index == this.frames.length-1) {
+        if(!this.loop && this.index === this.frames.length-1) {
             clearInterval(this.inter_id)
             this.inter_id = null
             return
