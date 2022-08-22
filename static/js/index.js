@@ -83,7 +83,7 @@ async function fullTracking(e) {
 }
 
 function togglePreview() {
-    preview.hidden = pointSelector.selectedPoints.length < 2;
+    previewCanvas.hidden = pointSelector.selectedPoints.length < 2;
 }
 
 function trackingPreview() {
