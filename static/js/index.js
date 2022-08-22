@@ -48,7 +48,7 @@ const pointSelector = new PointsSelector(debouncedPreview, 'point-selector');
 
     imgInput.addEventListener('change', handleImageSelection);
 
-    // Bind result viewer
+    // Bind controllers
     resultsViewer.bind(resultsViewerUI);
     pointSelector.bind(selectorWrapper);
 
@@ -67,7 +67,6 @@ async function fullTracking(e) {
     e.preventDefault();
     clearError();
 
-    const formData = new FormData(trackingForm);
     results.hidden = false;
     results.scrollIntoView({behavior: "smooth"});
 
@@ -75,8 +74,7 @@ async function fullTracking(e) {
         resultsContainer.hidden = true;
         resultsLoader.hidden = false;
 
-        const currentResults = await executeTracking(formData);
-
+        const currentResults = await executeTracking(new FormData(trackingForm));
         await processTrackingResults(currentResults);
     } catch(error) {
         showError(error);
@@ -163,6 +161,10 @@ async function resultsToCanvas(trackingResult, renderParams) {
 }
 
 async function processTrackingResults(trackingResult) {
+    if(trackingResult.errors && trackingResult.errors.length > 0) {
+        showError('Tracking errors:\n\t- ' + trackingResult.errors.join('\n\t- '));
+    }
+
     const dateString = new Date().toISOString().split('.')[0].replace(/:/g, '.');
     const resultsFileName = `${imgInput.files[0].name.split('.')[0]}_results_${dateString}`
 

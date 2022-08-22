@@ -75,7 +75,6 @@ class TrackingSegment:
 class TrackingFrameMetadata:
     normal_lines: List[TrackingSegment] = field(default_factory=list)
 
-
 @dataclass
 class TrackingFrameResult:
     points:     List[TrackingPoint]
@@ -84,3 +83,4 @@ class TrackingFrameResult:
 @dataclass
 class TrackingResult:
     frames: List[TrackingFrameResult]
+    errors: List[str] = field(default_factory=list)

@@ -10,6 +10,7 @@ from .tracking import interpolate_missing, gauss_fitting, generate_normal_line_b
 
 def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config: Config) -> TrackingResult:
     results = []
+    errors = []
 
     # Obtenemos los puntos iniciales del tracking interpolando linealmente los puntos del usuario
     prev_frame_points = multi_point_linear_interpolation(user_points)
@@ -44,16 +45,20 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
         raw_points, interpolated_points, preserved_points = interpolate_missing(raw_points_with_missing, prev_frame_points, config.missing_inter_len)
 
         # Si fue seleccionado, suavizamos los puntos ajustando los mismos a una curva de bezier
-        smoothed_points = bezier_fitting(raw_points) if config.bezier_smoothing else raw_points
+        # Bezier puede fallar por cantidad maxima de puntos
+        try:
+            smoothed_points = bezier_fitting(raw_points) if config.bezier_smoothing else raw_points
+        except ValueError as e:
+            errors.append(str(e))
+            smoothed_points = raw_points
 
         # Ya obtuvimos los puntos finales del frame! Los disponibilizamos como los puntos iniciales del proximo frame
         prev_frame_points = smoothed_points
 
-        # TODO: Nos tenemos que sentar a pensar bien como es el modelo de la respuesta, porque no es sencillo
         # Guardamos el resultado del frame
         results.append(TrackingFrameResult(
             TrackingPoint.from_arrays(prev_frame_points, {TrackingPointStatus.INTERPOLATED: interpolated_points, TrackingPointStatus.PRESERVED: preserved_points}),
             TrackingFrameMetadata(TrackingSegment.from_arrays(normal_lines_limits))
         ))
 
-    return TrackingResult(results)
+    return TrackingResult(results, errors)
