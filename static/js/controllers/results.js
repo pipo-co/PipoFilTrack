@@ -1,6 +1,6 @@
-"use strict";
+import {drawIntoCanvas, setResolution} from "../utils/canvas.js";
 
-class ResultsViewer {
+export default class ResultsViewer {
     constructor(templateId) {
         this.templateId = templateId;
         this.canvas     = document.createElement('canvas');

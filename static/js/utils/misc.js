@@ -1,5 +1,5 @@
 // https://www.freecodecamp.org/news/javascript-debounce-example/
-function debounce(func, timeout = 500) {
+export function debounce(func, timeout = 500) {
     let timer;
     return (...args) => {
       clearTimeout(timer);
@@ -7,7 +7,7 @@ function debounce(func, timeout = 500) {
     };
 }
 
-function download(url, fileName) {
+export function download(url, fileName) {
   const a = document.createElement('a')
   a.href = url
   a.download = fileName
@@ -16,6 +16,6 @@ function download(url, fileName) {
   document.body.removeChild(a)
 }
 
-function inRange(value, max, min = 0) {
+export function inRange(value, max, min = 0) {
   return Math.max(Math.min(value, max), min);
 }

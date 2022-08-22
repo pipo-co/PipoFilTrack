@@ -1,13 +1,9 @@
-
-
-
-
-;(function(){
+export const UTIF = (function(){
 var UTIF = {};
 
 // Make available for import by `require()`
-if (typeof module == "object") {module.exports = UTIF;}
-else {self.UTIF = UTIF;}
+// if (typeof module == "object") {module.exports = UTIF;}
+// else {self.UTIF = UTIF;}
 
 var pako = (typeof require === "function") ? require("pako") : self.pako;
 
@@ -1587,4 +1583,5 @@ a<u.A;a++){o[X][a]=0}}}B(o)}}return V}}())
 
 
 })(UTIF, pako);
+return UTIF;
 })();

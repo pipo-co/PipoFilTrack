@@ -1,5 +1,11 @@
-"use strict";
+import {UTIF} from "./libs/UTIF.js";
+import {Whammy} from "./libs/whammy.js";
 
+import ResultsViewer from "./controllers/results.js";
+import PointsSelector from "./controllers/selector.js";
+
+import {debounce, download} from "./utils/misc.js";
+import {buildCanvas, drawIntoCanvas, drawLine, drawPoint, trackingPoint2canvas} from "./utils/canvas.js";
 
 const WEBM_QUALITY      = 1;
 
@@ -56,7 +62,6 @@ const pointSelector = new PointsSelector(debouncedPreview, 'point-selector');
     // arrowUpButton.addEventListener('click', increasePointDiameter);
     // arrowDownButton.addEventListener('click', decreasePointDiameter); 
 })();
-
 
 async function fullTracking(e) {
     e.preventDefault();

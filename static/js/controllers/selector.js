@@ -1,10 +1,20 @@
+import {
+    canvasDisableSmoothing,
+    canvasPos2Pixel,
+    drawLine,
+    drawPoint,
+    pixel2CanvasPos,
+    setResolution
+} from "../utils/canvas.js";
+import {inRange} from "../utils/misc.js";
+
 // Constants
-const POINT_SIZE        = 10;
-const LINE_WIDTH        = 5;
 const POINT_COLOR       = '#00ff00';
 const ZOOM_FACTOR       = 2;
+const POINT_SIZE        = 10;
+const LINE_WIDTH        = 5;
 
-class PointsSelector {
+export default class PointsSelector {
     constructor(onClickCallback, templateId) {
         this.templateId         = templateId;
         this.onClickCallback    = onClickCallback
@@ -96,7 +106,7 @@ class PointsSelector {
 
     moveSelection(event) {
         this.imgOffset.x -= event.movementX;
-        this.imgOffset.y -= event.movementY; 
+        this.imgOffset.y -= event.movementY;
 
         this.redraw();
     }
@@ -176,10 +186,10 @@ class PointsSelector {
             const prev = point.prev;
             const prevX = pixel2CanvasPos(prev.x + 0.5, this.canvas.width, sourceWidth, this.imgOffset.x);
             const prevY = pixel2CanvasPos(prev.y + 0.5, this.canvas.height, sourceHeight, this.imgOffset.y);
-            drawLine(ctx, prevX, prevY, x, y, POINT_COLOR)
+            drawLine(ctx, prevX, prevY, x, y, POINT_COLOR, LINE_WIDTH);
         }
 
-        drawPoint(ctx, x, y, POINT_COLOR, pointSize);
+        drawPoint(ctx, x, y, POINT_COLOR, POINT_SIZE);
     }
 
     undoPoint() {
