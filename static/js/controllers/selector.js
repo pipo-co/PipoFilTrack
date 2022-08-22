@@ -27,6 +27,7 @@ export default class PointsSelector {
         this.controls           = null;
         this.bindPoint          = null;
         this.canvas             = null;
+        this.savedMov = { x: 0, y: 0 };
 
         this.moveHandler = e => this.moveSelection(e);
     }
@@ -88,8 +89,9 @@ export default class PointsSelector {
     }
 
     resetZoom() {
-        this.imgOffset = { x: 0, y: 0};
+        this.imgOffset  = { x: 0, y: 0};
         this.zoomFactor = 1;
+        this.savedMov   = { x: 0, y: 0 };
         this.updateZoomValueDisplay();
     }
 
@@ -111,10 +113,22 @@ export default class PointsSelector {
     }
 
     moveSelection(event) {
-        this.imgOffset.x -= event.movementX;
-        this.imgOffset.y -= event.movementY;
+        const rect = this.canvas.getBoundingClientRect();
 
-        this.redraw();
+        const movX = canvasPos2Pixel(event.movementX + this.savedMov.x, rect.width, this.getSourceWidth());
+        const movY = canvasPos2Pixel(event.movementY + this.savedMov.y, rect.width, this.getSourceWidth());
+
+        this.imgOffset.x -= movX;
+        this.imgOffset.y -= movY;
+
+        this.savedMov = {
+            x: movX === 0 ? this.savedMov.x + event.movementX : 0,
+            y: movY === 0 ? this.savedMov.y + event.movementY : 0,
+        }
+
+        if(movX !== 0 || movY !== 0) {
+            this.redraw();
+        }
     }
 
     redraw() {
@@ -126,7 +140,6 @@ export default class PointsSelector {
     updateZoomValueDisplay() {
         this.controls.zoom.innerText = `${this.zoomFactor * 100}%`
     }
-
 
     getSourceHeight() {
         return Math.trunc(this.image.height / this.zoomFactor);
