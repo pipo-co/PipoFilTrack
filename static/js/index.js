@@ -87,8 +87,9 @@ function togglePreview() {
 }
 
 function trackingPreview() {
+     clearError();
+
     const formData = new FormData(trackingForm);
-    
     formData.set('images[]', imgInput.files[0]);
 
     if(pointSelector.selectedPoints.length >= 2) {
@@ -162,7 +163,7 @@ async function resultsToCanvas(trackingResult, renderParams) {
 
 async function processTrackingResults(trackingResult) {
     if(trackingResult.errors && trackingResult.errors.length > 0) {
-        showError('Tracking errors:\n\t- ' + trackingResult.errors.join('\n\t- '));
+        showTrackingErrors(trackingResult.errors);
     }
 
     const dateString = new Date().toISOString().split('.')[0].replace(/:/g, '.');
@@ -210,8 +211,11 @@ async function renderTrackingResult(trackingResult, resultsFileName) {
     });
 }
 
-
 async function updatePreview(previewResults) {
+    if(previewResults.errors && previewResults.errors.length > 0) {
+        showTrackingErrors(previewResults.errors);
+    }
+
     const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}));
     previewCanvas.classList.remove("loader");
     drawIntoCanvas(previewCanvas, frame);
@@ -241,13 +245,11 @@ function toTsvResults(resultData) {
 
 // In case of error returns error message
 async function* drawableIterator(images) {
-    // Files is not iterable
     for(const image of images) {
         switch(image.type) {
             case 'image/tiff': {
                 const buffer = await image.arrayBuffer();
                 const ifds = UTIF.decode(buffer);
-
                 for(const ifd of ifds) {
                     UTIF.decodeImage(buffer, ifd, ifds);
 
@@ -280,6 +282,10 @@ function closeFrame(frame) {
     if(frame instanceof ImageBitmap) {
         frame.close()
     }
+}
+
+function showTrackingErrors(errors) {
+    showError('Tracking errors:\n\t- ' + errors.join('\n\t- '));
 }
 
 function showError(message) {
