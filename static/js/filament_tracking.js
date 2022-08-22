@@ -1,9 +1,6 @@
 "use strict";
 
-// Constants
-const POINT_SIZE        = 10;
-const LINE_WIDTH        = 5;
-const POINT_COLOR       = '#00ff00';
+
 const WEBM_QUALITY      = 1;
 
 const TRACKING_POINT_SIZE           = 5;
@@ -18,7 +15,6 @@ const TRACKING_POINT_COLOR  = '#0055ff'
 const NORMAL_LINE_COLOR     = 'rgba(0,255,255,0.22)'
 
 // Elementos de UI
-const selectorCanvas        = document.getElementById('points-selector-canvas');
 const selectorWrapper       = document.getElementById('selector-wrapper');
 const selectorZone          = document.getElementById('selector-zone');
 const previewZone           = document.getElementById('preview-zone');
@@ -46,8 +42,6 @@ const rvRenderingProps      = document.getElementById('rv-rendering-properties')
 /* ------ Global data -------- */
 
 // Preview and point selection
-const selectedPoints    = [];
-const redoPoints        = [];
 let selectorDrawable;
 let pointSize = POINT_SIZE;
 let scale       = 1;
@@ -57,6 +51,7 @@ let currentResults;
 
 // Results viewer controller
 const resultsViewer = new ResultsViewer('result-controls');
+const pointSelector = new PointsSelector(debouncedPreview);
 
 (function () {
     trackingForm.addEventListener('submit', fullTracking);
@@ -64,23 +59,21 @@ const resultsViewer = new ResultsViewer('result-controls');
 
     imgInput.addEventListener('change', handleImageSelection);
 
-    selectorCanvas.style.display = 'none';
-    selectorCanvas.width = CANVAS_RESOLUTION;
-    selectorCanvas.addEventListener('click', onCanvasClick);
-
     // Bind result viewer
-    resultsViewer.bindViewer(resultsViewerUI);
+    resultsViewer.bind(resultsViewerUI);
+    pointSelector.bind(selectorWrapper);
+    
+    // // Undo/Redo selected points
+    // undo.addEventListener('click', undoPoint);
+    // redo.addEventListener('click', redoPoint);
 
-    // Undo/Redo selected points
-    undo.addEventListener('click', undoPoint);
-    redo.addEventListener('click', redoPoint);
+    // plus.addEventListener('click', addZoom);
+    // minus.addEventListener('click', reduceZoom); 
 
-    plus.addEventListener('click', addZoom);
-    minus.addEventListener('click', reduceZoom); 
+    // arrowUpButton.addEventListener('click', increasePointDiameter);
+    // arrowDownButton.addEventListener('click', decreasePointDiameter); 
 })();
 
-arrowUpButton.addEventListener('click', increasePointDiameter);
-arrowDownButton.addEventListener('click', decreasePointDiameter); 
 
 async function fullTracking(e) {
     e.preventDefault();
@@ -93,12 +86,13 @@ async function fullTracking(e) {
     try {
         resultsContainer.hidden = true;
         resultsLoader.hidden = false;
+        console.log('Calling executeTracking');
         currentResults = await executeTracking(formData);
+        console.log('Calling processTrackingresults');
         await processTrackingresults(currentResults);
     } catch(error) {
         showError(error);
         results.hidden = true;
-        selectorCanvas.scrollIntoView({behavior: "smooth"});
     }
 }
 
@@ -107,7 +101,8 @@ function trackingPreview() {
     
     formData.set('images[]', imgInput.files[0]);
 
-    if(selectedPoints.length >= 2) {
+    if(pointSelector.selectedPoints.length >= 2) {
+        previewSection.hidden = pointSelector.selectedPoints.length < 2 ? true : false;
         executeTracking(formData)
             .then(updatePreview)
             .catch(showError)
@@ -119,16 +114,12 @@ function debouncedPreview() {
     debounce(trackingPreview)();
 }
 
-function debouncedPreview() {
-    debounce(trackingPreview)();
-}
-
 async function executeTracking(formData) {
-    if(selectedPoints.length < 2) {
+    if(pointSelector.selectedPoints.length < 2) {
         return Promise.reject('Debe seleccionar el punto inicial y final del filamento');
     }
 
-    formData.append('points', JSON.stringify(selectedPoints));
+    formData.append('points', JSON.stringify(pointSelector.selectedPoints));
 
     let response;
     try {
@@ -197,6 +188,7 @@ async function processTrackingresults(trackingResult) {
 
     rvRenderingProps.addEventListener('input', () => renderTrackingResult(trackingResult));
 
+    console.log('Calling renderTrackingResult');
     await renderTrackingResult(trackingResult);
     
     resultsViewerUI.classList.remove("loader");
@@ -225,14 +217,6 @@ async function renderTrackingResult(trackingResult) {
     });
 }
 
-function download(url, fileName) {
-    const a = document.createElement('a')
-    a.href = url
-    a.download = fileName
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-  }
 
 async function updatePreview(previewResults) {
     const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}));
@@ -260,10 +244,6 @@ function toTsvResults(resultData) {
     }
 
     return ret.join('\r\n');
-}
-
-function trackingPoint2canvas({x, y}, canvas, img) {
-    return [pixel2CanvasPosX(x, canvas, img), pixel2CanvasPosY(y, canvas, img)];
 }
 
 // In case of error returns error message
@@ -317,154 +297,6 @@ function clearError() {
     errors.innerText = '';
 }
 
-function canvasPos2Pixel(pos, canvas_len, img_len) {
-    return Math.trunc(pos / canvas_len * img_len)
-}
-function canvasPos2PixelX(x, canvas_w) {
-    return canvasPos2Pixel(x, canvas_w, selectorDrawable.width);
-}
-function canvasPos2PixelY(y, canvas_h) {
-    return canvasPos2Pixel(y, canvas_h, selectorDrawable.height);
-}
-
-function pixel2CanvasPos(pixel, canvas_draw_len, img_len) {
-    return pixel / img_len * canvas_draw_len;
-}
-function pixel2CanvasPosX(x, canvas, img) {
-    return pixel2CanvasPos(x, canvas.width, img.width);
-}
-function pixel2CanvasPosY(y, canvas, img) {
-    return pixel2CanvasPos(y, canvas.height, img.height);
-}
-
-function onCanvasClick(event) {
-    const rect = selectorCanvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    const pixel_x = canvasPos2PixelX(x, rect.width);
-    const pixel_y = canvasPos2PixelY(y, rect.height);
-
-    // Si agregas un punto, perdes los redo
-    redoPoints.length = 0;
-
-    addPointSelection({x: pixel_x, y: pixel_y});
-    debouncedPreview()
-}
-
-function addPointSelection(point) {
-    point.prev = selectedPoints.length > 0
-        ? selectedPoints[selectedPoints.length - 1]
-        : null
-        ;
-    selectedPoints.push(point);
-
-    updateInterface();
-    drawPointSelection(point);
-}
-
-function drawPointSelection(point) {
-    const ctx = selectorCanvas.getContext("2d");
-
-    // Agregamos 0.5 para que se muestre en el medio del pixel, no en la esquina
-    const x = pixel2CanvasPosX(point.x + 0.5, selectorCanvas, selectorDrawable);
-    const y = pixel2CanvasPosY(point.y + 0.5, selectorCanvas, selectorDrawable);
-
-    // Line
-    if(point.prev) {
-        const prev = point.prev;
-        const prevX = pixel2CanvasPosX(prev.x + 0.5, selectorCanvas, selectorDrawable);
-        const prevY = pixel2CanvasPosY(prev.y + 0.5, selectorCanvas, selectorDrawable);
-        drawLine(ctx, prevX, prevY, x, y, POINT_COLOR)
-    }
-
-    drawPoint(ctx, x, y, POINT_COLOR, pointSize);
-}
-
-function undoPoint() {
-    const ctx = selectorCanvas.getContext("2d");
-
-    if(selectedPoints.length > 0) {
-        redoPoints.push(selectedPoints.pop());
-
-        // Clean canvas
-        ctx.clearRect(0, 0, selectorCanvas.width, selectorCanvas.height);
-
-        // Redraw image
-        canvasDisableSmoothing(ctx);
-        ctx.drawImage(selectorDrawable, 0, 0, selectorCanvas.width, selectorCanvas.height);
-
-        // Redraw all poins
-        selectedPoints.forEach(drawPointSelection)
-        updateInterface();
-    }
-    debouncedPreview()
-}
-
-function redoPoint() {
-    if(redoPoints.length > 0) {
-        const point = redoPoints.pop();
-        addPointSelection(point)
-    }
-    debouncedPreview()
-}
-
-function rcLoop() {
-    result_viewer.loop = !result_viewer.loop
-}
-
-function rcFrameRateChange(delta) {
-    result_viewer.fps.value += delta;
-    if(result_viewer.fps.value <= 0) {
-        result_viewer.fps.value = 1;
-    }
-    result_viewer.fps.update();
-    restartResultsAnimation();
-}
-
-function addZoom() {
-  if (selectorCanvasWidth > 100) {
-    //si pase los 100, tengo que darle toda la pantalla, para eso se desplaza abajo
-    // la seccion de preview y de parametros
-    selectorZone.classList.remove("uk-width-3-5")
-    selectorZone.classList.add("uk-width-1-1")
-    previewZone.classList.add("uk-flex-last")
-    previewZone.classList.remove("uk-width-2-5")
-    previewZone.classList.add("uk-width-1-1")
-  }
-  selectorCanvasWidth = selectorCanvasWidth * scaleFactor
-  selectorCanvas.style.width = selectorCanvasWidth + "vh" 
-}
-
-function reduceZoom() {
-  if (selectorCanvasWidth <= 100) {
-    selectorZone.classList.remove("uk-width-1-1")
-    selectorZone.classList.add("uk-width-3-5")
-    previewZone.classList.remove("uk-flex-last")
-    previewZone.classList.remove("uk-width-1-1")
-    previewZone.classList.add("uk-width-2-5")
-  }
-  selectorCanvasWidth = selectorCanvasWidth * (1/scaleFactor)
-  selectorCanvas.style.width = selectorCanvasWidth + "vh"
-}
-
-function increasePointDiameter() {
-  pointSize = pointSize + 1
-}
-
-function decreasePointDiameter() {
-  if (pointSize > 1) pointSize = pointSize - 1;
-}
-
-function updateInterface() {
-    actionButtons.hidden = selectedPoints.length === 0 && redoPoints.length === 0 ? true : false  
-    pointsButtons.hidden = selectedPoints.length === 0 && redoPoints.length === 0 ? true : false 
-    previewSection.hidden = selectedPoints.length < 2 ? true : false  
-    undo.style.visibility = selectedPoints.length === 0 ? 'hidden' : 'visible';
-    redo.style.visibility = redoPoints.length === 0 ? 'hidden' : 'visible';
-    clearError();
-}
-
 // Empty selected points and build canvas for point selection
 async function handleImageSelection() {
     if(imgInput.files.length === 0) {
@@ -487,20 +319,16 @@ async function handleImageSelection() {
     }
     selectorDrawable = firstDrawable.value;
 
-    // Update selector canvas with new drawable
-    selectorCanvas.height = selectorCanvas.width / selectorDrawable.width * selectorDrawable.height;
-    const ctx = selectorCanvas.getContext('2d');
-    canvasDisableSmoothing(ctx);
-    ctx.drawImage(selectorDrawable, 0, 0, selectorCanvas.width, selectorCanvas.height);
+    
+    pointSelector.loadImage(selectorDrawable);
 
     // Show canvas
     selectorWrapper.hidden = false;
-    selectorCanvas.style.display = '';
     pointsButtons.hidden = false;
 
     // Reset selected points
-    selectedPoints.length    = 0;
-    redoPoints.length        = 0;
+    pointSelector.selectedPoints.length    = 0;
+    pointSelector.redoPoints.length        = 0;
 }
 
 function formToRenderParams(form) {

@@ -47,3 +47,16 @@ function canvasDisableSmoothing(ctx) {
     ctx.webkitImageSmoothingEnabled = false;
     ctx.imageSmoothingEnabled       = false;
 }
+
+function trackingPoint2canvas({ x, y }, canvas, img) {
+    return [pixel2CanvasPos(x, canvas.width, img.width), pixel2CanvasPos(y, canvas.height, img.height)];
+  }
+  
+  function canvasPos2Pixel(pos, canvas_len, img_len, offset = 0) {
+    return Math.trunc(pos / canvas_len * img_len) + offset;
+  }
+  
+  function pixel2CanvasPos(pixel, canvas_draw_len, img_len, offset = 0) {
+    return (pixel - offset) / img_len * canvas_draw_len;
+  }
+  

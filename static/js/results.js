@@ -12,7 +12,7 @@ class ResultsViewer {
         this.controls = null;
     }
 
-    bindViewer(bindElement) {
+    bind(bindElement) {
         bindElement.appendChild(this.canvas);
 
         const template = document.getElementById(this.templateId);
