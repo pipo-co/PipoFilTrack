@@ -1,11 +1,3 @@
-@font-face {
- font-family:"montserrat-medium";
- src:url(/static/fonts/montserrat-medium-webfont.woff2) format("woff2") ,
- url(/static/fonts/montserrat-medium-webfont.woff) format("woff");
- font-style:normal;
- font-weight:normal
-}
-
 html {
   height: 100%;
 }
@@ -27,7 +19,6 @@ h1 {
 
 .full-pill {
   border-radius: 25px;
-  
 }
 
 #selector-wrapper canvas {
@@ -48,10 +39,10 @@ h1 {
   color:#003837 !important;
 }
 
-.drawing {
+.draw {
   cursor: crosshair;
 }
-.moving {
+.move {
   cursor: pointer;
 }
 
@@ -117,10 +108,6 @@ canvas {
 .uk-form-label {
   width: initial !important;
   margin-top: initial !important;
-}
-
-#points-selector-canvas {
-  cursor: crosshair;
 }
 
 #undo, #redo {

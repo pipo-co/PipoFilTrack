@@ -14,17 +14,12 @@ const TRACKING_POINT_COLOR  = '#0055ff'
 
 const NORMAL_LINE_COLOR     = 'rgba(0,255,255,0.22)'
 
-// Elementos de UI
+/* -------- UI Elements -------- */
 const selectorWrapper       = document.getElementById('selector-wrapper');
-const selectorZone          = document.getElementById('selector-zone');
-const previewZone           = document.getElementById('preview-zone');
 const previewCanvas         = document.getElementById('preview');
 const trackingForm          = document.getElementById('tracking-form');
 const imgInput              = document.getElementById('img-input');
 const errors                = document.getElementById('errors');
-const actionButtons         = document.getElementById('action-buttons');
-const arrowUpButton         = document.getElementById('arrow-up');
-const arrowDownButton       = document.getElementById('arrow-down');
 const trackButtonContainer  = document.getElementById('track-button');
 const undo                  = document.getElementById('undo');
 const redo                  = document.getElementById('redo');
@@ -37,19 +32,9 @@ const downloadWebM          = document.getElementById('download-webm');
 const downloadTsv           = document.getElementById('download-tsv');
 const rvRenderingProps      = document.getElementById('rv-rendering-properties');
 
-/* ------ Global data -------- */
-
-// Preview and point selection
-let selectorDrawable;
-let pointSize = POINT_SIZE;
-let scale       = 1;
-let scaleFactor = 1.1;
-let selectorCanvasWidth = 65;
-let currentResults;
-
-// Results viewer controller
+/* -------- Controllers -------- */
 const resultsViewer = new ResultsViewer('result-controls');
-const pointSelector = new PointsSelector(debouncedPreview, 'point-selector-controls-template');
+const pointSelector = new PointsSelector(debouncedPreview, 'point-selector');
 
 (function () {
     trackingForm.addEventListener('submit', fullTracking);
@@ -84,10 +69,10 @@ async function fullTracking(e) {
     try {
         resultsContainer.hidden = true;
         resultsLoader.hidden = false;
-        console.log('Calling executeTracking');
-        currentResults = await executeTracking(formData);
-        console.log('Calling processTrackingresults');
-        await processTrackingresults(currentResults);
+
+        const currentResults = await executeTracking(formData);
+
+        await processTrackingResults(currentResults);
     } catch(error) {
         showError(error);
         results.hidden = true;
@@ -95,7 +80,7 @@ async function fullTracking(e) {
 }
 
 function togglePreview() {
-    preview.hidden = pointSelector.selectedPoints.length < 2 ? true : false;
+    preview.hidden = pointSelector.selectedPoints.length < 2;
 }
 
 function trackingPreview() {
@@ -172,7 +157,7 @@ async function resultsToCanvas(trackingResult, renderParams) {
     return frames
 }
 
-async function processTrackingresults(trackingResult) {
+async function processTrackingResults(trackingResult) {
     const dateString = new Date().toISOString().split('.')[0].replace(/:/g, '.');
     const resultsFileName = `${imgInput.files[0].name.split('.')[0]}_results_${dateString}`
 
@@ -188,27 +173,26 @@ async function processTrackingresults(trackingResult) {
     downloadTsv.href        = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
     downloadTsv.download    = `${resultsFileName}.tsv`
 
-    rvRenderingProps.addEventListener('input', () => renderTrackingResult(trackingResult));
+    rvRenderingProps.addEventListener('input', () => renderTrackingResult(trackingResult, resultsFileName));
 
-    console.log('Calling renderTrackingResult');
-    await renderTrackingResult(trackingResult);
+    await renderTrackingResult(trackingResult, resultsFileName);
     
     resultsViewerUI.classList.remove("loader");
     resultsLoader.hidden = true;
     resultsContainer.hidden = false;
-    
-    resultsViewerUI.style.display = '';
-    results.style.display = '';
+
+    results.hidden = false;
     results.scrollIntoView({behavior: "smooth"});
 }
 
-async function renderTrackingResult(trackingResult) {
+async function renderTrackingResult(trackingResult, resultsFileName) {
     const frames = await resultsToCanvas(trackingResult, formToRenderParams(rvRenderingProps));
     resultsViewer.loadResults(frames);
 
     downloadWebM.addEventListener('click', () => {
         const vid = new Whammy.Video(resultsViewer.fps, WEBM_QUALITY);
         UIkit.notification('Download started');
+
         frames.forEach(frame => vid.add(frame));
         vid.compile(false, video => {
             if(downloadWebM.href) {
@@ -308,20 +292,19 @@ async function handleImageSelection() {
           return;
     }
     trackButtonContainer.hidden = false;
-    const firstDrawable = await drawableIterator(imgInput.files).next();
-    if(!firstDrawable || firstDrawable.done) {
+    const firstFrame = await drawableIterator(imgInput.files).next();
+    if(!firstFrame || firstFrame.done) {
         showError('No valid image selected');
         imgInput.value = '';
         return;
     }
 
     // Get selector drawable value
-    if(selectorDrawable) {
-        closeFrame(selectorDrawable);
+    if(pointSelector.image) {
+        closeFrame(pointSelector.image);
     }
-    selectorDrawable = firstDrawable.value;
 
-    pointSelector.loadImage(selectorDrawable);
+    pointSelector.loadImage(firstFrame.value);
 
     // Show canvas
     selectorWrapper.hidden = false;

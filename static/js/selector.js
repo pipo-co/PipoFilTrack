@@ -2,21 +2,21 @@
 const POINT_SIZE        = 10;
 const LINE_WIDTH        = 5;
 const POINT_COLOR       = '#00ff00';
+const ZOOM_FACTOR       = 2;
 
 class PointsSelector {
     constructor(onClickCallback, templateId) {
-        this.templateId = templateId;
-        this.onClickCallback = onClickCallback
-        this.image = null;
-        this.selectedPoints = [];
-        this.redoPoints = [];
-        this.moveListener = null;
-        this.drawing = true;
-        this.imgOffset = { x: 0, y: 0 };
-        this.zoomFactor = 1;
-        this.controls = null;
-        this.bindPoint = null;
-        this.canvas = null;    
+        this.templateId         = templateId;
+        this.onClickCallback    = onClickCallback
+        this.image              = null;
+        this.selectedPoints     = [];
+        this.redoPoints         = [];
+        this.mode               = 'draw';
+        this.imgOffset          = { x: 0, y: 0 };
+        this.zoomFactor         = 1;
+        this.controls           = null;
+        this.bindPoint          = null;
+        this.canvas             = null;
 
         this.moveHandler = e => this.moveSelection(e);
     }
@@ -29,13 +29,11 @@ class PointsSelector {
         bindElement.appendChild(template.content.cloneNode(true));
 
         this.canvas = document.getElementById('ps-canvas');
-        // bindElement.appendChild(this.canvas);
-        this.canvas.addEventListener('click', event => this.onCanvasClick(event));
-        this.canvas.addEventListener('mousedown', event => this.startMove(event));
-
+        this.canvas.addEventListener('click',       event => this.onCanvasClick(event));
+        this.canvas.addEventListener('mousedown',   event => this.startMove(event));
 
         this.controls = {
-            controls:       document.getElementById('point-selector-controls'),
+            controls:       document.getElementById('ps-controls'),
             zoomIn:         document.getElementById('ps-zoom-in'),
             zoomOut:        document.getElementById('ps-zoom-out'),
             zoom:           document.getElementById('ps-zoom-value'),
@@ -43,28 +41,23 @@ class PointsSelector {
             move:           document.getElementById('ps-move'),
         };
 
-        this.controls.zoomIn        .addEventListener('click', () => this.updateZoom(2));
-        this.controls.zoomOut       .addEventListener('click', () => this.updateZoom(0.5));
-        this.controls.draw          .addEventListener('click', () => this.updateMode(true));
-        this.controls.move          .addEventListener('click', () => this.updateMode(false));
+        this.controls.zoomIn        .addEventListener('click', () => this.updateZoom(ZOOM_FACTOR));
+        this.controls.zoomOut       .addEventListener('click', () => this.updateZoom(1/ZOOM_FACTOR));
+        this.controls.draw          .addEventListener('click', () => this.updateMode('draw'));
+        this.controls.move          .addEventListener('click', () => this.updateMode('move'));
+
+        // Set starting mode
+        this.updateMode(this.mode);
     }
 
-    updateMode(value) {
-        this.drawing = value;
+    updateMode(newMode) {
+        this.canvas.classList.remove(this.mode);
+        this.canvas.classList.add(newMode);
 
-        const newClass = value ? 'drawing' : 'moving';
-        const oldClas = !value ? 'drawing' : 'moving';
+        this.controls[this.mode].classList.remove('toggled-button');
+        this.controls[newMode].classList.add('toggled-button');
 
-        this.canvas.classList.add(newClass);
-        this.canvas.classList.remove(oldClas);
-
-        if(value) {
-            this.controls.draw.classList.add('toggled-button');
-            this.controls.move.classList.remove('toggled-button');
-        } else {
-            this.controls.move.classList.add('toggled-button');
-            this.controls.draw.classList.remove('toggled-button');
-        }
+        this.mode = newMode;
     }
 
     loadImage(image) {
@@ -74,7 +67,7 @@ class PointsSelector {
 
         this.drawImage();
         this.updateZoomValueDisplay();
-        this.updateMode(true);
+        this.updateMode('draw');
         this.controls.controls.hidden = false;
     }
 
@@ -85,7 +78,7 @@ class PointsSelector {
     }
 
     startMove(event) {
-        if(!this.drawing && event.button === 0) {
+        if(this.mode === 'move' && event.button === 0) {
             this.canvas.addEventListener('mousemove', this.moveHandler);
             document.body.addEventListener('mouseup', e => {
                 if(e.button === 0) {
@@ -140,7 +133,7 @@ class PointsSelector {
     }
 
     onCanvasClick(event) {
-        if(!this.drawing) {
+        if(this.mode !== 'draw') {
             return;
         }
 
