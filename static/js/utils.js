@@ -15,3 +15,7 @@ function download(url, fileName) {
   a.click()
   document.body.removeChild(a)
 }
+
+function inRange(value, max, min = 0) {
+  return Math.max(Math.min(value, max), min);
+}

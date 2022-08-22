@@ -23,11 +23,9 @@ const trackingForm          = document.getElementById('tracking-form');
 const imgInput              = document.getElementById('img-input');
 const errors                = document.getElementById('errors');
 const actionButtons         = document.getElementById('action-buttons');
-const pointsButtons         = document.getElementById('point-buttons');
 const arrowUpButton         = document.getElementById('arrow-up');
 const arrowDownButton       = document.getElementById('arrow-down');
-const previewSection        = document.getElementById('preview-section');
-const imgButtons            = document.getElementById('img-buttons');
+const trackButtonContainer  = document.getElementById('track-button');
 const undo                  = document.getElementById('undo');
 const redo                  = document.getElementById('redo');
 const resultsViewerUI       = document.getElementById('results-viewer');
@@ -51,7 +49,7 @@ let currentResults;
 
 // Results viewer controller
 const resultsViewer = new ResultsViewer('result-controls');
-const pointSelector = new PointsSelector(debouncedPreview);
+const pointSelector = new PointsSelector(debouncedPreview, 'point-selector-controls-template');
 
 (function () {
     trackingForm.addEventListener('submit', fullTracking);
@@ -62,7 +60,7 @@ const pointSelector = new PointsSelector(debouncedPreview);
     // Bind result viewer
     resultsViewer.bind(resultsViewerUI);
     pointSelector.bind(selectorWrapper);
-    
+
     // // Undo/Redo selected points
     // undo.addEventListener('click', undoPoint);
     // redo.addEventListener('click', redoPoint);
@@ -96,13 +94,17 @@ async function fullTracking(e) {
     }
 }
 
+function togglePreview() {
+    preview.hidden = pointSelector.selectedPoints.length < 2 ? true : false;
+}
+
 function trackingPreview() {
     const formData = new FormData(trackingForm);
     
     formData.set('images[]', imgInput.files[0]);
 
     if(pointSelector.selectedPoints.length >= 2) {
-        previewSection.hidden = pointSelector.selectedPoints.length < 2 ? true : false;
+        togglePreview();
         executeTracking(formData)
             .then(updatePreview)
             .catch(showError)
@@ -305,7 +307,7 @@ async function handleImageSelection() {
           imgInput.value = '';
           return;
     }
-    imgButtons.hidden = false;
+    trackButtonContainer.hidden = false;
     const firstDrawable = await drawableIterator(imgInput.files).next();
     if(!firstDrawable || firstDrawable.done) {
         showError('No valid image selected');
@@ -319,12 +321,10 @@ async function handleImageSelection() {
     }
     selectorDrawable = firstDrawable.value;
 
-    
     pointSelector.loadImage(selectorDrawable);
 
     // Show canvas
     selectorWrapper.hidden = false;
-    pointsButtons.hidden = false;
 
     // Reset selected points
     pointSelector.selectedPoints.length    = 0;

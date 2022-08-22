@@ -72,11 +72,11 @@ class ResultsViewer {
     }
 
     updateFrameNumberDisplay() {
-        this.controls['frame'].innerHTML = `Cuadro: ${this.index+1}/${this.frames.length}`
+        this.controls['frame'].innerText = `Cuadro: ${this.index+1}/${this.frames.length}`
     }
 
     updateFrameRateNumberDisplay() {
-        this.controls['frame_rate'].innerHTML = `Speed: ${this.fps}`
+        this.controls['frame_rate'].innerText = `Speed: ${this.fps}`
     }
 
     nextFrame() {
