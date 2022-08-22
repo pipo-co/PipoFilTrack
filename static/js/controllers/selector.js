@@ -107,16 +107,16 @@ export default class PointsSelector {
     }
 
     ensureBounds() {
-        this.imgOffset.x = inRange(this.imgOffset.x, this.image.width - this.getSourceWidth());
-        this.imgOffset.y = inRange(this.imgOffset.y, this.image.height - this.getSourceHeight());
+        this.imgOffset.x = inRange(this.imgOffset.x, this.image.width - this.sourceWidth);
+        this.imgOffset.y = inRange(this.imgOffset.y, this.image.height - this.sourceHeight);
 
     }
 
     moveSelection(event) {
         const rect = this.canvas.getBoundingClientRect();
 
-        const movX = canvasPos2Pixel(event.movementX + this.savedMov.x, rect.width, this.getSourceWidth());
-        const movY = canvasPos2Pixel(event.movementY + this.savedMov.y, rect.width, this.getSourceWidth());
+        const movX = canvasPos2Pixel(event.movementX + this.savedMov.x, rect.width, this.sourceWidth);
+        const movY = canvasPos2Pixel(event.movementY + this.savedMov.y, rect.width, this.sourceHeight);
 
         this.imgOffset.x -= movX;
         this.imgOffset.y -= movY;
@@ -141,20 +141,17 @@ export default class PointsSelector {
         this.controls.zoom.innerText = `${this.zoomFactor * 100}%`
     }
 
-    getSourceHeight() {
+    get sourceHeight() {
         return Math.trunc(this.image.height / this.zoomFactor);
     }
-    getSourceWidth() {
+    get sourceWidth() {
         return Math.trunc(this.image.width / this.zoomFactor);
     }
 
     drawImage() {
-        const sourceWidth = this.getSourceWidth();
-        const sourceHeight = this.getSourceHeight();
-
         const ctx = this.canvas.getContext('2d');
         canvasDisableSmoothing(ctx);
-        ctx.drawImage(this.image, this.imgOffset.x, this.imgOffset.y, sourceWidth, sourceHeight, 0, 0, this.canvas.width, this.canvas.height);
+        ctx.drawImage(this.image, this.imgOffset.x, this.imgOffset.y, this.sourceWidth, this.sourceHeight, 0, 0, this.canvas.width, this.canvas.height);
     }
 
     drawAllPoints() {
@@ -170,8 +167,8 @@ export default class PointsSelector {
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
 
-        const pixel_x = canvasPos2Pixel(x, rect.width, this.getSourceWidth(), this.imgOffset.x);
-        const pixel_y = canvasPos2Pixel(y, rect.height, this.getSourceHeight(), this.imgOffset.y);
+        const pixel_x = canvasPos2Pixel(x, rect.width, this.sourceWidth, this.imgOffset.x);
+        const pixel_y = canvasPos2Pixel(y, rect.height, this.sourceHeight, this.imgOffset.y);
         // Si agregas un punto, perdes los redo
         this.redoPoints.length = 0;
 
@@ -193,18 +190,15 @@ export default class PointsSelector {
     drawPointSelection(point) {
         const ctx = this.canvas.getContext("2d");
 
-        const sourceWidth = this.getSourceWidth();
-        const sourceHeight = this.getSourceHeight();
-
         // Agregamos 0.5 para que se muestre en el medio del pixel, no en la esquina
-        const x = pixel2CanvasPos(point.x + 0.5, this.canvas.width, sourceWidth, this.imgOffset.x);
-        const y = pixel2CanvasPos(point.y + 0.5, this.canvas.height, sourceHeight, this.imgOffset.y);
+        const x = pixel2CanvasPos(point.x + 0.5, this.canvas.width, this.sourceWidth, this.imgOffset.x);
+        const y = pixel2CanvasPos(point.y + 0.5, this.canvas.height, this.sourceHeight, this.imgOffset.y);
 
         // Line
         if (point.prev) {
             const prev = point.prev;
-            const prevX = pixel2CanvasPos(prev.x + 0.5, this.canvas.width, sourceWidth, this.imgOffset.x);
-            const prevY = pixel2CanvasPos(prev.y + 0.5, this.canvas.height, sourceHeight, this.imgOffset.y);
+            const prevX = pixel2CanvasPos(prev.x + 0.5, this.canvas.width, this.sourceWidth, this.imgOffset.x);
+            const prevY = pixel2CanvasPos(prev.y + 0.5, this.canvas.height, this.sourceHeight, this.imgOffset.y);
             drawLine(ctx, prevX, prevY, x, y, POINT_COLOR, LINE_WIDTH);
         }
 
