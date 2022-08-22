@@ -75,8 +75,8 @@ export default class PointsSelector {
         this.image = image;
         setResolution(this.canvas, this.image.width, this.image.height);
 
+        this.resetZoom();
         this.drawImage();
-        this.updateZoomValueDisplay();
         this.updateMode('draw');
         this.controls.controls.hidden = false;
     }
@@ -84,6 +84,12 @@ export default class PointsSelector {
     updateZoom(factor) {
         this.zoomFactor = Math.max(this.zoomFactor * factor, 1);
         this.redraw();
+        this.updateZoomValueDisplay();
+    }
+
+    resetZoom() {
+        this.imgOffset = { x: 0, y: 0};
+        this.zoomFactor = 1;
         this.updateZoomValueDisplay();
     }
 
