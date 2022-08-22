@@ -40,7 +40,7 @@ const rvRenderingProps      = document.getElementById('rv-rendering-properties')
 
 /* -------- Controllers -------- */
 const resultsViewer = new ResultsViewer('result-controls');
-const pointSelector = new PointsSelector(debouncedPreview, 'point-selector');
+const pointSelector = new PointsSelector('point-selector', debouncedPreview);
 
 (function () {
     trackingForm.addEventListener('submit', fullTracking);

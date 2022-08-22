@@ -15,7 +15,7 @@ const POINT_SIZE        = 10;
 const LINE_WIDTH        = 5;
 
 export default class PointsSelector {
-    constructor(onClickCallback, templateId) {
+    constructor(templateId, onClickCallback) {
         this.templateId         = templateId;
         this.onClickCallback    = onClickCallback
         this.image              = null;
