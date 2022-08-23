@@ -131,7 +131,6 @@ cython_debug/
 .idea/
 .vscode/
 .vscode-server/
-images/
 sta
 .bash_history
 .DS_Store
