@@ -1,9 +1,9 @@
-import {drawIntoCanvas, setResolution} from "../utils/canvas.js";
+import {drawIntoCanvas, resizeCanvasHeight} from "../utils/canvas.js";
 
 export default class ResultsViewer {
     constructor(templateId) {
         this.templateId = templateId;
-        this.canvas     = document.createElement('canvas');
+        this.canvas     = null;
         this.frames     = [];
         this.index      = 0;
         this.inter_id   = null;
@@ -12,7 +12,9 @@ export default class ResultsViewer {
         this.controls = null;
     }
 
-    bind(bindElement) {
+    bind(bindElement, canvasWidth) {
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = canvasWidth;
         bindElement.appendChild(this.canvas);
 
         const template = document.getElementById(this.templateId);
@@ -42,7 +44,7 @@ export default class ResultsViewer {
     loadResults(frames) {
         this.frames = frames
         
-        setResolution(this.canvas, frames[0].width, frames[0].height);
+        resizeCanvasHeight(this.canvas, frames[0].width, frames[0].height);
 
         this.drawFrame();
         this.updateFrameRateNumberDisplay();

@@ -5,10 +5,16 @@ import ResultsViewer from "./controllers/results.js";
 import PointsSelector from "./controllers/selector.js";
 
 import {debounce, download} from "./utils/misc.js";
-import {buildCanvas, drawIntoCanvas, drawLine, drawPoint, trackingPoint2canvas} from "./utils/canvas.js";
+import {buildImageCanvas, drawIntoCanvas, drawLine, drawPoint, trackingPoint2canvas} from "./utils/canvas.js";
 
-const WEBM_QUALITY      = 1;
+/* --------- Constants ------------ */
+// Horizontal resolution in pixels of all canvas used. Height is calculated to maintain aspect ratio of images.
+const CANVAS_RESOLUTION = 1080;
 
+// Quality of canvas to video frame conversion used for results expressed as a percentage [0, 1]. Default is max quality.
+const WEBM_QUALITY = 1;
+
+// Color and sizes of graphic elements used to render tracking results.
 const TRACKING_POINT_SIZE           = 5;
 const TRACKING_POINT_STATUS_COLOR   = {
     'INTERPOLATED': '#0055ff',
@@ -16,9 +22,12 @@ const TRACKING_POINT_STATUS_COLOR   = {
     null:           '#00ff00',
     undefined:      '#00ff00',
 }
-const TRACKING_POINT_COLOR  = '#0055ff'
+const TRACKING_NORMAL_LINE_COLOR = 'rgba(0,255,255,0.22)'
 
-const NORMAL_LINE_COLOR     = 'rgba(0,255,255,0.22)'
+// Color and sizes of graphic elements used make initial point selection.
+const SELECTION_POINT_SIZE  = 10;
+const SELECTION_LINE_WIDTH  = 5;
+const SELECTION_COLOR       = '#00ff00';
 
 /* -------- UI Elements -------- */
 const selectorWrapper       = document.getElementById('selector-wrapper');
@@ -40,27 +49,24 @@ const rvRenderingProps      = document.getElementById('rv-rendering-properties')
 
 /* -------- Controllers -------- */
 const resultsViewer = new ResultsViewer('result-controls');
-const pointSelector = new PointsSelector('point-selector', debouncedPreview);
+const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE, SELECTION_LINE_WIDTH, SELECTION_COLOR, debouncedPreview);
 
-(function () {
+/* -------- Main -------- */
+;(function () {
     trackingForm.addEventListener('submit', fullTracking);
     trackingForm.addEventListener('input', debouncedPreview);
 
     imgInput.addEventListener('change', handleImageSelection);
 
+    previewCanvas.width = CANVAS_RESOLUTION;
+
     // Bind controllers
-    resultsViewer.bind(resultsViewerUI);
-    pointSelector.bind(selectorWrapper);
+    resultsViewer.bind(resultsViewerUI, CANVAS_RESOLUTION);
+    pointSelector.bind(selectorWrapper, CANVAS_RESOLUTION);
 
     // // Undo/Redo selected points
     // undo.addEventListener('click', undoPoint);
     // redo.addEventListener('click', redoPoint);
-
-    // plus.addEventListener('click', addZoom);
-    // minus.addEventListener('click', reduceZoom); 
-
-    // arrowUpButton.addEventListener('click', increasePointDiameter);
-    // arrowDownButton.addEventListener('click', decreasePointDiameter); 
 })();
 
 async function fullTracking(e) {
@@ -138,7 +144,8 @@ async function resultsToCanvas(trackingResult, renderParams) {
     const framesIter = drawableIterator(imgInput.files);
     for(const result of trackingResult.frames[Symbol.iterator]()) {
         const {value: frame} = await framesIter.next();
-        const canvas = buildCanvas(frame);
+
+        const canvas = buildImageCanvas(frame, CANVAS_RESOLUTION);
         const ctx = canvas.getContext('2d');
 
         for(const point of result.points) {
@@ -150,7 +157,7 @@ async function resultsToCanvas(trackingResult, renderParams) {
             for(const segment of result.metadata.normal_lines) {
                 const [x0, y0] = trackingPoint2canvas(segment.start, canvas, frame);
                 const [x1, y1] = trackingPoint2canvas(segment.end, canvas, frame);
-                drawLine(ctx, x0, y0, x1, y1, NORMAL_LINE_COLOR);
+                drawLine(ctx, x0, y0, x1, y1, TRACKING_NORMAL_LINE_COLOR);
             }
         }
 
@@ -341,7 +348,7 @@ class RenderParams {
         if(colorCoding) {
             this.colorSupplier = (status) => TRACKING_POINT_STATUS_COLOR[status];
         } else {
-            this.colorSupplier = () => TRACKING_POINT_COLOR;
+            this.colorSupplier = () => TRACKING_POINT_STATUS_COLOR[null];
         }
     }
 }

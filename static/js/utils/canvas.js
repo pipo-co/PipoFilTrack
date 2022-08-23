@@ -1,5 +1,3 @@
-const DEFAULT_CANVAS_RESOLUTION = 1080; // La resolucion horizontal, la vertical se calcula para mantener el aspect ratio
-
 export function drawLine(ctx, x0, y0, x1, y1, color, width) {
     ctx.beginPath();
     ctx.moveTo(x0, y0);
@@ -16,25 +14,24 @@ export function drawPoint(ctx, x, y, color, size) {
     ctx.fill();
 }
 
-export function buildCanvas(frame) {
+export function buildImageCanvas(image, canvasWidth) {
     const ret = document.createElement('canvas');
-    ret.classList.add('canvas');
-
-    return drawIntoCanvas(ret, frame);
+    ret.width = canvasWidth;
+    return drawIntoCanvas(ret, image);
 }
 
-export function drawIntoCanvas(canvas, frame) {
-    setResolution(canvas, frame.width, frame.height);
+export function drawIntoCanvas(canvas, image) {
+    resizeCanvasHeight(canvas, image.width, image.height);
 
     const ctx = canvas.getContext('2d');
     canvasDisableSmoothing(ctx);
-    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
     return canvas;
 }
 
-export function setResolution(canvas, width, height, resolution = DEFAULT_CANVAS_RESOLUTION) {
-    canvas.width = resolution;
+// Adjust canvas vertical size to maintain width * height aspect ratio
+export function resizeCanvasHeight(canvas, width, height) {
     canvas.height = canvas.width / width * height;
 }
 

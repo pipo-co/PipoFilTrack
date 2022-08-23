@@ -4,35 +4,39 @@ import {
     drawLine,
     drawPoint,
     pixel2CanvasPos,
-    setResolution
+    resizeCanvasHeight
 } from "../utils/canvas.js";
 import {inRange} from "../utils/misc.js";
 
 // Constants
-const POINT_COLOR       = '#00ff00';
-const ZOOM_FACTOR       = 2;
-const POINT_SIZE        = 10;
-const LINE_WIDTH        = 5;
+const ZOOM_FACTOR = 2;
 
 export default class PointsSelector {
-    constructor(templateId, onClickCallback) {
+    constructor(templateId, pointSize, lineWidth, color, onSelectionCallback) {
+        // Params
         this.templateId         = templateId;
-        this.onClickCallback    = onClickCallback
+        this.pointSize          = pointSize;
+        this.lineWidth          = lineWidth;
+        this.color              = color;
+        this.onSelectionCallback= onSelectionCallback;
+        // UI Bindings
+        this.bindPoint          = null;
+        this.controls           = null;
+        this.canvas             = null;
+        // Selection image and points
         this.image              = null;
         this.selectedPoints     = [];
         this.redoPoints         = [];
+        // Zoom
         this.mode               = 'draw';
         this.imgOffset          = { x: 0, y: 0 };
         this.zoomFactor         = 1;
-        this.controls           = null;
-        this.bindPoint          = null;
-        this.canvas             = null;
-        this.savedMov = { x: 0, y: 0 };
+        this.savedMov           = { x: 0, y: 0 };
 
         this.moveHandler = e => this.moveSelection(e);
     }
 
-    bind(bindElement) {
+    bind(bindElement, canvasWidth) {
         this.bindPoint = bindElement;
         bindElement.hidden = true;
 
@@ -40,6 +44,7 @@ export default class PointsSelector {
         bindElement.appendChild(template.content.cloneNode(true));
 
         this.canvas = document.getElementById('ps-canvas');
+        this.canvas.width = canvasWidth;
         this.canvas.addEventListener('click',       event => this.onCanvasClick(event));
         this.canvas.addEventListener('mousedown',   event => this.startMove(event));
 
@@ -74,7 +79,7 @@ export default class PointsSelector {
     loadImage(image) {
         this.bindPoint.hidden = false;
         this.image = image;
-        setResolution(this.canvas, this.image.width, this.image.height);
+        resizeCanvasHeight(this.canvas, this.image.width, this.image.height);
 
         this.resetZoom();
         this.drawImage();
@@ -173,7 +178,7 @@ export default class PointsSelector {
         this.redoPoints.length = 0;
 
         this.addPointSelection({ x: pixel_x, y: pixel_y });
-        this.onClickCallback();
+        this.onSelectionCallback();
     }
 
     addPointSelection(point) {
@@ -199,10 +204,10 @@ export default class PointsSelector {
             const prev = point.prev;
             const prevX = pixel2CanvasPos(prev.x + 0.5, this.canvas.width, this.sourceWidth, this.imgOffset.x);
             const prevY = pixel2CanvasPos(prev.y + 0.5, this.canvas.height, this.sourceHeight, this.imgOffset.y);
-            drawLine(ctx, prevX, prevY, x, y, POINT_COLOR, LINE_WIDTH);
+            drawLine(ctx, prevX, prevY, x, y, this.color, this.lineWidth);
         }
 
-        drawPoint(ctx, x, y, POINT_COLOR, POINT_SIZE);
+        drawPoint(ctx, x, y, this.color, this.pointSize);
     }
 
     undoPoint() {
@@ -221,7 +226,7 @@ export default class PointsSelector {
             // Redraw all poins
             updateInterface();
         }
-        this.onClickCallback()
+        this.onSelectionCallback()
     }
 
     redoPoint() {
@@ -229,7 +234,7 @@ export default class PointsSelector {
             const point = redoPoints.pop();
             addPointSelection(point)
         }
-        this.onClickCallback()
+        this.onSelectionCallback()
     }
 
     increasePointDiameter() {
