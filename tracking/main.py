@@ -49,6 +49,7 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
         try:
             smoothed_points = bezier_fitting(raw_points) if config.bezier_smoothing else raw_points
         except ValueError as e:
+            config.bezier_smoothing = False
             errors.append(str(e))
             smoothed_points = raw_points
 
