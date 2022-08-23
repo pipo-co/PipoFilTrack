@@ -8,11 +8,11 @@ from scipy.special import comb
 
 PIXEL_POINT_RATIO = 1
 
-def multi_point_linear_interpolation(points: np.ndarray) -> np.ndarray:
+def multi_point_linear_interpolation(points: np.ndarray, density: int = 1) -> np.ndarray:
     """
     Given a point vector, interpolates linearly between each point pair.
     """
-    return np.append(np.concatenate([points_linear_interpolation(start, end)[:-1] for start, end in zip(points, points[1:])]), [points[-1]], axis=0)
+    return np.append(np.concatenate([points_linear_interpolation(start, end)[:-1][::density] for start, end in zip(points, points[1:])]), [points[-1]], axis=0)
 
 def points_linear_interpolation(start: np.ndarray, end: np.ndarray) -> np.ndarray:
     # line returns the pixels of the line described by the 2 points

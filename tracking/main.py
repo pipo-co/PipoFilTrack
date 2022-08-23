@@ -13,7 +13,7 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
     errors = []
 
     # Obtenemos los puntos iniciales del tracking interpolando linealmente los puntos del usuario
-    prev_frame_points = multi_point_linear_interpolation(user_points)
+    prev_frame_points = multi_point_linear_interpolation(user_points, config.point_density)
 
     # Si no hay suficientes puntos para la tangente configurada, bajamos la cantidada de puntos
     max_tangent_length = config.max_tangent_length if len(prev_frame_points) < config.max_tangent_length / 2 else len(prev_frame_points) // 2
