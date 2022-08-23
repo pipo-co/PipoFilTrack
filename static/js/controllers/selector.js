@@ -6,7 +6,7 @@ import {
     pixel2CanvasPos,
     resizeCanvasHeight
 } from "../utils/canvas.js";
-import {inRange} from "../utils/misc.js";
+import {inRange, toggleDisabled} from "../utils/misc.js";
 
 // Constants
 const ZOOM_FACTOR = 2;
@@ -62,8 +62,9 @@ export default class PointsSelector {
         this.controls.draw          .addEventListener('click', () => this.updateMode('draw'));
         this.controls.move          .addEventListener('click', () => this.updateMode('move'));
 
-        // Set starting mode
+        // Initialize UI elements
         this.updateMode(this.mode);
+        this.onZoomUpdate();
     }
 
     updateMode(newMode) {
@@ -90,14 +91,14 @@ export default class PointsSelector {
     updateZoom(factor) {
         this.zoomFactor = Math.max(this.zoomFactor * factor, 1);
         this.redraw();
-        this.updateZoomValueDisplay();
+        this.onZoomUpdate();
     }
 
     resetZoom() {
         this.imgOffset  = { x: 0, y: 0};
         this.zoomFactor = 1;
         this.savedMov   = { x: 0, y: 0 };
-        this.updateZoomValueDisplay();
+        this.onZoomUpdate();
     }
 
     startMove(event) {
@@ -188,7 +189,6 @@ export default class PointsSelector {
             ;
         this.selectedPoints.push(point);
 
-        // this.updateInterface();
         this.drawPointSelection(point);
     }
 
@@ -200,7 +200,7 @@ export default class PointsSelector {
         const y = pixel2CanvasPos(point.y + 0.5, this.canvas.height, this.sourceHeight, this.imgOffset.y);
 
         // Line
-        if (point.prev) {
+        if(point.prev) {
             const prev = point.prev;
             const prevX = pixel2CanvasPos(prev.x + 0.5, this.canvas.width, this.sourceWidth, this.imgOffset.x);
             const prevY = pixel2CanvasPos(prev.y + 0.5, this.canvas.height, this.sourceHeight, this.imgOffset.y);
@@ -254,4 +254,13 @@ export default class PointsSelector {
         clearError();
     }
 
+    onZoomUpdate() {
+        const cond = this.zoomFactor === 1;
+        toggleDisabled(this.controls.move, this.zoomFactor === 1);
+        if(cond && this.mode === 'move') {
+            this.updateMode('draw');
+        }
+
+        this.updateZoomValueDisplay();
+    }
 }

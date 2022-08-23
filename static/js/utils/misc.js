@@ -19,3 +19,11 @@ export function download(url, fileName) {
 export function inRange(value, max, min = 0) {
   return Math.max(Math.min(value, max), min);
 }
+
+export function toggleDisabled(elem, cond) {
+    if(cond) {
+        elem.classList.add('disabled', 'uk-disabled');
+    } else {
+        elem.classList.remove('disabled', 'uk-disabled');
+    }
+}
