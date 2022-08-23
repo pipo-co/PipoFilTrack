@@ -36,8 +36,6 @@ const trackingForm          = document.getElementById('tracking-form');
 const imgInput              = document.getElementById('img-input');
 const errors                = document.getElementById('errors');
 const trackButtonContainer  = document.getElementById('track-button');
-const undo                  = document.getElementById('undo');
-const redo                  = document.getElementById('redo');
 const resultsViewerUI       = document.getElementById('results-viewer');
 const resultsContainer      = document.getElementById('results-container');
 const resultsLoader         = document.getElementById('results-loader');
@@ -63,10 +61,6 @@ const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE,
     // Bind controllers
     resultsViewer.bind(resultsViewerUI, CANVAS_RESOLUTION);
     pointSelector.bind(selectorWrapper, CANVAS_RESOLUTION);
-
-    // // Undo/Redo selected points
-    // undo.addEventListener('click', undoPoint);
-    // redo.addEventListener('click', redoPoint);
 })();
 
 async function fullTracking(e) {

@@ -18,7 +18,6 @@ export default class PointsSelector {
         this.pointSize          = pointSize;
         this.lineWidth          = lineWidth;
         this.color              = color;
-        this.onSelectionCallback= onSelectionCallback;
         // UI Bindings
         this.bindPoint          = null;
         this.controls           = null;
@@ -32,6 +31,11 @@ export default class PointsSelector {
         this.imgOffset          = { x: 0, y: 0 };
         this.zoomFactor         = 1;
         this.savedMov           = { x: 0, y: 0 };
+
+        this.onSelectionCallback = () => {
+            this.onSelection();
+            onSelectionCallback();
+        }
 
         this.moveHandler = e => this.moveSelection(e);
     }
@@ -53,17 +57,22 @@ export default class PointsSelector {
             zoomIn:         document.getElementById('ps-zoom-in'),
             zoomOut:        document.getElementById('ps-zoom-out'),
             zoom:           document.getElementById('ps-zoom-value'),
+            undo:           document.getElementById('ps-undo'),
+            redo:           document.getElementById('ps-redo'),
             draw:           document.getElementById('ps-draw'),
             move:           document.getElementById('ps-move'),
         };
 
         this.controls.zoomIn        .addEventListener('click', () => this.updateZoom(ZOOM_FACTOR));
         this.controls.zoomOut       .addEventListener('click', () => this.updateZoom(1/ZOOM_FACTOR));
+        this.controls.undo          .addEventListener('click', () => this.undoPoint());
+        this.controls.redo          .addEventListener('click', () => this.redoPoint());
         this.controls.draw          .addEventListener('click', () => this.updateMode('draw'));
         this.controls.move          .addEventListener('click', () => this.updateMode('move'));
 
         // Initialize UI elements
         this.updateMode(this.mode);
+        this.onSelection();
         this.onZoomUpdate();
     }
 
@@ -211,47 +220,38 @@ export default class PointsSelector {
     }
 
     undoPoint() {
+        if(this.selectedPoints.length <= 0) {
+            return;
+        }
+
         const ctx = this.canvas.getContext("2d");
 
-        if (selectedPoints.length > 0) {
-            redoPoints.push(selectedPoints.pop());
+        this.redoPoints.push(this.selectedPoints.pop());
 
-            // Clean canvas
-            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Clean canvas
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-            // Redraw image
-            canvasDisableSmoothing(ctx);
-            ctx.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height);
+        // Redraw image and points
+        this.redraw();
 
-            // Redraw all poins
-            updateInterface();
-        }
-        this.onSelectionCallback()
+        // Undo counts as a selection
+        this.onSelectionCallback();
     }
 
     redoPoint() {
-        if (redoPoints.length > 0) {
-            const point = redoPoints.pop();
-            addPointSelection(point)
+        if(this.redoPoints.length <= 0) {
+            return;
         }
-        this.onSelectionCallback()
+
+        this.addPointSelection(this.redoPoints.pop())
+
+        // Redo counts as a selection
+        this.onSelectionCallback();
     }
 
-    increasePointDiameter() {
-        pointSize = pointSize + 1
-    }
-
-    decreasePointDiameter() {
-        if (pointSize > 1) pointSize = pointSize - 1;
-    }
-
-    updateInterface() {
-        actionButtons.hidden = selectedPoints.length === 0 && redoPoints.length === 0 ? true : false
-        pointsButtons.hidden = selectedPoints.length === 0 && redoPoints.length === 0 ? true : false
-        previewPlaceholder.hidden = selectedPoints.length < 2 ? true : false
-        undo.style.visibility = selectedPoints.length === 0 ? 'hidden' : 'visible';
-        redo.style.visibility = redoPoints.length === 0 ? 'hidden' : 'visible';
-        clearError();
+    onSelection() {
+        toggleDisabled(this.controls.undo, this.selectedPoints.length === 0);
+        toggleDisabled(this.controls.redo, this.redoPoints.length === 0);
     }
 
     onZoomUpdate() {
