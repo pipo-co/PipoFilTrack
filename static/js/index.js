@@ -82,23 +82,22 @@ async function fullTracking(e) {
     }
 }
 
-function togglePreview() {
-    previewCanvas.hidden = pointSelector.selectedPoints.length < 2;
-}
-
 function trackingPreview() {
      clearError();
+
+     if(pointSelector.selectedPoints.length < 2) {
+         previewCanvas.hidden = true;
+         return;
+     }
 
     const formData = new FormData(trackingForm);
     formData.set('images[]', imgInput.files[0]);
 
-    if(pointSelector.selectedPoints.length >= 2) {
-        togglePreview();
-        executeTracking(formData)
-            .then(updatePreview)
-            .catch(showError)
-            ;
-    }
+    previewCanvas.hidden = false;
+    executeTracking(formData)
+        .then(updatePreview)
+        .catch(showError)
+        ;
 }
 
 function debouncedPreview() {
