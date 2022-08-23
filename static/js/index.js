@@ -63,6 +63,41 @@ const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE,
     pointSelector.bind(selectorWrapper, CANVAS_RESOLUTION);
 })();
 
+/* -------- Image Selection -------- */
+// Empty selected points and build canvas for point selection
+async function handleImageSelection() {
+    if(imgInput.files.length === 0) {
+          // No nos subieron nada
+          showError('No images selected');
+          imgInput.value = '';
+          return;
+    }
+
+    // Show track button
+    trackButtonContainer.hidden = false;
+
+    const firstFrame = await imageIterator(imgInput.files).next();
+    if(!firstFrame || firstFrame.done) {
+        showError('No valid image selected');
+        imgInput.value = '';
+        return;
+    }
+
+    // Set selector image value
+    if(pointSelector.image) {
+        closeImage(pointSelector.image);
+    }
+    pointSelector.loadImage(firstFrame.value);
+
+    // Show canvas
+    selectorWrapper.hidden = false;
+
+    // Reset selected points
+    pointSelector.selectedPoints.length    = 0;
+    pointSelector.redoPoints.length        = 0;
+}
+
+/* -------- Tracking -------- */
 async function fullTracking(e) {
     e.preventDefault();
     clearError();
@@ -80,28 +115,6 @@ async function fullTracking(e) {
         showError(error);
         results.hidden = true;
     }
-}
-
-function trackingPreview() {
-     clearError();
-
-     if(pointSelector.selectedPoints.length < 2) {
-         previewCanvas.hidden = true;
-         return;
-     }
-
-    const formData = new FormData(trackingForm);
-    formData.set('images[]', imgInput.files[0]);
-
-    previewCanvas.hidden = false;
-    executeTracking(formData)
-        .then(updatePreview)
-        .catch(showError)
-        ;
-}
-
-function debouncedPreview() {
-    debounce(trackingPreview)();
 }
 
 async function executeTracking(formData) {
@@ -128,6 +141,112 @@ async function executeTracking(formData) {
     } catch(error) {
         return Promise.reject(error);
     }
+}
+
+/* -------- Preview -------- */
+function debouncedPreview() {
+    debounce(trackingPreview)();
+}
+
+function trackingPreview() {
+     clearError();
+
+     if(pointSelector.selectedPoints.length < 2) {
+         previewCanvas.hidden = true;
+         return;
+     }
+
+    const formData = new FormData(trackingForm);
+    formData.set('images[]', imgInput.files[0]);
+
+    previewCanvas.hidden = false;
+    executeTracking(formData)
+        .then(updatePreview)
+        .catch(showError)
+        ;
+}
+
+async function updatePreview(previewResults) {
+    if(previewResults.errors && previewResults.errors.length > 0) {
+        showTrackingErrors(previewResults.errors);
+    }
+
+    const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}));
+    previewCanvas.classList.remove("loader");
+    drawIntoCanvas(previewCanvas, frame);
+}
+
+/* -------- Results -------- */
+async function processTrackingResults(trackingResult) {
+    if(trackingResult.errors && trackingResult.errors.length > 0) {
+        showTrackingErrors(trackingResult.errors);
+    }
+
+    const dateString = new Date().toISOString().split('.')[0].replace(/:/g, '.');
+    const resultsFileName = `${imgInput.files[0].name.split('.')[0]}_results_${dateString}`
+
+    if(downloadJson.href) {
+        URL.revokeObjectURL(downloadJson.href);
+    }
+    downloadJson.href       = URL.createObjectURL(new Blob([toJsonResults(trackingResult)], {type: 'application/json'}));
+    downloadJson.download   = `${resultsFileName}.json`
+
+    if(downloadTsv.href) {
+        URL.revokeObjectURL(downloadTsv.href);
+    }
+    downloadTsv.href        = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
+    downloadTsv.download    = `${resultsFileName}.tsv`
+
+    rvRenderingProps.addEventListener('input', () => renderTrackingResult(trackingResult, resultsFileName));
+
+    await renderTrackingResult(trackingResult, resultsFileName);
+
+    resultsViewerUI.classList.remove("loader");
+    resultsLoader.hidden = true;
+    resultsContainer.hidden = false;
+
+    results.hidden = false;
+    results.scrollIntoView({behavior: "smooth"});
+}
+
+function toJsonResults(resultData) {
+    const redactedResults = resultData.frames.map(frame => { return {
+        points: frame.points.map(point => { return {
+            x: point.x,
+            y: point.y,
+        }}),
+    }});
+    return JSON.stringify(redactedResults);
+}
+
+function toTsvResults(resultData) {
+    const ret = ['frame\tx\ty'];
+
+    let frame = 0;
+    for(const result of resultData.frames) {
+        result.points.forEach(point => ret.push([frame, point.x, point.y].join('\t')));
+        frame++;
+    }
+
+    return ret.join('\r\n');
+}
+
+async function renderTrackingResult(trackingResult, resultsFileName) {
+    const frames = await resultsToCanvas(trackingResult, RenderParams.fromForm(rvRenderingProps));
+    resultsViewer.loadResults(frames);
+
+    downloadWebM.addEventListener('click', () => {
+        const vid = new Whammy.Video(resultsViewer.fps, WEBM_QUALITY);
+        UIkit.notification('Download started');
+
+        frames.forEach(frame => vid.add(frame));
+        vid.compile(false, video => {
+            if(downloadWebM.href) {
+                URL.revokeObjectURL(downloadWebM.href);
+            }
+            download(URL.createObjectURL(video), `${resultsFileName}.webm`);
+        });
+    });
 }
 
 async function resultsToCanvas(trackingResult, renderParams) {
@@ -161,138 +280,6 @@ async function resultsToCanvas(trackingResult, renderParams) {
     return frames
 }
 
-async function processTrackingResults(trackingResult) {
-    if(trackingResult.errors && trackingResult.errors.length > 0) {
-        showTrackingErrors(trackingResult.errors);
-    }
-
-    const dateString = new Date().toISOString().split('.')[0].replace(/:/g, '.');
-    const resultsFileName = `${imgInput.files[0].name.split('.')[0]}_results_${dateString}`
-
-    if(downloadJson.href) {
-        URL.revokeObjectURL(downloadJson.href);
-    }
-    downloadJson.href       = URL.createObjectURL(new Blob([toJsonResults(trackingResult)], {type: 'application/json'}));
-    downloadJson.download   = `${resultsFileName}.json`
-
-    if(downloadTsv.href) {
-        URL.revokeObjectURL(downloadTsv.href);
-    }
-    downloadTsv.href        = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
-    downloadTsv.download    = `${resultsFileName}.tsv`
-
-    rvRenderingProps.addEventListener('input', () => renderTrackingResult(trackingResult, resultsFileName));
-
-    await renderTrackingResult(trackingResult, resultsFileName);
-    
-    resultsViewerUI.classList.remove("loader");
-    resultsLoader.hidden = true;
-    resultsContainer.hidden = false;
-
-    results.hidden = false;
-    results.scrollIntoView({behavior: "smooth"});
-}
-
-async function renderTrackingResult(trackingResult, resultsFileName) {
-    const frames = await resultsToCanvas(trackingResult, formToRenderParams(rvRenderingProps));
-    resultsViewer.loadResults(frames);
-
-    downloadWebM.addEventListener('click', () => {
-        const vid = new Whammy.Video(resultsViewer.fps, WEBM_QUALITY);
-        UIkit.notification('Download started');
-
-        frames.forEach(frame => vid.add(frame));
-        vid.compile(false, video => {
-            if(downloadWebM.href) {
-                URL.revokeObjectURL(downloadWebM.href);
-            }
-            download(URL.createObjectURL(video), `${resultsFileName}.webm`);
-        });
-    });
-}
-
-async function updatePreview(previewResults) {
-    if(previewResults.errors && previewResults.errors.length > 0) {
-        showTrackingErrors(previewResults.errors);
-    }
-
-    const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}));
-    previewCanvas.classList.remove("loader");
-    drawIntoCanvas(previewCanvas, frame);
-}
-
-function toJsonResults(resultData) {
-    const redactedResults = resultData.frames.map(frame => { return {
-        points: frame.points.map(point => { return {
-            x: point.x,
-            y: point.y,
-        }}),
-    }});
-    return JSON.stringify(redactedResults);
-}
-
-function toTsvResults(resultData) {
-    const ret = ['frame\tx\ty'];
-
-    let frame = 0;
-    for(const result of resultData.frames) {
-        result.points.forEach(point => ret.push([frame, point.x, point.y].join('\t')));
-        frame++;
-    }
-
-    return ret.join('\r\n');
-}
-
-function showTrackingErrors(errors) {
-    showError('Tracking errors:\n\t- ' + errors.join('\n\t- '));
-}
-
-function showError(message) {
-    errors.innerText = message;
-}
-
-function clearError() {
-    errors.innerText = '';
-}
-
-// Empty selected points and build canvas for point selection
-async function handleImageSelection() {
-    if(imgInput.files.length === 0) {
-          // No nos subieron nada
-          showError('No images selected');
-          imgInput.value = '';
-          return;
-    }
-    trackButtonContainer.hidden = false;
-    const firstFrame = await imageIterator(imgInput.files).next();
-    if(!firstFrame || firstFrame.done) {
-        showError('No valid image selected');
-        imgInput.value = '';
-        return;
-    }
-
-    // Get selector drawable value
-    if(pointSelector.image) {
-        closeImage(pointSelector.image);
-    }
-
-    pointSelector.loadImage(firstFrame.value);
-
-    // Show canvas
-    selectorWrapper.hidden = false;
-
-    // Reset selected points
-    pointSelector.selectedPoints.length    = 0;
-    pointSelector.redoPoints.length        = 0;
-}
-
-function formToRenderParams(form) {
-    return new RenderParams({
-        normalLines: form['normal-lines'].checked, 
-        colorCoding: form['color-coding'].checked
-    });
-}
-
 class RenderParams {
     constructor({normalLines, colorCoding}) {
         this.normalLines = normalLines;
@@ -303,4 +290,24 @@ class RenderParams {
             this.colorSupplier = () => TRACKING_POINT_STATUS_COLOR[null];
         }
     }
+
+    static fromForm(form) {
+        return new RenderParams({
+            normalLines: form['normal-lines'].checked,
+            colorCoding: form['color-coding'].checked
+        });
+    }
+}
+
+/* ------------ Errors ----------- */
+function showTrackingErrors(errors) {
+    showError('Tracking errors:\n\t- ' + errors.join('\n\t- '));
+}
+
+function showError(message) {
+    errors.innerText = message;
+}
+
+function clearError() {
+    errors.innerText = '';
 }
