@@ -1,4 +1,3 @@
-import {UTIF} from "./libs/UTIF.js";
 import {Whammy} from "./libs/whammy.js";
 
 import ResultsViewer from "./controllers/results.js";
@@ -6,6 +5,7 @@ import PointsSelector from "./controllers/selector.js";
 
 import {debounce, download} from "./utils/misc.js";
 import {buildImageCanvas, drawIntoCanvas, drawLine, drawPoint, trackingPoint2canvas} from "./utils/canvas.js";
+import {closeImage, imageIterator} from "./utils/images.js";
 
 /* --------- Constants ------------ */
 // Horizontal resolution in pixels of all canvas used. Height is calculated to maintain aspect ratio of images.
@@ -134,7 +134,7 @@ async function resultsToCanvas(trackingResult, renderParams) {
     const frames = []
 
     // We iterate frame results and images at the same time (should have same length)
-    const framesIter = drawableIterator(imgInput.files);
+    const framesIter = imageIterator(imgInput.files);
     for(const result of trackingResult.frames[Symbol.iterator]()) {
         const {value: frame} = await framesIter.next();
 
@@ -155,7 +155,7 @@ async function resultsToCanvas(trackingResult, renderParams) {
         }
 
         frames.push(canvas);
-        closeFrame(frame);
+        closeImage(frame);
     }
 
     return frames
@@ -243,47 +243,6 @@ function toTsvResults(resultData) {
     return ret.join('\r\n');
 }
 
-// In case of error returns error message
-async function* drawableIterator(images) {
-    for(const image of images) {
-        switch(image.type) {
-            case 'image/tiff': {
-                const buffer = await image.arrayBuffer();
-                const ifds = UTIF.decode(buffer);
-                for(const ifd of ifds) {
-                    UTIF.decodeImage(buffer, ifd, ifds);
-
-                    const rgbaData = UTIF.toRGBA8(ifd);
-                    const imageData = new ImageData(new Uint8ClampedArray(rgbaData), ifd.width, ifd.height);
-
-                    const drawable = document.createElement('canvas');
-                    drawable.width = ifd.width;
-                    drawable.height = ifd.height;
-
-                    // Rendereamos la imagen en un canvas intermedio para luego poder escalar la imagen
-                    const ctx = drawable.getContext('2d');
-                    ctx.putImageData(imageData, 0, 0, 0, 0, ifd.width, ifd.height);
-
-                    yield drawable;
-                }
-            } break;
-            case 'image/jpeg':
-            case 'image/jpg':
-            case 'image/png': {
-                yield await createImageBitmap(image);
-            } break;
-            default:
-                // Ignoramos tipos que no conocemos
-        }
-    }
-}
-
-function closeFrame(frame) {
-    if(frame instanceof ImageBitmap) {
-        frame.close()
-    }
-}
-
 function showTrackingErrors(errors) {
     showError('Tracking errors:\n\t- ' + errors.join('\n\t- '));
 }
@@ -305,7 +264,7 @@ async function handleImageSelection() {
           return;
     }
     trackButtonContainer.hidden = false;
-    const firstFrame = await drawableIterator(imgInput.files).next();
+    const firstFrame = await imageIterator(imgInput.files).next();
     if(!firstFrame || firstFrame.done) {
         showError('No valid image selected');
         imgInput.value = '';
@@ -314,7 +273,7 @@ async function handleImageSelection() {
 
     // Get selector drawable value
     if(pointSelector.image) {
-        closeFrame(pointSelector.image);
+        closeImage(pointSelector.image);
     }
 
     pointSelector.loadImage(firstFrame.value);
