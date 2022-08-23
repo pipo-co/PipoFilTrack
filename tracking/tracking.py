@@ -31,7 +31,10 @@ def project_to_line(point: Tuple[float, float], m1: float, b1: float) -> Tuple[f
 
 def interpolate_points(interpolation_points: List[Tuple[float, float]], none_points: int, leftmost_point: Tuple[float, float], rightmost_point: Tuple[float, float]) -> np.ndarray:
     interpolation_points = np.asarray(interpolation_points)
-    res = stats.linregress(interpolation_points)
+    try:
+        res = stats.linregress(interpolation_points)
+    except ValueError:
+        return np.asarray([interpolation_points[0] for _ in range(none_points)])
 
     first_point = project_to_line(leftmost_point, res.slope, res.intercept)
     last_point = project_to_line(rightmost_point, res.slope, res.intercept)
