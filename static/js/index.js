@@ -16,6 +16,7 @@ const WEBM_QUALITY = 1;
 
 // Color and sizes of graphic elements used to render tracking results.
 const TRACKING_POINT_SIZE           = 5;
+const TRACKING_NORMAL_LINE_WIDTH    = 5;
 const TRACKING_POINT_STATUS_COLOR   = {
     'INTERPOLATED': '#0055ff',
     'PRESERVED':    '#ff0000',
@@ -269,7 +270,7 @@ async function resultsToCanvas(trackingResult, renderParams) {
             for(const segment of result.metadata.normal_lines) {
                 const [x0, y0] = trackingPoint2canvas(segment.start, canvas, frame);
                 const [x1, y1] = trackingPoint2canvas(segment.end, canvas, frame);
-                drawLine(ctx, x0, y0, x1, y1, TRACKING_NORMAL_LINE_COLOR);
+                drawLine(ctx, x0, y0, x1, y1, TRACKING_NORMAL_LINE_COLOR, TRACKING_NORMAL_LINE_WIDTH);
             }
         }
 
