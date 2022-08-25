@@ -43,17 +43,15 @@
             <fieldset>
               <legend class="uk-legend uk-margin-small">Parámetros de tracking</legend>
               {% for field in config_fields %}
-                <div class="uk-margin">
+                <div class="uk-margin uk-flex uk-flex-between uk-flex-middle">
                 <label for="config-{{ field.name }}" class="uk-form-label uk-text-break uk-margin-right">{{ field.metadata['name'] }} <span uk-icon="info" title="{{ field.metadata['desc'] }}"></span></label>
-                  <div style="display: flex; justify-content: flex-end">
                     {% if field.type.__name__ == 'bool' %}
-                      <input id="config-{{ field.name }}" name="{{ field.name }}" type="checkbox" class="uk-checkbox" {% if field.default %} checked {% endif %} required />
+                      <input id="config-{{ field.name }}" name="{{ field.name }}" type="checkbox" class="uk-checkbox uk-margin-remove-top" {% if field.default %} checked {% endif %} required />
                     {% elif field.type.__name__ == 'int' %}
                       <input id="config-{{ field.name }}" name="{{ field.name }}" type="number" value="{{ field.default }}" step="1" min="{{ field.metadata['min'] }}" max="{{ field.metadata['max'] }}" required />
                     {% elif field.type.__name__ == 'float' %}
                       <input id="config-{{ field.name }}" name="{{ field.name }}" type="number" value="{{ field.default }}" step="{{ field.metadata['step'] }}" min="{{ field.metadata['min'] }}" max="{{ field.metadata['max'] }}" required />
                     {% endif %}
-                  </div>
                 </div>
               {% endfor %}
             </fieldset>
