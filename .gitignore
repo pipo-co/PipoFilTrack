@@ -135,3 +135,4 @@ sta
 .bash_history
 .DS_Store
 .ssh/known_hosts
+/images/
