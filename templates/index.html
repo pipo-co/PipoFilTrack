@@ -22,7 +22,22 @@
 <body class="uk-background-cover">
   <main class="uk-text-center">
     <form id="tracking-form" enctype="multipart/form-data" class="uk-form-horizontal uk-margin-large">
-      <div id="selection" class="uk-flex uk-flex-center">
+      <div id="selection" class="uk-flex uk-flex-wrap uk-flex-center">
+        <div id="selector-zone" class="uk-text-center uk-width-3-4">
+          <div class="uk-flex uk-flex-center uk-margin">
+            <div id="selector-wrapper"></div>
+          </div>
+          <div class="uk-flex uk-flex-center uk-margin" id="img-buttons">
+            <div uk-form-custom class="uk-margin-right uk-margin-left">
+              <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required />
+              <button class="uk-button uk-button-primary uk-width-1-1 uk-margin-small-bottom" type="button" tabindex="-1">Seleccione las imágenes que desea trackear</button>
+            </div>
+            <div id="track-button" class="uk-margin-right uk-margin-left" hidden>
+              <button class="uk-button uk-button-primary" id="tracking-submit">Track</button>
+            </div>
+          </div>
+          <p id="errors" ></p>
+        </div>
         <div id="preview-zone" class="uk-width-1-4">
           <div class="uk-margin">
             <fieldset>
@@ -46,21 +61,6 @@
           <div class="uk-flex uk-flex-center uk-flex-column uk-text-center uk-margin" id="preview-section">
             <canvas id="preview" class="loader canvas uk-text-center" hidden></canvas>
           </div>
-        </div>
-        <div id="selector-zone" class="uk-text-center uk-width-3-4">
-          <div class="uk-flex uk-flex-center uk-margin">
-            <div id="selector-wrapper"></div>
-          </div>
-          <div class="uk-flex uk-flex-center uk-margin" id="img-buttons">
-            <div uk-form-custom class="uk-margin-right uk-margin-left">
-              <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required />
-              <button class="uk-button uk-button-primary uk-width-1-1 uk-margin-small-bottom" type="button" tabindex="-1">Seleccione las imágenes que desea trackear</button>
-            </div>
-            <div id="track-button" class="uk-margin-right uk-margin-left" hidden>
-              <button class="uk-button uk-button-primary" id="tracking-submit">Track</button>
-            </div>
-          </div>
-          <p id="errors" ></p>
         </div>
       </div>
     </form>
