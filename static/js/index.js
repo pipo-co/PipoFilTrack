@@ -46,6 +46,9 @@ const downloadWebM          = document.getElementById('download-webm');
 const downloadTsv           = document.getElementById('download-tsv');
 const rvRenderingProps      = document.getElementById('rv-rendering-properties');
 
+/* -------- Global variable -------- */
+let downloadWebMEventHandler
+
 /* -------- Controllers -------- */
 const resultsViewer = new ResultsViewer('result-controls');
 const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE, SELECTION_LINE_WIDTH, SELECTION_COLOR, debouncedPreview);
@@ -236,7 +239,9 @@ async function renderTrackingResult(trackingResult, resultsFileName) {
     const frames = await resultsToCanvas(trackingResult, RenderParams.fromForm(rvRenderingProps));
     resultsViewer.loadResults(frames);
 
-    downloadWebM.addEventListener('click', () => {
+    downloadWebM.removeEventListener('click', downloadWebMEventHandler);
+    
+    downloadWebMEventHandler = () => {
         const vid = new Whammy.Video(resultsViewer.fps, WEBM_QUALITY);
         UIkit.notification('Download started');
 
@@ -247,7 +252,9 @@ async function renderTrackingResult(trackingResult, resultsFileName) {
             }
             download(URL.createObjectURL(video), `${resultsFileName}.webm`);
         });
-    });
+    };
+
+    downloadWebM.addEventListener('click', downloadWebMEventHandler);
 }
 
 async function resultsToCanvas(trackingResult, renderParams) {
