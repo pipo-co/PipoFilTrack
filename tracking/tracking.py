@@ -148,8 +148,8 @@ def gauss_fitting(intensity_profile: np.ndarray, max_color: int, max_error: floa
         # Intensity profile failed to be fitted by a gaussian curve
         return None
 
-def generate_normal_line_bounds(points: np.ndarray, angle_resolution: int, normal_len: float) -> np.ndarray:
-    d = angle_resolution
+def generate_normal_line_bounds(points: np.ndarray, tangent_length: int, normal_len: float) -> np.ndarray:
+    d = tangent_length
 
     start = points[:-d]
     end = points[d:]
