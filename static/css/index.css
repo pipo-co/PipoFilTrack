@@ -25,6 +25,10 @@ h1 {
   height: 85vh;
 }
 
+#preview canvas {
+  height: 85vh;
+}
+
 .button {
   background-color: transparent;
   cursor: pointer;

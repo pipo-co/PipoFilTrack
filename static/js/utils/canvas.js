@@ -21,11 +21,21 @@ export function buildImageCanvas(image, canvasWidth) {
 }
 
 export function drawIntoCanvas(canvas, image) {
+  resizeCanvasHeight(canvas, image.width, image.height);
+
+  const ctx = canvas.getContext('2d');
+  canvasDisableSmoothing(ctx);
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  return canvas;
+}
+
+export function drawIntoCanvasZoomed(canvas, image, imgOffset, imgSource) {
     resizeCanvasHeight(canvas, image.width, image.height);
 
     const ctx = canvas.getContext('2d');
     canvasDisableSmoothing(ctx);
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, imgOffset.x, imgOffset.y, imgSource.sourceWidth, imgSource.sourceHeight, 0, 0, canvas.width, canvas.height);
 
     return canvas;
 }

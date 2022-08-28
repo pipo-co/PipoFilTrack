@@ -4,7 +4,7 @@ import ResultsViewer from "./controllers/results.js";
 import PointsSelector from "./controllers/selector.js";
 
 import {debounce, download} from "./utils/misc.js";
-import {buildImageCanvas, drawIntoCanvas, drawLine, drawPoint, trackingPoint2canvas} from "./utils/canvas.js";
+import {buildImageCanvas, drawIntoCanvasZoomed, drawLine, drawPoint, trackingPoint2canvas} from "./utils/canvas.js";
 import {closeImage, imageIterator} from "./utils/images.js";
 
 /* --------- Constants ------------ */
@@ -156,8 +156,8 @@ function trackingPreview() {
      clearError();
 
      if(pointSelector.selectedPoints.length < 2) {
-         previewCanvas.hidden = true;
-         return;
+        previewCanvas.hidden = true;
+        return;
      }
 
     const formData = new FormData(trackingForm);
@@ -171,14 +171,16 @@ function trackingPreview() {
 }
 
 async function updatePreview(previewResults) {
-    if(previewResults.errors && previewResults.errors.length > 0) {
-        showTrackingErrors(previewResults.errors);
-    }
+  if(previewResults.errors && previewResults.errors.length > 0) {
+      showTrackingErrors(previewResults.errors);
+  }
 
-    const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}));
-    previewCanvas.classList.remove("loader");
-    drawIntoCanvas(previewCanvas, frame);
+  const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}), pointSelector.image.width);
+  previewCanvas.classList.remove("loader");
+  
+  drawIntoCanvasZoomed(previewCanvas, frame, pointSelector.imgOffset, {sourceWidth: pointSelector.sourceWidth, sourceHeight: pointSelector.sourceHeight});
 }
+
 
 /* -------- Results -------- */
 async function processTrackingResults(trackingResult) {
@@ -257,7 +259,7 @@ async function renderTrackingResult(trackingResult, resultsFileName) {
     downloadWebM.addEventListener('click', downloadWebMEventHandler);
 }
 
-async function resultsToCanvas(trackingResult, renderParams) {
+async function resultsToCanvas(trackingResult, renderParams, canvasResolution = CANVAS_RESOLUTION) {
     const frames = []
 
     // We iterate frame results and images at the same time (should have same length)
@@ -265,7 +267,7 @@ async function resultsToCanvas(trackingResult, renderParams) {
     for(const result of trackingResult.frames[Symbol.iterator]()) {
         const {value: frame} = await framesIter.next();
 
-        const canvas = buildImageCanvas(frame, CANVAS_RESOLUTION);
+        const canvas = buildImageCanvas(frame, canvasResolution);
         const ctx = canvas.getContext('2d');
 
         for(const point of result.points) {
