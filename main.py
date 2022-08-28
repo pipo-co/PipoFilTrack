@@ -25,7 +25,7 @@ def application_error_handler(e):
     return make_response(jsonify(e), 400)
 
 @app.errorhandler(HTTPException)
-def application_error_handler(e):
+def http_exception_handler(e):
     return make_response(jsonify(ApplicationError(str(e)), e.code))
 
 @app.errorhandler(Exception)
