@@ -22,7 +22,6 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
         # Calculamos los limites que definen los segmentos de las rectas normales
         normal_lines_limits = generate_normal_line_bounds(prev_frame_points, max_tangent_length, config.normal_line_length)
 
-        # TODO(tobi): Arreglar falla en bajas densidades (problema en el calculo de la normal?) "index 7 is out of bounds for axis 0 with size 7"
         # A partir de los limites obtenemos la lista de pixeles que representan a los segmentos de las rectas normales
         # No es un ndarray porque no todas salen con la misma longitud (diagonales, etc)
         normal_lines = [points_linear_interpolation(start, end) for start, end in normal_lines_limits]

@@ -171,7 +171,8 @@ def generate_normal_line_bounds(points: np.ndarray, tangent_length: int, normal_
     return np.rint(bounds).astype(np.int64)
 
 # indices (n, 2) de la forma (x, y)
-def read_line_from_img(img: np.ndarray, indices: np.ndarray) -> np.ndarray:
+def read_line_from_img(img: np.ndarray, ind: np.ndarray) -> np.ndarray:
+    indices = ind[(ind[:,0] > 0) & (ind[:,0] < img.shape[1]) & (ind[:,1] > 0) & (ind[:,1] < img.shape[0])]
     return img[indices[:,1], indices[:,0]]
 
 def bezier_fitting(points: np.ndarray):
