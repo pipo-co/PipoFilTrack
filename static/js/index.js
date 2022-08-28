@@ -48,6 +48,7 @@ const rvRenderingProps      = document.getElementById('rv-rendering-properties')
 
 /* -------- Global variable -------- */
 let downloadWebMEventHandler
+let resultViewerPropertiesHandler
 
 /* -------- Controllers -------- */
 const resultsViewer = new ResultsViewer('result-controls');
@@ -203,7 +204,11 @@ async function processTrackingResults(trackingResult) {
     downloadTsv.href        = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
     downloadTsv.download    = `${resultsFileName}.tsv`
 
-    rvRenderingProps.addEventListener('input', () => renderTrackingResult(trackingResult, resultsFileName));
+    rvRenderingProps.removeEventListener('input', resultViewerPropertiesHandler);
+    
+    resultViewerPropertiesHandler = () => renderTrackingResult(trackingResult, resultsFileName);
+
+    rvRenderingProps.addEventListener('input', resultViewerPropertiesHandler);
 
     await renderTrackingResult(trackingResult, resultsFileName);
 
