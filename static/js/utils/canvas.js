@@ -30,12 +30,12 @@ export function drawIntoCanvas(canvas, image) {
   return canvas;
 }
 
-export function drawIntoCanvasZoomed(canvas, image, imgOffset, imgSource) {
+export function drawIntoCanvasZoomed(canvas, image, imgOffset, zoomFactor, pointSelectorWidth, pointSelectorHeight) {
     resizeCanvasHeight(canvas, image.width, image.height);
 
     const ctx = canvas.getContext('2d');
     canvasDisableSmoothing(ctx);
-    ctx.drawImage(image, imgOffset.x, imgOffset.y, imgSource.sourceWidth, imgSource.sourceHeight, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, (imgOffset.x / pointSelectorWidth) * image.width, (imgOffset.y / pointSelectorHeight) * image.height, Math.trunc(image.width / zoomFactor), Math.trunc(image.height / zoomFactor), 0, 0, canvas.width, canvas.height);
 
     return canvas;
 }

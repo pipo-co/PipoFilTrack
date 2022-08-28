@@ -12,7 +12,7 @@ import {inRange, toggleDisabled} from "../utils/misc.js";
 const ZOOM_FACTOR = 2;
 
 export default class PointsSelector {
-    constructor(templateId, pointSize, lineWidth, color, onSelectionCallback) {
+    constructor(templateId, pointSize, lineWidth, color, onSelectionCallback, zoomUpdateCallback) {
         // Params
         this.templateId         = templateId;
         this.pointSize          = pointSize;
@@ -35,6 +35,10 @@ export default class PointsSelector {
         this.onSelectionCallback = () => {
             this.onSelection();
             onSelectionCallback();
+        }
+
+        this.onZoomUpdateCallback = () => {
+            zoomUpdateCallback();
         }
 
         this.moveHandler = e => this.moveSelection(e);
@@ -73,7 +77,6 @@ export default class PointsSelector {
         // Initialize UI elements
         this.updateMode(this.mode);
         this.onSelection();
-        this.onZoomUpdate();
     }
 
     updateMode(newMode) {
@@ -120,7 +123,6 @@ export default class PointsSelector {
         this.zoomFactor = 1;
         this.savedMov   = { x: 0, y: 0 };
         toggleDisabled(this.controls.zoomOut, this.zoomFactor == 1);
-        this.onZoomUpdate();
     }
 
     startMove(event) {
@@ -156,6 +158,7 @@ export default class PointsSelector {
 
         if(movX !== 0 || movY !== 0) {
             this.redraw();
+            this.onZoomUpdateCallback()
         }
     }
 
@@ -275,5 +278,6 @@ export default class PointsSelector {
         }
 
         this.updateZoomValueDisplay();
+        this.onZoomUpdateCallback()
     }
 }

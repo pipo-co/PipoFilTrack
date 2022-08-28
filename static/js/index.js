@@ -47,12 +47,13 @@ const downloadTsv           = document.getElementById('download-tsv');
 const rvRenderingProps      = document.getElementById('rv-rendering-properties');
 
 /* -------- Global variable -------- */
-let downloadWebMEventHandler
+let downloadWebMEventHandle
 let resultViewerPropertiesHandler
+let previewFrame
 
 /* -------- Controllers -------- */
 const resultsViewer = new ResultsViewer('result-controls');
-const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE, SELECTION_LINE_WIDTH, SELECTION_COLOR, debouncedPreview);
+const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE, SELECTION_LINE_WIDTH, SELECTION_COLOR, debouncedPreview, onZoomUpdate);
 
 /* -------- Main -------- */
 ;(function () {
@@ -154,12 +155,12 @@ function debouncedPreview() {
 }
 
 function trackingPreview() {
-     clearError();
+    clearError();
 
-     if(pointSelector.selectedPoints.length < 2) {
-        previewCanvas.hidden = true;
-        return;
-     }
+    if(pointSelector.selectedPoints.length < 2) {
+      previewCanvas.hidden = true;
+      return;
+    }
 
     const formData = new FormData(trackingForm);
     formData.set('images[]', imgInput.files[0]);
@@ -176,12 +177,15 @@ async function updatePreview(previewResults) {
       showTrackingErrors(previewResults.errors);
   }
 
-  const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}), pointSelector.image.width);
+  const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}), CANVAS_RESOLUTION);
   previewCanvas.classList.remove("loader");
-  
-  drawIntoCanvasZoomed(previewCanvas, frame, pointSelector.imgOffset, {sourceWidth: pointSelector.sourceWidth, sourceHeight: pointSelector.sourceHeight});
+  previewFrame = frame
+  drawIntoCanvasZoomed(previewCanvas, previewFrame, pointSelector.imgOffset, pointSelector.zoomFactor, pointSelector.image.width, pointSelector.image.height);
 }
 
+async function onZoomUpdate() {
+  drawIntoCanvasZoomed(previewCanvas, previewFrame, pointSelector.imgOffset, pointSelector.zoomFactor, pointSelector.image.width, pointSelector.image.height);
+}
 
 /* -------- Results -------- */
 async function processTrackingResults(trackingResult) {
@@ -266,7 +270,6 @@ async function renderTrackingResult(trackingResult, resultsFileName) {
 
 async function resultsToCanvas(trackingResult, renderParams, canvasResolution = CANVAS_RESOLUTION) {
     const frames = []
-
     // We iterate frame results and images at the same time (should have same length)
     const framesIter = imageIterator(imgInput.files);
     for(const result of trackingResult.frames[Symbol.iterator]()) {
