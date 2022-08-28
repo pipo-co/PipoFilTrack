@@ -110,6 +110,11 @@ canvas {
   margin-top: initial !important;
 }
 
+.uk-button {
+  color: white !important;
+  border-radius: 9px !important;
+}
+
 #undo, #redo {
   margin-top: 1%;
   max-height: 32px;
@@ -154,45 +159,80 @@ input[type="button"] {
 
 button {
   cursor: pointer;
-}.tooltip {
-  position: relative;
-  color: #00b4ab;
 }
 
-.tooltip .tooltip-text {
-  font-family: "Open Sans", sans-serif;
-  font-size: 1em;
-  line-height: 3em;
+.con-tooltip {
+  position: absolute;
+  
+  border-radius: 9px;
+  padding: 0 10px;
+  
+  display: inline-block;
+  
+  transition: all 0.3s ease-in-out;
+  cursor: default;
+}
+
+/*tooltip */
+.tooltip {
   visibility: hidden;
-  width: max-content;
-  background-color: #000000;
-  color: #fff;
-  text-align: left;
-  border-radius: 6px;
-  padding: 10px;
+  
+  width: 750%;
+  padding: 0px 15px;
+
+  background: #333;
+  color: white;
+  
   position: absolute;
-  z-index: 1;
-  bottom: 125%;
-  left: 50%;
-  margin-left: -30px;
-  opacity: 0;
-  transition: .3s;
-  transform: translate3d(0px, 20px, 0px);
+  top:-200%;
+  left: -400%;
+  
+  border-radius: 9px;
+  font: 14px;
+
+  transform: translateY(9px);
+  transition: all 0.3s ease-in-out;
+  
+  box-shadow: 0 0 3px rgba(56, 54, 54, 0.86);
 }
 
-.tooltip .tooltip-text::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
+
+/* tooltip  after*/
+.tooltip::after {
+  content: " ";
+  width: 0;
+  height: 0;
+  
   border-style: solid;
-  border-color: #00b4ab transparent transparent transparent;
+  border-width: 12px 12.5px 0 12.5px;
+  border-color: #333 transparent transparent transparent;
+
+  position: absolute;
+  left: 40%;
+
 }
 
-.tooltip:hover .tooltip-text {
+.con-tooltip:hover .tooltip{
   visibility: visible;
+  transform: translateY(-10px);
   opacity: 1;
-  transform: translate3d(0px, 0px, 0px);
+    transition: .3s linear;
+  animation: odsoky 1s ease-in-out infinite  alternate;
+
 }
+@keyframes odsoky {
+  0%{
+    transform: translateY(6px);	
+  }
+
+  100%{
+    transform: translateY(1px);	
+  }
+
+}
+
+/*hover ToolTip*/
+.left:hover {transform: translateX(-6px); }
+.top:hover {transform: translateY(-6px);  }
+.bottom:hover {transform: translateY(6px);}
+.right:hover {transform: translateX(6px); }
