@@ -29,7 +29,11 @@ class Config:
 
     @classmethod
     def from_dict(cls, env):
+        env = env.copy()
         fields_dict = {f.name: f for f in fields(cls)}
+        for k, v in fields_dict.items():
+            if v.type == bool:
+                env[k] = k in env
         return cls(**{k: fields_dict[k].type(v) for k, v in env.items() if k in fields_dict})
 
 # Encode tracking point extraordinary statuses
