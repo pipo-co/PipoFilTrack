@@ -44,7 +44,8 @@
               <legend class="uk-legend uk-margin-small">Parámetros de tracking</legend>
               {% for field in config_fields %}
                 <div class="uk-margin uk-flex uk-flex-between uk-flex-middle">
-                  <label for="config-{{ field.name }}" class="uk-form-label uk-text-break uk-margin-right">{{ field.metadata['name'] }} 
+                  <label for="config-{{ field.name }}" class="uk-form-label uk-text-break uk-margin-right">
+                    {{ field.metadata['name'] }}
                     <div class="con-tooltip top">
                     <span uk-icon="info"></span>
                     <div class="tooltip">
@@ -52,7 +53,7 @@
                     </div></div>
                 </label>
                     {% if field.type.__name__ == 'bool' %}
-                      <input id="config-{{ field.name }}" name="{{ field.name }}" type="checkbox" class="uk-checkbox uk-margin-remove-top" {% if field.default %} checked {% endif %} required />
+                      <input id="config-{{ field.name }}" name="{{ field.name }}" type="checkbox" class="uk-checkbox uk-margin-remove-top" {% if field.default %} checked {% endif %} />
                     {% elif field.type.__name__ == 'int' %}
                       <input id="config-{{ field.name }}" name="{{ field.name }}" type="number" value="{{ field.default }}" step="1" min="{{ field.metadata['min'] }}" max="{{ field.metadata['max'] }}" required />
                     {% elif field.type.__name__ == 'float' %}
