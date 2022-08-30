@@ -47,7 +47,7 @@ const downloadTsv           = document.getElementById('download-tsv');
 const rvRenderingProps      = document.getElementById('rv-rendering-properties');
 
 /* -------- Global variable -------- */
-let downloadWebMEventHandle
+let downloadWebMEventHandler
 let resultViewerPropertiesHandler
 let previewFrame
 
