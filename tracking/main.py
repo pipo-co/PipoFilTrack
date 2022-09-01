@@ -46,7 +46,7 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
         # Si fue seleccionado, suavizamos los puntos ajustando los mismos a una curva de bezier
         # Bezier puede fallar por cantidad maxima de puntos
         try:
-            smoothed_points = bezier_fitting(raw_points) if config.bezier_smoothing else raw_points
+            smoothed_points = bezier_fitting(raw_points, config.bezier_segment_len) if config.bezier_smoothing else raw_points
         except ValueError as e:
             config.bezier_smoothing = False
             errors.append(str(e))

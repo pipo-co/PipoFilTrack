@@ -175,23 +175,29 @@ def read_line_from_img(img: np.ndarray, ind: np.ndarray) -> np.ndarray:
     indices = ind[(ind[:,0] > 0) & (ind[:,0] < img.shape[1]) & (ind[:,1] > 0) & (ind[:,1] < img.shape[0])]
     return img[indices[:,1], indices[:,0]]
 
-def bezier_fitting(points: np.ndarray):
-    # How many points we want from the bezier curve
-    # It could be a parameter, but we always want the same amount of points as the input
-    count = points.shape[0]
+def bezier_fitting(points: np.ndarray, segment_len: int):
+    if np.isinf(comb(segment_len, segment_len // 2)):
+        raise ValueError('Bezier segment is too long. Try lowering it\'s length')
 
-    size = points.shape[0]
-    n = size - 1
+    total_points = len(points)
+    bezier_segments = [points[i: i + segment_len] for i in range(0, total_points, segment_len-1)]
+    total_segments = len(bezier_segments)
+    ret = np.zeros((total_points, 2))
 
-    if np.isinf(comb(n, n // 2)):
-        raise ValueError('Too many points in curve for bezier smoothing')
+    for seg_idx, segment in enumerate(bezier_segments):
+        # How many points we want from the bezier curve
+        # It could be a parameter, but we always want the same amount of points as the input
+        count = len(segment)
 
-    idx = np.arange(size).reshape((-1, 1))  # We make it of shape (count, 1) so it can later be broadcast to 2
-    ts = np.linspace(0, 1, num=count)
+        size = count
+        n = size - 1
 
-    ret = np.zeros((count, 2))
-    for i, t in enumerate(ts):
-        # Sum of points multiplied by the corresponding Bernstein polynomial
-        ret[i, :] = np.sum(points * comb(n, idx) * (t**idx) * ((1 - t)**(n - idx)), axis=0)
+        idx = np.arange(size).reshape((-1, 1))  # We make it of shape (count, 1) so it can later be broadcast to 2
+        ts = np.linspace(0, 1, num=count-1 if seg_idx < total_segments-1 else count)  # Queremos que sea abierto a derecha, excepto en el ultimo caso
+
+        for i, t in enumerate(ts):
+            # Sum of points multiplied by the corresponding Bernstein polynomial
+            #TODO(tobi): Se podria calcular solo una vez el polinomio para el caso segment_len
+            ret[seg_idx*(segment_len-1) + i, :] = np.sum(segment * comb(n, idx) * (t**idx) * ((1 - t)**(n - idx)), axis=0)
 
     return ret
