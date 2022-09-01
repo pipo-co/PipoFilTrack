@@ -132,16 +132,20 @@ def profile_pos_to_point(pos: float, points: np.ndarray) -> Optional[Tuple[float
 
     return new_x, new_y
 
-def gaussian(x, mu, sig):
-    return 1./(np.sqrt(2.*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2.)/2)
-
-def gauss_fitting(intensity_profile: np.ndarray, max_color: int, max_error: float) -> Optional[float]:
+def gauss_fitting(intensity_profile: np.ndarray, max_color: int, max_error: float, offset: bool) -> Optional[float]:
     """
     Ajusta los puntos a una distribucion gaussiana y retorna su maximo (la media) y su error.
     """
-    xdata = np.arange(len(intensity_profile))
+    profile_len = len(intensity_profile)
+    xdata = np.arange(profile_len)
     try:
-        popt, pcov = curve_fit(lambda x, m, s: gaussian(x, m, s) * max_color, xdata, intensity_profile)
+        popt, pcov = curve_fit(
+            (lambda x, mu, sig, a, y0: y0 + (a-y0)*np.exp(-((x-mu)**2)/(2.*sig**2.))) if offset else
+            (lambda x, mu, sig: max_color*(1./(np.sqrt(2.*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2.)/2))),
+            xdata,
+            intensity_profile,
+            p0=([profile_len/2, 1, max_color/2, max_color/2]) if offset else ([profile_len/2, 1]),
+        )
         p_error = np.square(np.diag(pcov))
         return popt[0] if p_error[0] < max_error else None
     except RuntimeError:
