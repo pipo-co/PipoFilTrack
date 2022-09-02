@@ -1,4 +1,4 @@
-import {Whammy} from "./libs/whammy.js";
+import "./libs/jszip.min.js";
 
 import ResultsViewer from "./controllers/results.js";
 import PointsSelector from "./controllers/selector.js";
@@ -43,7 +43,7 @@ const previewLoader         = document.getElementById('preview-loader');
 const resultsLoader         = document.getElementById('results-loader');
 const results               = document.getElementById('results');
 const downloadJson          = document.getElementById('download-json');
-const downloadWebM          = document.getElementById('download-webm');
+const downloadWebM          = document.getElementById('download-zip');
 const downloadTsv           = document.getElementById('download-tsv');
 const rvRenderingProps      = document.getElementById('rv-rendering-properties');
 
@@ -252,16 +252,20 @@ async function renderTrackingResult(trackingResult, resultsFileName) {
 
     downloadWebM.removeEventListener('click', downloadWebMEventHandler);
     
-    downloadWebMEventHandler = () => {
-        const vid = new Whammy.Video(resultsViewer.fps, WEBM_QUALITY);
+    
+
+    downloadWebMEventHandler = async () => {
+        const zip = new JSZip();
         UIkit.notification('Download started');
 
-        frames.forEach(frame => vid.add(frame));
-        vid.compile(false, video => {
-            if(downloadWebM.href) {
-                URL.revokeObjectURL(downloadWebM.href);
-            }
-            download(URL.createObjectURL(video), `${resultsFileName}.webm`);
+        let index = 0;
+        for (const frame of frames) {
+            const blob = await new Promise(resolve => frame.toBlob(resolve));
+            zip.file(`Frame${index++}.png`, blob)
+          }
+
+        zip.generateAsync({type:"blob"}).then(function(content) {
+            download(URL.createObjectURL(content), `${resultsFileName}.zip`);
         });
     };
 
