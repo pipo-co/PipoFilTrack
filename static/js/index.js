@@ -134,10 +134,10 @@ async function executeTracking(formData) {
     try {
         response = await fetch('/track', {method: 'POST', body: formData})
         if(!response.ok) {   
-            return Promise.reject(response.statusText);
+            return Promise.reject(`Server Error: ${response.status} - ${response.statusText}`);
         }
     } catch(error) {
-        return Promise.reject('Server Connection Error: ' + error);
+        return Promise.reject(`Server Connection Error: ${error}`);
     }
 
     try {
