@@ -1,6 +1,7 @@
 import dataclasses
 import json
 import os
+import traceback
 
 import numpy as np
 from flask import render_template, request, make_response, jsonify, Flask
@@ -22,14 +23,17 @@ def add_header(response):
 
 @app.errorhandler(ApplicationError)
 def application_error_handler(e):
+    traceback.print_tb(e.__traceback__)
     return make_response(jsonify(e), 400)
 
 @app.errorhandler(HTTPException)
 def http_exception_handler(e):
+    traceback.print_tb(e.__traceback__)
     return make_response(jsonify(ApplicationError(str(e)), e.code))
 
 @app.errorhandler(Exception)
 def generic_error_handler(e):
+    traceback.print_tb(e.__traceback__)
     return make_response(jsonify(ApplicationError(str(e))), 500)
 
 @app.route('/')
