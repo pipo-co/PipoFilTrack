@@ -22,11 +22,11 @@ def float_config_field(default: float, name: str, desc: str, step: float, min_: 
 class Config:
     max_fitting_error: float    = float_config_field(0.2, 'Tolerancia de error', 'Limite de tolerancia en el error del ajuste gaussiano del perfil de intensidad', step=1e-10, min_=0, max_=100)
     fitting_with_offset: bool   = bool_config_field(True, 'Ajustar permitiendo offset', 'Permitir la variación del offset para el ajuste gaussiano del perfil de intensidad')
-    normal_line_length: int     = int_config_field(10, 'Ancho del perfil de intensidad', 'Ancho en pixeles del perfil de intensidad a tomar perpendicularmente a cada punto', min_=2, max_=100)
+    normal_line_length: int     = int_config_field(10, 'Ancho del perfil de intensidad', 'Ancho en pixeles del perfil de intensidad a tomar perpendicularmente a cada punto', min_=2, max_=1000)
     point_density: int          = int_config_field(1, 'Densidad de puntos', 'Proporción de puntos a usar durante la interpolación por pixel (1/n). La máxima densidad es 1. Reducir la densidad reduce la precisión, pero aumenta la velocidad del algoritmo', min_=1, max_=100)
-    missing_inter_len: int      = int_config_field(3, 'Cantidad de puntos para interpolar', 'Cantidad de puntos vecinos a tomar hacia ambos lados para interpolar los puntos considerados inválidos (rojos)', min_=1, max_=20)
-    max_tangent_length: int     = int_config_field(15, 'Puntos para calcular tangente', 'Cantidad de puntos vecinos tomados para calcular la pendiente de cada punto', min_=1, max_=100)
-    bezier_segment_len: int     = int_config_field(100, 'Longitud del segmento de suavizado', 'Longitud por el que se parte el filamento, para luego ajustar a una curva de Bezier cada uno', min_=2, max_=500)
+    missing_inter_len: int      = int_config_field(3, 'Cantidad de puntos para interpolar', 'Cantidad de puntos vecinos a tomar hacia ambos lados para interpolar los puntos considerados inválidos (rojos)', min_=1, max_=100)
+    max_tangent_length: int     = int_config_field(15, 'Puntos para calcular tangente', 'Cantidad de puntos vecinos tomados para calcular la pendiente de cada punto', min_=1, max_=1000)
+    bezier_segment_len: int     = int_config_field(100, 'Longitud del segmento de suavizado', 'Longitud por el que se parte el filamento, para luego ajustar a una curva de Bezier cada uno', min_=2, max_=1000)
     bezier_smoothing: bool      = bool_config_field(True, 'Suavizado final', 'Post-procesamiento de suavizado del filamento ajustando a una curva de Bezier por segmento')
 
     @classmethod
