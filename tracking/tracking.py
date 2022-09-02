@@ -197,12 +197,13 @@ def bezier_fitting(points: np.ndarray, segment_len: int):
         size = count
         n = size - 1
 
-        idx = np.arange(size).reshape((-1, 1))  # We make it of shape (count, 1) so it can later be broadcast to 2
-        ts = np.linspace(0, 1, num=count-1 if seg_idx < total_segments-1 else count)  # Queremos que sea abierto a derecha, excepto en el ultimo caso
+        # We make it of shape (count, 1) so it can later be broadcast to 2
+        idx = np.arange(size).reshape((-1, 1))
+        # We want the last value to not be present, except on the last iteration
+        ts = np.linspace(0, 1, num=count)[:count-1 if seg_idx < total_segments-1 else count]
 
         for i, t in enumerate(ts):
             # Sum of points multiplied by the corresponding Bernstein polynomial
-            #TODO(tobi): Se podria calcular solo una vez el polinomio para el caso segment_len
             ret[seg_idx*(segment_len-1) + i, :] = np.sum(segment * comb(n, idx) * (t**idx) * ((1 - t)**(n - idx)), axis=0)
 
     return ret
