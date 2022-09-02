@@ -131,8 +131,8 @@ canvas {
 }
 
 .loader {
-  border: 16px solid #f3f3f3; /* Light grey */
-  border-top: 16px solid #3498db; /* Blue */
+  border: 16px solid #f3f3f3; 
+  border-top: 16px solid #3498db; 
   border-radius: 50%;
   width: 120px;
   height: 120px;
@@ -240,3 +240,61 @@ button {
 .top:hover {transform: translateY(-6px);  }
 .bottom:hover {transform: translateY(6px);}
 .right:hover {transform: translateX(6px); }
+
+#results-loader{
+  position:relative;
+  text-align: center;
+  margin-top: 15px;
+  margin-bottom: 35px;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%); 
+}
+.circle{
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: #00ff00;
+  border-radius: 50%;
+  animation: loading 1.5s cubic-bezier(.8, .5, .2, 1.4) infinite;
+  transform-origin: bottom center;
+  position: relative;
+}
+@keyframes loading{
+  0%{
+    transform: translateY(0px);
+    background-color: #00b900;
+  }
+  50%{
+    transform: translateY(50px);
+    background-color: #00ff00;
+  }
+  100%{
+    transform: translateY(0px);
+    background-color: #00b900;
+  }
+}
+.circle-1{
+  animation-delay: 0.1s;
+}
+.circle-2{
+  animation-delay: 0.2s;
+}
+.circle-3{
+  animation-delay: 0.3s;
+}
+.circle-4{
+  animation-delay: 0.4s;
+}
+.circle-5{
+  animation-delay: 0.5s;
+}
+.circle-6{
+  animation-delay: 0.6s;
+}
+.circle-7{
+  animation-delay: 0.7s;
+}
+.circle-8{
+  animation-delay: 0.8s;
+}

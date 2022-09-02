@@ -64,7 +64,13 @@
             </fieldset>
           </div>
           <div class="uk-flex uk-flex-center" id="preview-section">
-            <canvas id="preview" class="loader canvas uk-text-center" hidden></canvas>
+            <div id="preview-loader" class="uk-margin-auto" hidden>
+              <span class="circle circle-1"></span>
+              <span class="circle circle-2"></span>
+              <span class="circle circle-3"></span>
+              <span class="circle circle-4"></span>
+            </div>
+            <canvas id="preview" class="canvas uk-text-center" hidden></canvas>
           </div>
         </div>
       </div>
@@ -72,7 +78,17 @@
 
     <div id="results" hidden>
       <h1>Resultados</h1>
-      <div id="results-loader" class="uk-margin-auto loader"></div>
+      <div id="results-loader" >
+        <span class="circle circle-1"></span>
+        <span class="circle circle-2"></span>
+        <span class="circle circle-3"></span>
+        <span class="circle circle-4"></span>
+        <span class="circle circle-5"></span>
+        <span class="circle circle-6"></span>
+        <span class="circle circle-7"></span>
+        <span class="circle circle-8"></span>
+      </div>
+      <!-- <div id="results-loader" class="loader"></div> -->
       <div id="results-container" class="uk-flex" hidden>
         <div id="results-viewer" class="uk-width-1-2 uk-margin-auto loader"></div>
         <div class="uk-width-1-2">

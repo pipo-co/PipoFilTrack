@@ -39,6 +39,7 @@ const errors                = document.getElementById('errors');
 const trackButtonContainer  = document.getElementById('track-button');
 const resultsViewerUI       = document.getElementById('results-viewer');
 const resultsContainer      = document.getElementById('results-container');
+const previewLoader         = document.getElementById('preview-loader');
 const resultsLoader         = document.getElementById('results-loader');
 const results               = document.getElementById('results');
 const downloadJson          = document.getElementById('download-json');
@@ -164,7 +165,7 @@ function trackingPreview() {
     const formData = new FormData(trackingForm);
     formData.set('images[]', imgInput.files[0]);
 
-    previewCanvas.hidden = false;
+    previewLoader.hidden = false;
     executeTracking(formData)
         .then(updatePreview)
         .catch(showError)
@@ -177,7 +178,8 @@ async function updatePreview(previewResults) {
   }
 
   const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}), CANVAS_RESOLUTION);
-  previewCanvas.classList.remove("loader");
+  previewLoader.hidden = true;
+  previewCanvas.hidden = false;
   previewFrame = frame
   drawIntoCanvasZoomed(previewCanvas, previewFrame, pointSelector.imgOffset, pointSelector.zoomFactor, pointSelector.image.width, pointSelector.image.height);
 }
@@ -215,7 +217,6 @@ async function processTrackingResults(trackingResult) {
 
     await renderTrackingResult(trackingResult, resultsFileName);
 
-    resultsViewerUI.classList.remove("loader");
     resultsLoader.hidden = true;
     resultsContainer.hidden = false;
 
