@@ -94,7 +94,7 @@ export default class PointsSelector {
         this.image = image;
         resizeCanvasHeight(this.canvas, this.image.width, this.image.height);
         this.resetZoom();
-        this.updateZoomValueDisplay();
+        this.onZoomUpdate();
         this.drawImage();
         this.updateMode('draw');
         this.controls.controls.hidden = false;
@@ -114,7 +114,6 @@ export default class PointsSelector {
           this.zoomFactor = Math.max(this.zoomFactor * factor, 1);
         }
         
-        toggleDisabled(this.controls.zoomOut, this.zoomFactor === 1);
         this.redraw();
         this.onZoomUpdate();
     }
@@ -123,7 +122,6 @@ export default class PointsSelector {
         this.imgOffset  = { x: 0, y: 0};
         this.zoomFactor = 1;
         this.savedMov   = { x: 0, y: 0 };
-        toggleDisabled(this.controls.zoomOut, this.zoomFactor === 1);
     }
 
     startMove(event) {
@@ -273,7 +271,8 @@ export default class PointsSelector {
 
     onZoomUpdate() {
         const cond = this.zoomFactor === 1;
-        toggleDisabled(this.controls.move, this.zoomFactor === 1);
+        toggleDisabled(this.controls.move, cond);
+        toggleDisabled(this.controls.zoomOut, cond);
         if(cond && this.mode === 'move') {
             this.updateMode('draw');
         }
