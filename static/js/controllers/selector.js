@@ -94,6 +94,7 @@ export default class PointsSelector {
         this.image = image;
         resizeCanvasHeight(this.canvas, this.image.width, this.image.height);
         this.resetZoom();
+        this.updateZoomValueDisplay();
         this.drawImage();
         this.updateMode('draw');
         this.controls.controls.hidden = false;
