@@ -14,7 +14,7 @@ from tracking.models import Config, ApplicationError
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = os.getenv('SECRET_KEY')
 
-ALLOWED_IMAGE_TYPES = ['.tif', '.tiff', '.jpg', '.jpeg', '.png']
+ALLOWED_IMAGE_TYPES = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.raw']
 
 @app.after_request
 def add_header(response):
