@@ -47,6 +47,8 @@ function getName(fileName, index, length) {
 
 export function closeImage(frame) {
     if(frame instanceof ImageBitmap) {
-        frame.close()
+        frame.close();
+    } else if(frame.data && frame.data instanceof ImageBitmap) {
+        frame.data.close();
     }
 }
