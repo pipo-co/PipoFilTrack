@@ -31,7 +31,7 @@ export function drawIntoCanvas(canvas, image) {
 }
 
 export function drawIntoCanvasZoomed(canvas, image, imgOffset, zoomFactor, pointSelectorWidth, pointSelectorHeight) {
-    resizeCanvasHeight(canvas, image.width, image.height);
+    resizeCanvasHeight(canvas, image.width, image.height, 2);
 
     const ctx = canvas.getContext('2d');
     canvasDisableSmoothing(ctx);
@@ -41,7 +41,12 @@ export function drawIntoCanvasZoomed(canvas, image, imgOffset, zoomFactor, point
 }
 
 // Adjust canvas vertical size to maintain width * height aspect ratio
-export function resizeCanvasHeight(canvas, width, height) {
+// Also if image is too wide we have to adjust height vh to fit the hole image
+export function resizeCanvasHeight(canvas, width, height, correction = 1) {
+    let percentage = height / width;
+    if (percentage < 0.85 ) {
+      canvas.style.height = 100 * percentage ** correction + "vh" 
+    }
     canvas.height = canvas.width / width * height;
 }
 

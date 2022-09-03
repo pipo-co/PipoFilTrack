@@ -54,7 +54,7 @@ let previewFrame
 
 /* -------- Controllers -------- */
 const resultsViewer = new ResultsViewer('result-controls');
-const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE, SELECTION_LINE_WIDTH, SELECTION_COLOR, debouncedPreview, onZoomUpdate);
+const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE, SELECTION_LINE_WIDTH, SELECTION_COLOR, debouncedPreview, onImageLoad, onZoomUpdate);
 
 /* -------- Main -------- */
 ;(function () {
@@ -180,7 +180,7 @@ async function updatePreview(previewResults) {
   const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}), CANVAS_RESOLUTION);
   previewLoader.hidden = true;
   previewCanvas.hidden = false;
-  previewFrame = frame
+  previewFrame = frame;
   drawIntoCanvasZoomed(previewCanvas, previewFrame, pointSelector.imgOffset, pointSelector.zoomFactor, pointSelector.image.width, pointSelector.image.height);
 }
 
