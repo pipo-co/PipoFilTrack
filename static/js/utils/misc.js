@@ -1,5 +1,5 @@
 // https://www.freecodecamp.org/news/javascript-debounce-example/
-export function debounce(func, timeout = 500) {
+export function debounce(func, timeout = 1000) {
     let timer;
     return (...args) => {
       clearTimeout(timer);
