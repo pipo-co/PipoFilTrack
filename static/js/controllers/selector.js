@@ -100,7 +100,7 @@ export default class PointsSelector {
     }
 
     updateZoom(factor) {
-        if (this.zoomFactor == 1) {
+        if (this.zoomFactor === 1) {
           this.zoomFactor = Math.max(this.zoomFactor * factor, 1);
           this.imgOffset  = {x: this.image.width / 4, y: this.image.height / 4};
         }
@@ -113,7 +113,7 @@ export default class PointsSelector {
           this.zoomFactor = Math.max(this.zoomFactor * factor, 1);
         }
         
-        toggleDisabled(this.controls.zoomOut, this.zoomFactor == 1);
+        toggleDisabled(this.controls.zoomOut, this.zoomFactor === 1);
         this.redraw();
         this.onZoomUpdate();
     }
@@ -122,7 +122,7 @@ export default class PointsSelector {
         this.imgOffset  = { x: 0, y: 0};
         this.zoomFactor = 1;
         this.savedMov   = { x: 0, y: 0 };
-        toggleDisabled(this.controls.zoomOut, this.zoomFactor == 1);
+        toggleDisabled(this.controls.zoomOut, this.zoomFactor === 1);
     }
 
     startMove(event) {
