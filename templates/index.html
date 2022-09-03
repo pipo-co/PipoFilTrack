@@ -24,10 +24,10 @@
 </head>
 
 <body class="uk-background-cover">
-  <main class="uk-text-center">
+  <main>
     <form id="tracking-form" enctype="multipart/form-data" class="uk-form-horizontal uk-margin-large">
       <div id="selection" class="uk-flex uk-flex-wrap">
-        <div id="selector-zone" class="uk-text-center uk-width-2-3">
+        <div id="selector-zone" class="uk-width-2-3">
           <div class="uk-flex uk-flex-center uk-margin">
             <div id="selector-wrapper"></div>
           </div>
@@ -48,7 +48,7 @@
         <div id="preview-zone" class="uk-width-1-3">
           <div class="uk-margin">
             <fieldset>
-              <legend class="uk-legend uk-margin-small">Parámetros de tracking</legend>
+              <legend class="uk-legend uk-margin-small uk-text-center">Parámetros de tracking</legend>
               {% for field in config_fields %}
               <div class="uk-margin uk-flex uk-flex-between uk-flex-middle">
                 <div>
@@ -78,7 +78,7 @@
             </fieldset>
           </div>
           <div class="uk-flex uk-flex-center" id="preview-section">
-            <div id="preview-loader" class="uk-margin-auto" hidden>
+            <div id="preview-loader" class="uk-margin-auto uk-text-center" hidden>
               <span class="circle circle-1"></span>
               <span class="circle circle-2"></span>
               <span class="circle circle-3"></span>
@@ -90,7 +90,7 @@
       </div>
     </form>
 
-    <div id="results" hidden>
+    <div id="results" class="uk-text-center" hidden>
       <h1>Resultados</h1>
       <div id="results-loader">
         <span class="circle circle-1"></span>
