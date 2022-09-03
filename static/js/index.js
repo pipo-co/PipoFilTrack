@@ -185,7 +185,9 @@ async function updatePreview(previewResults) {
 }
 
 async function onZoomUpdate() {
+    if(previewFrame) {
   drawIntoCanvasZoomed(previewCanvas, previewFrame, pointSelector.imgOffset, pointSelector.zoomFactor, pointSelector.image.width, pointSelector.image.height);
+}
 }
 
 /* -------- Results -------- */
