@@ -27,7 +27,7 @@ export async function* imageIterator(images) {
             case 'image/jpeg':
             case 'image/jpg':
             case 'image/png': {
-                yield await {data: createImageBitmap(image), name: image.name};
+                yield {data: createImageBitmap(image), name: image.name};
             } break;
             default:
                 // Ignoramos tipos que no conocemos
