@@ -260,7 +260,7 @@ async function renderTrackingResult(trackingResult, resultsFileName) {
 
         for (const frame of frames) {
             const blob = await new Promise(resolve => frame.data.toBlob(resolve));
-            const name = frame.name.substr(0, frame.name.lastIndexOf('.'));
+            const name = frame.name.substring(0, frame.name.lastIndexOf('.'));
             zip.file(`${name}.png`, blob)
           }
 
