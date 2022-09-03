@@ -135,18 +135,24 @@ async function executeTracking(formData) {
     let response;
     try {
         response = await fetch('/track', {method: 'POST', body: formData})
-        if(!response.ok) {   
-            return Promise.reject(`Server Error: ${response.status} - ${response.statusText}`);
-        }
     } catch(error) {
         return Promise.reject(`Server Connection Error: ${error}`);
     }
 
     try {
         const body = await response.json();
-        return Promise.resolve(body);
+        if(response.ok) {   
+            return Promise.resolve(body);
+        }
+        // Error del back
+        return Promise.reject(body.message);
     } catch(error) {
-        return Promise.reject(error);
+        if(!response.ok) {
+            // Error en nginx => HTML => no es json
+            return Promise.reject(`Server Error: ${response.status} - ${response.statusText}`);
+        }
+        // Error en json
+        return Promise.reject('Error procesando la respuesta.');
     }
 }
 
