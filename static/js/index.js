@@ -1,4 +1,4 @@
-import "./libs/jszip.min.js";
+import {JSZip} from "./libs/jszip.min.js";
 
 import ResultsViewer from "./controllers/results.js";
 import PointsSelector from "./controllers/selector.js";
