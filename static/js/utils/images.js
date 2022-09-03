@@ -7,7 +7,7 @@ export async function* imageIterator(images) {
             case 'image/tiff': {
                 const buffer = await image.arrayBuffer();
                 const ifds = UTIF.decode(buffer);
-                for(const ifd of ifds) {
+                for(const [i, ifd] of ifds.entries()) {
                     UTIF.decodeImage(buffer, ifd, ifds);
 
                     const rgbaData = UTIF.toRGBA8(ifd);
@@ -20,19 +20,29 @@ export async function* imageIterator(images) {
                     // Rendereamos la imagen en un canvas intermedio para luego poder escalar la imagen
                     const ctx = drawable.getContext('2d');
                     ctx.putImageData(imageData, 0, 0, 0, 0, ifd.width, ifd.height);
-
-                    yield drawable;
+                    
+                    yield {data: drawable, name: getName(image.name, i, ifds.length)};
                 }
             } break;
             case 'image/jpeg':
             case 'image/jpg':
             case 'image/png': {
-                yield await createImageBitmap(image);
+                yield await {data: createImageBitmap(image), name: image.name};
             } break;
             default:
                 // Ignoramos tipos que no conocemos
         }
     }
+}
+
+function getName(fileName, index, length) {
+    if(length > 1) {
+        const name = fileName.substr(0, fileName.lastIndexOf('.'));
+        const number = `${index}`.padStart(Math.floor(length/10), '0');
+        const fType = fileName.substr(fileName.lastIndexOf('.'));
+        return name + number + fType;
+    }
+    return fileName;
 }
 
 export function closeImage(frame) {

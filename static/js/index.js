@@ -94,7 +94,7 @@ async function handleImageSelection() {
     if(pointSelector.image) {
         closeImage(pointSelector.image);
     }
-    pointSelector.loadImage(firstFrame.value);
+    pointSelector.loadImage(firstFrame.value.data);
 
     // Show canvas
     selectorWrapper.hidden = false;
@@ -177,7 +177,7 @@ async function updatePreview(previewResults) {
       showTrackingErrors(previewResults.errors);
   }
 
-  const [frame] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}), CANVAS_RESOLUTION);
+  const [{data: frame}] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}), CANVAS_RESOLUTION);
   previewLoader.hidden = true;
   previewCanvas.hidden = false;
   previewFrame = frame;
@@ -186,8 +186,8 @@ async function updatePreview(previewResults) {
 
 async function onZoomUpdate() {
     if(previewFrame) {
-  drawIntoCanvasZoomed(previewCanvas, previewFrame, pointSelector.imgOffset, pointSelector.zoomFactor, pointSelector.image.width, pointSelector.image.height);
-}
+        drawIntoCanvasZoomed(previewCanvas, previewFrame, pointSelector.imgOffset, pointSelector.zoomFactor, pointSelector.image.width, pointSelector.image.height);
+    }
 }
 
 /* -------- Results -------- */
@@ -250,7 +250,7 @@ function toTsvResults(resultData) {
 
 async function renderTrackingResult(trackingResult, resultsFileName) {
     const frames = await resultsToCanvas(trackingResult, RenderParams.fromForm(rvRenderingProps));
-    resultsViewer.loadResults(frames);
+    resultsViewer.loadResults(frames.map(f => f.data));
 
     downloadWebM.removeEventListener('click', downloadWebMEventHandler);
     
@@ -260,10 +260,10 @@ async function renderTrackingResult(trackingResult, resultsFileName) {
         const zip = new JSZip();
         UIkit.notification('Download started');
 
-        let index = 0;
         for (const frame of frames) {
-            const blob = await new Promise(resolve => frame.toBlob(resolve));
-            zip.file(`Frame${index++}.png`, blob)
+            const blob = await new Promise(resolve => frame.data.toBlob(resolve));
+            const name = frame.name.substr(0, frame.name.lastIndexOf('.'));
+            zip.file(`${name}.png`, blob)
           }
 
         zip.generateAsync({type:"blob"}).then(function(content) {
@@ -279,7 +279,7 @@ async function resultsToCanvas(trackingResult, renderParams, canvasResolution = 
     // We iterate frame results and images at the same time (should have same length)
     const framesIter = imageIterator(imgInput.files);
     for(const result of trackingResult.frames[Symbol.iterator]()) {
-        const {value: frame} = await framesIter.next();
+        const {value: {data: frame, name: imgName}} = await framesIter.next();
 
         const canvas = buildImageCanvas(frame, canvasResolution);
         const ctx = canvas.getContext('2d');
@@ -297,7 +297,7 @@ async function resultsToCanvas(trackingResult, renderParams, canvasResolution = 
             }
         }
 
-        frames.push(canvas);
+        frames.push({data: canvas, name: imgName});
         closeImage(frame);
     }
 
