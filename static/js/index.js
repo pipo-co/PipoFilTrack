@@ -54,7 +54,7 @@ let previewFrame
 
 /* -------- Controllers -------- */
 const resultsViewer = new ResultsViewer('result-controls');
-const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE, SELECTION_LINE_WIDTH, SELECTION_COLOR, debouncedPreview, onImageLoad, onZoomUpdate);
+const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE, SELECTION_LINE_WIDTH, SELECTION_COLOR, debouncedPreview, onZoomUpdate);
 
 /* -------- Main -------- */
 ;(function () {
