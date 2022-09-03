@@ -34,10 +34,8 @@
           <div class="uk-flex uk-flex-first uk-flex-center uk-margin" id="img-buttons">
             <a href="/manual" class="uk-button uk-button-default">Manual de uso</a>
             <div uk-form-custom class="uk-margin-right uk-margin-left">
-              <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple
-                required />
-              <button class="uk-button uk-button-default uk-width-1-1 uk-margin-small-bottom" type="button"
-                tabindex="-1">Seleccione las imágenes que desea trackear</button>
+              <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required />
+              <button class="uk-button uk-button-default uk-width-1-1" type="button" tabindex="-1">Seleccione las imágenes que desea trackear</button>
             </div>
             <div id="track-button" class="uk-margin-right uk-margin-left" hidden>
               <button class="uk-button uk-button-default" id="tracking-submit">Track</button>
@@ -84,7 +82,7 @@
               <span class="circle circle-3"></span>
               <span class="circle circle-4"></span>
             </div>
-            <canvas id="preview" class="canvas uk-text-center" hidden></canvas>
+            <canvas id="preview" class="canvas uk-text-center"></canvas>
           </div>
         </div>
       </div>

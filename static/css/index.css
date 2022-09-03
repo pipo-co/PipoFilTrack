@@ -27,6 +27,7 @@ h1 {
 
 #preview canvas {
   height: 85vh;
+  visibility: hidden;
 }
 
 #preview-section {
