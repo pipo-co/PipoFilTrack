@@ -1,25 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Filament Tracking</title>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1">
-  <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon"/>
+  <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon" />
 
   <!-- UIkit -->
   <script src="/static/js/libs/uikit/uikit.min.js" defer></script>
   <script src="/static/js/libs/uikit/uikit-icons.min.js" defer></script>
-  <link rel="stylesheet" href="/static/css/libs/uikit.min.css"/>
+  <link rel="stylesheet" href="/static/css/libs/uikit.min.css" />
+
 
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/static/css/index.css">
-  <script src="/static/js/utils/tooltip.js"  async></script>
+  <script src="/static/js/styling/tooltip.js" async></script>
 
   <!-- Custom JS -->
   <script src="/static/js/index.js" type="module"></script>
 
 </head>
+
 <body class="uk-background-cover">
   <main class="uk-text-center">
     <form id="tracking-form" enctype="multipart/form-data" class="uk-form-horizontal uk-margin-large">
@@ -31,38 +34,46 @@
           <div class="uk-flex uk-flex-first uk-flex-center uk-margin" id="img-buttons">
             <a href="/manual" class="uk-button uk-button-default">Manual de uso</a>
             <div uk-form-custom class="uk-margin-right uk-margin-left">
-              <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required />
-              <button class="uk-button uk-button-default uk-width-1-1 uk-margin-small-bottom" type="button" tabindex="-1">Seleccione las imágenes que desea trackear</button>
+              <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple
+                required />
+              <button class="uk-button uk-button-default uk-width-1-1 uk-margin-small-bottom" type="button"
+                tabindex="-1">Seleccione las imágenes que desea trackear</button>
             </div>
             <div id="track-button" class="uk-margin-right uk-margin-left" hidden>
               <button class="uk-button uk-button-default" id="tracking-submit">Track</button>
             </div>
           </div>
-          <p id="errors" ></p>
+          <p id="errors"></p>
         </div>
         <div id="preview-zone" class="uk-width-1-3">
           <div class="uk-margin">
             <fieldset>
               <legend class="uk-legend uk-margin-small">Parámetros de tracking</legend>
               {% for field in config_fields %}
-                <div class="uk-margin uk-flex uk-flex-between uk-flex-middle">
-                  <label for="config-{{ field.name }}" class="uk-form-label uk-text-break uk-margin-right">
+              <div class="uk-margin uk-flex uk-flex-between uk-flex-middle">
+                <div>
+                  <label for="config-{{ field.name }}" class="uk-form-label uk-text-break">
                     {{ field.metadata['name'] }}
-                    <div class="con-tooltip top" onclick="displayTooltip('id-{{ field.name }}')">
-                      <span uk-icon="info"></span>
-                      <div class="tooltip" id="id-{{ field.name }}" >
-                        <p>{{ field.metadata['desc'] }}</p>
-                      </div>
+                  </label>
+                  <div class="con-tooltip top" onclick="displayTooltip('id-{{ field.name }}')">
+                    <span uk-icon="info"></span>
+                    <div class="tooltip" id="id-{{ field.name }}" hidden>
+                      <p>{{ field.metadata['desc'] }}</p>
                     </div>
-                </label>
-                    {% if field.type.__name__ == 'bool' %}
-                      <input id="config-{{ field.name }}" name="{{ field.name }}" type="checkbox" class="uk-checkbox uk-margin-remove-top" {% if field.default %} checked {% endif %} />
-                    {% elif field.type.__name__ == 'int' %}
-                      <input id="config-{{ field.name }}" name="{{ field.name }}" type="number" value="{{ field.default }}" step="1" min="{{ field.metadata['min'] }}" max="{{ field.metadata['max'] }}" required />
-                    {% elif field.type.__name__ == 'float' %}
-                      <input id="config-{{ field.name }}" name="{{ field.name }}" type="number" value="{{ field.default }}" step="{{ field.metadata['step'] }}" min="{{ field.metadata['min'] }}" max="{{ field.metadata['max'] }}" required />
-                    {% endif %}
+                  </div>
                 </div>
+                {% if field.type.__name__ == 'bool' %}
+                <input id="config-{{ field.name }}" name="{{ field.name }}" type="checkbox"
+                  class="uk-checkbox uk-margin-remove-top" {% if field.default %} checked {% endif %} />
+                {% elif field.type.__name__ == 'int' %}
+                <input id="config-{{ field.name }}" name="{{ field.name }}" type="number" value="{{ field.default }}"
+                  step="1" min="{{ field.metadata['min'] }}" max="{{ field.metadata['max'] }}" required />
+                {% elif field.type.__name__ == 'float' %}
+                <input id="config-{{ field.name }}" name="{{ field.name }}" type="number" value="{{ field.default }}"
+                  step="{{ field.metadata['step'] }}" min="{{ field.metadata['min'] }}"
+                  max="{{ field.metadata['max'] }}" required />
+                {% endif %}
+              </div>
               {% endfor %}
             </fieldset>
           </div>
@@ -81,7 +92,7 @@
 
     <div id="results" hidden>
       <h1>Resultados</h1>
-      <div id="results-loader" >
+      <div id="results-loader">
         <span class="circle circle-1"></span>
         <span class="circle circle-2"></span>
         <span class="circle circle-3"></span>
@@ -94,7 +105,9 @@
       <div id="results-container" class="uk-flex" hidden>
         <div id="results-viewer" class="uk-width-1-2 uk-margin-auto"></div>
         <div class="uk-width-1-2">
-          <p>Descarga los resultados de las posiciones en formato <a id="download-json" download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a></p>
+          <p>Descarga los resultados de las posiciones en formato <a id="download-json"
+              download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a>
+          </p>
           <p>Descarga las imagenes en <a id="download-zip">Zip</a></p>
           <form id="rv-rendering-properties">
             <label>Puntos codificados con colores<input name="color-coding" type="checkbox" checked /></label>
@@ -105,6 +118,7 @@
     </div>
   </main>
 </body>
+
 </html>
 
 <template id="result-controls">
@@ -139,7 +153,8 @@
 <template id="point-selector">
   <div class="uk-flex uk-margin-left">
     <canvas id="ps-canvas"></canvas>
-    <div id="ps-controls" class="uk-flex-none uk-flex uk-flex-column uk-flex-around uk-margin-top uk-margin-bottom uk-padding-small" hidden>
+    <div id="ps-controls"
+      class="uk-flex-none uk-flex uk-flex-column uk-flex-around uk-margin-top uk-margin-bottom uk-padding-small" hidden>
       <div class="uk-flex uk-flex-column">
         <span class="primary pill button vertical-pill top-pill" id="ps-zoom-in" uk-icon="icon: plus"></span>
         <span class="primary pill vertical-pill" id="ps-zoom-value"></span>

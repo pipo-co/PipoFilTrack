@@ -142,7 +142,6 @@ canvas {
   color: red;
 }
 
-
 #selector-wrapper {
   position: relative;
 }
@@ -165,7 +164,7 @@ button {
 }
 
 .con-tooltip {
-  position: absolute;
+  position: relative;
   
   border-radius: 9px;
   padding: 0 10px;
@@ -178,8 +177,7 @@ button {
 
 /*tooltip */
 .tooltip {
-  visibility: hidden;
-  
+
   width: 750%;
   padding: 0px 15px;
 
