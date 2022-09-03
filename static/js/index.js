@@ -48,18 +48,19 @@ const downloadTsv           = document.getElementById('download-tsv');
 const rvRenderingProps      = document.getElementById('rv-rendering-properties');
 
 /* -------- Global variable -------- */
+const debouncedPreviewHandler = debounce(trackingPreview);
 let downloadWebMEventHandler
 let resultViewerPropertiesHandler
 let previewFrame
 
 /* -------- Controllers -------- */
 const resultsViewer = new ResultsViewer('result-controls');
-const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE, SELECTION_LINE_WIDTH, SELECTION_COLOR, debouncedPreview, onZoomUpdate);
+const pointSelector = new PointsSelector('point-selector', SELECTION_POINT_SIZE, SELECTION_LINE_WIDTH, SELECTION_COLOR, debouncedPreviewHandler, onZoomUpdate);
 
 /* -------- Main -------- */
 ;(function () {
     trackingForm.addEventListener('submit', fullTracking);
-    trackingForm.addEventListener('input', debouncedPreview);
+    trackingForm.addEventListener('input', debouncedPreviewHandler);
 
     imgInput.addEventListener('change', handleImageSelection);
 
@@ -150,10 +151,6 @@ async function executeTracking(formData) {
 }
 
 /* -------- Preview -------- */
-function debouncedPreview() {
-    debounce(trackingPreview)();
-}
-
 function trackingPreview() {
     clearError();
 
@@ -166,6 +163,7 @@ function trackingPreview() {
     formData.set('images[]', imgInput.files[0]);
 
     previewLoader.hidden = false;
+    previewCanvas.hidden = true;
     executeTracking(formData)
         .then(updatePreview)
         .catch(showError)
