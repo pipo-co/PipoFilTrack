@@ -31,7 +31,7 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
 
         # Obtenemos la posicion del maximo punto del perfil de intensidad.
         # Puede retornar None en caso de que no se pueda fittear la curva de intensidad, o si el error es mayor al maximo permitido.
-        points_profile_pos = list(map(lambda ip, img=frame: gauss_fitting(ip, img.max(), config.max_fitting_error, config.fitting_with_offset), intensity_profiles))
+        points_profile_pos = list(map(lambda ip, img=frame: gauss_fitting(ip, config.max_fitting_error), intensity_profiles))
 
         # A partir de las posiciones, obtenemos los puntos que representan.
         # En caso de que el error de la posicion fuese muy alto,
