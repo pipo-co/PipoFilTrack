@@ -162,6 +162,7 @@ async function trackingPreview() {
 
     if(pointSelector.selectedPoints.length < 2) {
       previewCanvas.style.visibility = 'hidden';
+      previewLoader.hidden = true;
       return;
     }
 
