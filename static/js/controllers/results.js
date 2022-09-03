@@ -43,8 +43,6 @@ export default class ResultsViewer {
 
     loadResults(frames) {
         this.frames = frames
-        resizeCanvasHeight(this.canvas, frames[0].width, frames[0].height, 0.5);
-
         this.drawFrame();
         this.updateFrameRateNumberDisplay();
     }
