@@ -5,7 +5,7 @@ import PointsSelector from "./controllers/selector.js";
 
 import {debounce, download} from "./utils/misc.js";
 import {buildImageCanvas, drawIntoCanvasZoomed, drawLine, drawPoint, trackingPoint2canvas} from "./utils/canvas.js";
-import {closeImage, imageIterator} from "./utils/images.js";
+import {closeImage, fileIterator, imageIterator} from "./utils/images.js";
 
 /* --------- Constants ------------ */
 // Horizontal resolution in pixels of all canvas used. Height is calculated to maintain aspect ratio of images.
@@ -151,7 +151,7 @@ async function executeTracking(formData) {
 }
 
 /* -------- Preview -------- */
-function trackingPreview() {
+async function trackingPreview() {
     clearError();
 
     if(pointSelector.selectedPoints.length < 2) {
@@ -160,7 +160,8 @@ function trackingPreview() {
     }
 
     const formData = new FormData(trackingForm);
-    formData.set('images[]', imgInput.files[0]);
+    const {value: previewFile} = await fileIterator(imgInput.files).next();
+    formData.set('images[]', previewFile);
 
     previewLoader.hidden = false;
     previewCanvas.hidden = true;

@@ -35,6 +35,33 @@ export async function* imageIterator(images) {
     }
 }
 
+export async function* fileIterator(images) {
+    for(const image of images) {
+        switch(image.type) {
+            case 'image/tiff': {
+                const buffer = await image.arrayBuffer();
+                const ifds = UTIF.decode(buffer);
+                if(ifds.length === 1) {
+                    yield image;
+                } else {
+                    for(const ifd of ifds) {
+                        UTIF.decodeImage(buffer, ifd, ifds);
+                        // Raw images naming scheme is: {name}-{height}_{width}_{channels}
+                        yield new File([UTIF.toRGBA8(ifd)], `${name}-${ifd.height}_${ifd.width}_4.raw`, {type: 'image/*'})
+                    }
+                }
+            } break;
+            case 'image/jpeg':
+            case 'image/jpg':
+            case 'image/png': {
+                yield image;
+            } break;
+            default:
+                // Ignoramos tipos que no conocemos
+        }
+    }
+}
+
 function getName(fileName, index, length) {
     if(length > 1) {
         const name = fileName.substring(0, fileName.lastIndexOf('.'));
