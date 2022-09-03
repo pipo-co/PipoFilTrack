@@ -37,9 +37,9 @@ export async function* imageIterator(images) {
 
 function getName(fileName, index, length) {
     if(length > 1) {
-        const name = fileName.substr(0, fileName.lastIndexOf('.'));
+        const name = fileName.substring(0, fileName.lastIndexOf('.'));
         const number = `${index}`.padStart(Math.floor(length/10), '0');
-        const fType = fileName.substr(fileName.lastIndexOf('.'));
+        const fType = fileName.substring(fileName.lastIndexOf('.'));
         return name + number + fType;
     }
     return fileName;
