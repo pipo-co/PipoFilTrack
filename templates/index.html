@@ -102,23 +102,27 @@
         <span class="circle circle-7"></span>
         <span class="circle circle-8"></span>
       </div>
-      <div id="results-container" class="uk-flex" hidden>
-        <div id="results-viewer" class="uk-width-1-2 uk-margin-auto"></div>
-        <div class="uk-width-1-2">
-          <p>Descarga los resultados de las posiciones en formato <a id="download-json"
-              download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a>
-          </p>
-          <p>Descarga las imagenes en <a id="download-zip">Zip</a></p>
+      <div id="results-container" hidden>
+        <div class="uk-flex-between">
           <form id="rv-rendering-properties">
             <label>Puntos codificados con colores<input name="color-coding" type="checkbox" checked /></label>
             <label>Perfiles de intensidad<input name="normal-lines" type="checkbox" /></label>
           </form>
         </div>
+        <div class="uk-flex">
+          <div id="results-viewer" class="uk-width-1-2 uk-margin-auto"></div>
+        </div>
+        <div class="uk-flex-between uk-text-center">
+          <h1>Exportar Resultados</h1>
+          <p>Descarga los resultados de las posiciones en formato <a id="download-json"
+              download="tracking_results.json">JSON</a> o <a id="download-tsv" download="tracking_results.tsv">TSV</a>
+          </p>
+          <p>Descarga las imagenes en <a id="download-zip">Zip</a></p>
+        </div>
       </div>
     </div>
   </main>
 </body>
-
 </html>
 
 <template id="result-controls">

@@ -77,7 +77,7 @@ export default class ResultsViewer {
     }
 
     updateFrameRateNumberDisplay() {
-        this.controls['frame_rate'].innerText = `Speed: ${this.fps}`
+        this.controls['frame_rate'].innerText = `Velocidad: ${this.fps}`
     }
 
     nextFrame() {
