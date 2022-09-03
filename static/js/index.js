@@ -161,7 +161,7 @@ async function trackingPreview() {
     clearError();
 
     if(pointSelector.selectedPoints.length < 2) {
-      previewCanvas.hidden = true;
+      previewCanvas.style.visibility = 'hidden';
       return;
     }
 
@@ -170,7 +170,7 @@ async function trackingPreview() {
     formData.set('images[]', previewFile);
 
     previewLoader.hidden = false;
-    previewCanvas.hidden = true;
+    previewCanvas.style.visibility = 'hidden';
     executeTracking(formData)
         .then(updatePreview)
         .catch(showError)
@@ -185,6 +185,7 @@ async function updatePreview(previewResults) {
   const [{data: frame}] = await resultsToCanvas(previewResults, new RenderParams({normalLines: true, colorCoding: true}), CANVAS_RESOLUTION);
   previewLoader.hidden = true;
   previewCanvas.hidden = false;
+  previewCanvas.style.visibility = 'visible';
   previewFrame = frame;
   drawIntoCanvasZoomed(previewCanvas, previewFrame, pointSelector.imgOffset, pointSelector.zoomFactor, pointSelector.image.width, pointSelector.image.height);
 }
