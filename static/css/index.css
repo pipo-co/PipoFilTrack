@@ -187,7 +187,6 @@ button {
   box-shadow: 0 0 3px rgba(56, 54, 54, 0.86);
 }
 
-
 /* tooltip  after*/
 .tooltip::after {
   content: " ";
@@ -200,33 +199,13 @@ button {
 
   position: absolute;
   left: 40%;
-
 }
 
-.con-tooltip:hover .tooltip{
-  visibility: visible;
-  transform: translateY(-10px);
-  opacity: 1;
-    transition: .3s linear;
-  animation: odsoky 1s ease-in-out infinite  alternate;
-
+.con-tooltip:hover{
+  color:#00ff00;
+  cursor: pointer;
+  transition: .3s linear;
 }
-@keyframes odsoky {
-  0%{
-    transform: translateY(6px);	
-  }
-
-  100%{
-    transform: translateY(1px);	
-  }
-
-}
-
-/*hover ToolTip*/
-.left:hover {transform: translateX(-6px); }
-.top:hover {transform: translateY(-6px);  }
-.bottom:hover {transform: translateY(6px);}
-.right:hover {transform: translateX(6px); }
 
 #results-loader{
   position:relative;

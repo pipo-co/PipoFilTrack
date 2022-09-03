@@ -12,11 +12,14 @@
   <script src="/static/js/libs/uikit/uikit-icons.min.js" defer></script>
   <link rel="stylesheet" href="/static/css/libs/uikit.min.css"/>
 
+  
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/static/css/index.css">
+  <script src="/static/js/utils/tooltip.js"  async></script>
 
   <!-- Custom JS -->
   <script src="/static/js/index.js" type="module"></script>
+
 
 </head>
 <body class="uk-background-cover">
@@ -46,11 +49,12 @@
                 <div class="uk-margin uk-flex uk-flex-between uk-flex-middle">
                   <label for="config-{{ field.name }}" class="uk-form-label uk-text-break uk-margin-right">
                     {{ field.metadata['name'] }}
-                    <div class="con-tooltip top">
-                    <span uk-icon="info"></span>
-                    <div class="tooltip">
-                      <p>{{ field.metadata['desc'] }}</p>
-                    </div></div>
+                    <div class="con-tooltip top" onclick="displayTooltip('id-{{ field.name }}')">
+                      <span uk-icon="info"></span>
+                      <div class="tooltip" id="id-{{ field.name }}" >
+                        <p>{{ field.metadata['desc'] }}</p>
+                      </div>
+                    </div>
                 </label>
                     {% if field.type.__name__ == 'bool' %}
                       <input id="config-{{ field.name }}" name="{{ field.name }}" type="checkbox" class="uk-checkbox uk-margin-remove-top" {% if field.default %} checked {% endif %} />
