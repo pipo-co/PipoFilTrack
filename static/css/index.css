@@ -178,9 +178,8 @@ button {
 
 /*tooltip */
 .tooltip {
-
   width: 750%;
-  padding: 0px 15px;
+  padding: 0 15px;
 
   background: #333;
   color: white;
@@ -190,7 +189,6 @@ button {
   left: -400%;
   
   border-radius: 9px;
-  font: 14px;
 
   transform: translateY(9px);
   transition: all 0.3s ease-in-out;
