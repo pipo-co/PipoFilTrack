@@ -11,8 +11,8 @@ import {closeImage, imageIterator} from "./utils/images.js";
 // Horizontal resolution in pixels of all canvas used. Height is calculated to maintain aspect ratio of images.
 const CANVAS_RESOLUTION = 1080;
 
-// Quality of canvas to video frame conversion used for results expressed as a percentage [0, 1]. Default is max quality.
-const WEBM_QUALITY = 1;
+// Format of the zipped result images
+const RESULTS_FORMAT = 'png';
 
 // Color and sizes of graphic elements used to render tracking results.
 const TRACKING_POINT_SIZE           = 5;
@@ -43,13 +43,13 @@ const previewLoader         = document.getElementById('preview-loader');
 const resultsLoader         = document.getElementById('results-loader');
 const results               = document.getElementById('results');
 const downloadJson          = document.getElementById('download-json');
-const downloadWebM          = document.getElementById('download-zip');
+const downloadZip           = document.getElementById('download-zip');
 const downloadTsv           = document.getElementById('download-tsv');
 const rvRenderingProps      = document.getElementById('rv-rendering-properties');
 
 /* -------- Global variable -------- */
 const debouncedPreviewHandler = debounce(trackingPreview);
-let downloadWebMEventHandler
+let downloadZipEventHandler
 let resultViewerPropertiesHandler
 let previewFrame
 
@@ -209,10 +209,10 @@ async function processTrackingResults(trackingResult) {
     downloadTsv.href        = URL.createObjectURL(new Blob([toTsvResults(trackingResult)],  {type: 'text/tab-separated-values'}));
     downloadTsv.download    = `${resultsFileName}.tsv`
 
-    rvRenderingProps.removeEventListener('input', resultViewerPropertiesHandler);
-    
+    if(resultViewerPropertiesHandler) {
+        rvRenderingProps.removeEventListener('input', resultViewerPropertiesHandler);
+    }
     resultViewerPropertiesHandler = () => renderTrackingResult(trackingResult, resultsFileName);
-
     rvRenderingProps.addEventListener('input', resultViewerPropertiesHandler);
 
     await renderTrackingResult(trackingResult, resultsFileName);
@@ -250,26 +250,24 @@ async function renderTrackingResult(trackingResult, resultsFileName) {
     const frames = await resultsToCanvas(trackingResult, RenderParams.fromForm(rvRenderingProps));
     resultsViewer.loadResults(frames.map(f => f.data));
 
-    downloadWebM.removeEventListener('click', downloadWebMEventHandler);
-    
-    
-
-    downloadWebMEventHandler = async () => {
+    if(downloadZipEventHandler) {
+        downloadZip.removeEventListener('click', downloadZipEventHandler);
+    }
+    downloadZipEventHandler = async () => {
         const zip = new JSZip();
         UIkit.notification('Download started');
 
-        for (const frame of frames) {
+        for(const frame of frames) {
             const blob = await new Promise(resolve => frame.data.toBlob(resolve));
             const name = frame.name.substring(0, frame.name.lastIndexOf('.'));
-            zip.file(`${name}.png`, blob)
+            zip.file(`${name}.${RESULTS_FORMAT}`, blob)
           }
 
-        zip.generateAsync({type:"blob"}).then(function(content) {
-            download(URL.createObjectURL(content), `${resultsFileName}.zip`);
-        });
+        zip .generateAsync({type:"blob"})
+            .then(content => download(URL.createObjectURL(content), `${resultsFileName}.zip`))
+            ;
     };
-
-    downloadWebM.addEventListener('click', downloadWebMEventHandler);
+    downloadZip.addEventListener('click', downloadZipEventHandler);
 }
 
 async function resultsToCanvas(trackingResult, renderParams, canvasResolution = CANVAS_RESOLUTION) {
