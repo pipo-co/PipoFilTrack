@@ -44,6 +44,10 @@ def index():
         allowed_image_types=ALLOWED_IMAGE_TYPES
     )
 
+@app.route('/manual')
+def manual():
+    return render_template('manual.html')
+
 @app.route('/track', methods=['POST'])
 def track():
     if 'points' not in request.form or len(points := json.loads(request.form['points'], object_hook=lambda point: (point['x'], point['y']))) < 2:

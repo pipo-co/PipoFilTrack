@@ -12,14 +12,12 @@
   <script src="/static/js/libs/uikit/uikit-icons.min.js" defer></script>
   <link rel="stylesheet" href="/static/css/libs/uikit.min.css"/>
 
-  
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/static/css/index.css">
   <script src="/static/js/utils/tooltip.js"  async></script>
 
   <!-- Custom JS -->
   <script src="/static/js/index.js" type="module"></script>
-
 
 </head>
 <body class="uk-background-cover">
@@ -31,6 +29,7 @@
             <div id="selector-wrapper"></div>
           </div>
           <div class="uk-flex uk-flex-first uk-flex-center uk-margin" id="img-buttons">
+            <a href="/manual" class="uk-button uk-button-default">Manual de uso</a>
             <div uk-form-custom class="uk-margin-right uk-margin-left">
               <input id="img-input" type="file" name="images[]" accept="{{ allowed_image_types | join(',') }}" multiple required />
               <button class="uk-button uk-button-default uk-width-1-1 uk-margin-small-bottom" type="button" tabindex="-1">Seleccione las imágenes que desea trackear</button>
