@@ -139,12 +139,13 @@ def gauss_fitting(intensity_profile: np.ndarray, max_error: float) -> Optional[f
     profile_len = len(intensity_profile)
     xdata = np.arange(profile_len)
     max_c = np.max(intensity_profile)
+    max_idx = np.argmax(intensity_profile)
     try:
         popt, pcov = curve_fit(
-            lambda x, mu, sig, a, y0: y0 + a*(1. / (np.sqrt(2. * np.pi) * sig) * np.exp(-np.power((x - mu) / sig, 2.) / 2)),
+            lambda x, mu, sig, a, y0: y0 + a * np.exp(-np.power((x - mu) / sig, 2.) / 2),
             xdata,
             intensity_profile,
-            p0=([profile_len/2, 1, max_c, max_c/4]),
+            p0=([max_idx, 1, max_c, max_c/4]),
         )
         p_error = np.square(np.diag(pcov))
         return popt[0] if p_error[0] < max_error else None
