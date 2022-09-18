@@ -141,12 +141,19 @@ def gauss_fitting(intensity_profile: np.ndarray, max_error: float) -> Optional[f
     max_c = np.max(intensity_profile)
     max_idx = np.argmax(intensity_profile)
     try:
-        popt, pcov = curve_fit(
-            lambda x, mu, sig, a, y0: y0 + a * np.exp(-np.power((x - mu) / sig, 2.) / 2),
-            xdata,
-            intensity_profile,
-            p0=([max_idx, 1, max_c, max_c/4]),
-        )
+        # Hay veces que curve_fit no logra establecer la covarianza de los parametros, lanza un warning y retorna error infinito
+        # Estos casos los estamos manejando bien (con el threshold), por lo que queremos suprimir el warning
+        import warnings
+        with warnings.catch_warnings():
+            from scipy.optimize import OptimizeWarning
+            warnings.simplefilter("ignore", category=OptimizeWarning)
+
+            popt, pcov = curve_fit(
+                lambda x, mu, sig, a, y0: y0 + a * np.exp(-np.power((x - mu) / sig, 2.) / 2),
+                xdata,
+                intensity_profile,
+                p0=([max_idx, 1, max_c, max_c/4]),
+            )
         p_error = np.square(np.diag(pcov))
         return popt[0] if p_error[0] < max_error else None
     except RuntimeError:
