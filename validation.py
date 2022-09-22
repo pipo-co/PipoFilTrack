@@ -58,7 +58,8 @@ def main():
 
     # Filament function
     def f(x):
-        return np.round(height/width * x).astype(np.uint8)
+        # return np.round(height/width * x).astype(np.uint8)                    # Linear
+        return (height/4 * np.sin(10/width * x) + height/2).astype(np.uint8)    # Sen
 
     # Filament softening (gaussian convolution) properties
     conv_sigma          = 10
