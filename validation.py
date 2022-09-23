@@ -125,6 +125,91 @@ def main():
     plt.plot(noise_sigmas, errors)
     plt.show()
 
+def cross_main():
+    # Image properties
+    width   = 166
+    height  = 96
+
+    # Filament properties
+    thickness = 3
+    max_value = 150
+    angle_start = 10
+    angle_end = 60
+
+    # Filament softening (gaussian convolution) properties
+    conv_sigma          = 10
+    conv_kernel_size    = 3
+
+    # Noise (gaussian) properties
+    noise_percentage    = 85
+    noise_sigma         = 0.001
+
+    # Point selection
+    trim_len        = 20
+    point_density   = 15
+
+    # Tracking config
+    config = Config(
+        max_fitting_error   = 0.6,
+        normal_line_length  = 10,
+        point_density       = 1,
+        missing_inter_len   = 3,
+        max_tangent_length  = 15,
+        bezier_segment_len  = 100,
+        bezier_smoothing    = True,
+    )
+
+    # Calculate starting conditions
+    x = np.arange(thickness, width - thickness)
+    thick = (thickness - thickness % 2) // 2
+
+    angles = np.linspace(angle_start, angle_end, num=angle_end - angle_start + 1)
+    errors = []
+
+    for angle in angles:
+        # Filament function
+        m = np.tan(np.deg2rad(angle / 2))
+        mid_y = m * width / 2
+        off = height / 2 - mid_y
+
+        def f(x):
+            return np.round(m * x + off).astype(np.uint8)
+
+        def g(x):
+            return height - 1 - np.round(m * x + off).astype(np.uint8)
+
+        y = f(x)
+        y2 = g(x)
+        img = np.zeros((height, width))
+        selected_points = np.dstack((x[trim_len:-trim_len:point_density], y[trim_len:-trim_len:point_density])).squeeze()
+
+        # Draw filament
+        for offset in range(-thick, thick + 1):
+            img[y + offset, x] = max_value
+            img[y2 + offset, x] = max_value
+        img = gauss_convolution(img, conv_sigma, conv_kernel_size)
+        img = gauss_noise(img, noise_sigma, noise_percentage)
+        img = normalize(img)
+
+        # Track
+        result = track_filament((img,), selected_points, config)
+        result_x = np.asarray([point.x for point in result.frames[0].points])
+        result_y = np.asarray([point.y for point in result.frames[0].points])
+
+        # Mean Square Error
+        mse = mean_squared_error(f(result_x), result_y)
+        errors.append(mse)
+
+        # Debug output
+        point_count = len(result.frames[0].points)
+        inter_count = len([point for point in result.frames[0].points if point.status is not None])
+        print(f'Angle (deg): {int(angle)}, MSE: {mse}, Interpolated: {inter_count}/{point_count}')
+        PImage.fromarray(img).save(f'validations/cross-angle-{int(angle)}.png')
+
+    # Plot sigma vs error
+    plt.plot(angles, errors)
+    plt.show()
+
 if __name__ == '__main__':
-    main()
+    cross_main()
 
