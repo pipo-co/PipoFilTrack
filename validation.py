@@ -52,6 +52,9 @@ def main():
     width   = 166
     height  = 96
 
+    # global sampling
+    runs = 50
+
     # Filament properties
     thickness = 3
     max_value = 150
@@ -68,7 +71,7 @@ def main():
     # Noise (gaussian) properties
     noise_percentage    = 85
     noise_sigma_start   = 0.0000  # Queremos variar el sigma del ruido
-    noise_sigma_end     = 0.0050
+    noise_sigma_end     = 0.0060
     noise_sigma_step    = 0.0001
 
     # Point selection
@@ -96,33 +99,57 @@ def main():
     errors = []
 
     # For each noise sigma
-    for noise_sigma in noise_sigmas:
-        img = np.zeros((height, width))
+    for _ in range(runs):
+        current_errors = []
+        errors.append(current_errors)
+        for noise_sigma in noise_sigmas:
+            img = np.zeros((height, width))
 
-        # Draw filament
-        for offset in range(-thick, thick + 1):
-            img[y + offset, x] = max_value
-        img = gauss_convolution(img, conv_sigma, conv_kernel_size)
-        img = gauss_noise(img, noise_sigma, noise_percentage)
-        img = normalize(img)
+            # Draw filament
+            for offset in range(-thick, thick + 1):
+                img[y + offset, x] = max_value
+            img = gauss_convolution(img, conv_sigma, conv_kernel_size)
+            img = gauss_noise(img, noise_sigma, noise_percentage)
+            img = normalize(img)
 
-        # Track
-        result = track_filament((img,), selected_points, config)
-        result_x = np.asarray([point.x for point in result.frames[0].points])
-        result_y = np.asarray([point.y for point in result.frames[0].points])
+            # Track
+            result = track_filament((img,), selected_points, config)
+            result_x = np.asarray([point.x for point in result.frames[0].points])
+            result_y = np.asarray([point.y for point in result.frames[0].points])
 
-        # Mean Square Error
-        mse = mean_squared_error(f(result_x), result_y)
-        errors.append(mse)
+            # Mean Square Error
+            mse = mean_squared_error(f(result_x), result_y)
+            current_errors.append(mse)
 
-        # Debug output
-        point_count = len(result.frames[0].points)
-        inter_count = len([point for point in result.frames[0].points if point.status is not None])
-        print(f'Sigma: {noise_sigma:.4f}, MSE: {mse}, Interpolated: {inter_count}/{point_count}')
-        PImage.fromarray(img).save(f'validations/test-{noise_sigma:.4f}.png')
+            # Debug output
+            point_count = len(result.frames[0].points)
+            inter_count = len([point for point in result.frames[0].points if point.status is not None])
+            print(f'Sigma: {noise_sigma:.4f}, MSE: {mse}, Interpolated: {inter_count}/{point_count}')
+            PImage.fromarray(img).save(f'validations/test-{noise_sigma:.4f}.png')
 
+    fig = plt.figure(figsize=(16, 10))
+    ax = fig.add_subplot(1, 1, 1)
+
+    e = np.array(errors)
+
+    ax.errorbar(
+        noise_sigmas
+        , np.mean(e, axis=0)
+        , yerr=np.std(e, axis=0)
+        , capsize=2
+    )
+    ax.set_yscale('log')
+    ax.grid(which="both")
+
+
+    fig = plt.figure(2, figsize=(16, 10))
+    ax = fig.add_subplot(1, 1, 1)
     # Plot sigma vs error
-    plt.plot(noise_sigmas, errors)
+    for i in range(runs):
+        ax.plot(noise_sigmas, errors[i])
+    
+    ax.grid(which="both")
+
     plt.show()
 
 def cross_main():
