@@ -6,8 +6,6 @@ from scipy import stats
 from scipy.optimize import curve_fit
 from scipy.special import comb
 
-PIXEL_POINT_RATIO = 1
-
 def multi_point_linear_interpolation(points: np.ndarray, density: int = 1) -> np.ndarray:
     """
     Given a point vector, interpolates linearly between each point pair.
@@ -47,8 +45,8 @@ def interpolate_points(interpolation_points: List[Tuple[float, float]], none_poi
 
 def interpolate_missing(points: List[Optional[Tuple[float, float]]], previous_points: np.ndarray, inter_len: int) -> Tuple[np.ndarray, List[int], List[int]]:
     """
-        Returns results with interpolated points included, or previous points if interpolation couldn't be done.
-        Also, a list of the indices of the interpolated/preserved points is provided.
+    Returns results with interpolated points included, or previous points if interpolation couldn't be done.
+    Also, a list of the indices of the interpolated/preserved points is provided.
     """
     valid_points: List[Tuple[float, float]] = []
     interpolated_points_idx: List[int]      = []
@@ -134,7 +132,8 @@ def profile_pos_to_point(pos: float, points: np.ndarray) -> Optional[Tuple[float
 
 def gauss_fitting(intensity_profile: np.ndarray, max_error: float) -> Optional[float]:
     """
-    Ajusta los puntos a una distribucion gaussiana y retorna su maximo (la media) y su error.
+    Ajusta los puntos a una distribución gaussiana y retorna su maximo (la media).
+    En caso de no encontrarse, o que el error supere el límite establecido, se retorna None
     """
     profile_len = len(intensity_profile)
     xdata = np.arange(profile_len)
