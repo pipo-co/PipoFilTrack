@@ -177,8 +177,9 @@ def tracking_validation():
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     ax.grid(which="both")
-    ax.set_ylabel('Root Mean Square Error [pixel]')
-    ax.set_xlabel('Signal to Noise Ratio (SNR)')
+    ax.set_ylabel('Root Mean Square Error [pixel]', size=24, labelpad=10)
+    ax.set_xlabel('Signal to Noise Ratio (SNR)', size=24, labelpad=10)
+    ax.tick_params(labelsize=16)
     ax.errorbar(
         np.mean(snrs, axis=1)
         , np.mean(errors, axis=1)
@@ -192,8 +193,9 @@ def tracking_validation():
     fig = plt.figure(2, figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     ax.grid(which="both")
-    ax.set_ylabel('Signal to Noise Ratio (SNR)')
-    ax.set_xlabel('Sigma')
+    ax.set_ylabel('Signal to Noise Ratio (SNR)', size=24, labelpad=10)
+    ax.set_xlabel('Sigma', size=24, labelpad=10)
+    ax.tick_params(labelsize=16)
     ax.errorbar(
         noise_sigmas
         , np.mean(snrs, axis=1)
