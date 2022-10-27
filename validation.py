@@ -147,10 +147,10 @@ def tracking_validation():
             # Track
             runtime = time.perf_counter()
             result = track_filament((img,), selected_points, config).frames[0]
-            runtime = time.perf_counter() - runtime
+            runtime = 1000 * (time.perf_counter() - runtime)
             result_x = np.asarray([point.x for point in result.points])
             result_y = np.asarray([point.y for point in result.points])
-            times.append(runtime)
+            current_times.append(runtime)
 
             # Signal to Noise Ratio [Dimensionless]
             bg      = img[bg_y_start:bg_y_end, bg_x_start:bg_x_end]
@@ -173,7 +173,7 @@ def tracking_validation():
                 f'| noise: {noise:<8.4f} '
                 f'| SNR: {snr:<8.4f} '
                 f'| RMSE: {rmse:<13.10f} '
-                f'| time: {runtime:<7.4f} '
+                f'| time: {runtime:<7.2f} '
                 f'| Interpolated: {inter_count:>3}/{point_count:<3} '
                 f'|'
             )
@@ -221,7 +221,7 @@ def tracking_validation():
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     ax.grid(which="both")
-    ax.set_ylabel('Execution Time [second]',        size=label_text_size, labelpad=label_text_pad)
+    ax.set_ylabel('Execution Time [millisecond]',        size=label_text_size, labelpad=label_text_pad)
     ax.set_xlabel('Signal to Noise Ratio (SNR)',    size=label_text_size, labelpad=label_text_pad)
     ax.tick_params(labelsize=label_tick_size)
     ax.errorbar(
@@ -235,9 +235,9 @@ def tracking_validation():
 
     # Output data
     with np.printoptions(threshold=np.inf):
-        print(snrs)
-        print(errors)
-        print(times)
+        print(f'snrs = {np.mean(snrs, axis=1)}')
+        print(f'errors = {np.mean(errors, axis=1)}')
+        print(f'times = {np.mean(times, axis=1)}')
 
     # Render plots
     plt.show()
@@ -394,8 +394,8 @@ def intersection_validation():
     # Output data
     with np.printoptions(threshold=np.inf):
         print(f'{snr=}')
-        print(angles)
-        print(errors)
+        print(f'{angles=}')
+        print(f'errors = {np.mean(errors, axis=1)}')
 
     # Render plots
     plt.show()
