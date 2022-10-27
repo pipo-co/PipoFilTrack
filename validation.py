@@ -55,8 +55,11 @@ def tracking_validation():
     # --- Validation Config --- #
 
     # Output config
-    imgs_name   = 'linear'
-    figsize     = (16, 10)
+    imgs_name       = 'linear'
+    figsize         = (16, 10)
+    label_text_size = 24
+    label_text_pad  = 10
+    label_tick_size = 16
 
     # Image properties
     width   = 166
@@ -177,9 +180,9 @@ def tracking_validation():
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     ax.grid(which="both")
-    ax.set_ylabel('Root Mean Square Error [pixel]', size=24, labelpad=10)
-    ax.set_xlabel('Signal to Noise Ratio (SNR)', size=24, labelpad=10)
-    ax.tick_params(labelsize=16)
+    ax.set_ylabel('Root Mean Square Error [pixel]', size=label_text_size, labelpad=label_text_pad)
+    ax.set_xlabel('Signal to Noise Ratio (SNR)',    size=label_text_size, labelpad=label_text_pad)
+    ax.tick_params(labelsize=label_tick_size)
     ax.errorbar(
         np.mean(snrs, axis=1)
         , np.mean(errors, axis=1)
@@ -193,9 +196,9 @@ def tracking_validation():
     fig = plt.figure(2, figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     ax.grid(which="both")
-    ax.set_ylabel('Signal to Noise Ratio (SNR)', size=24, labelpad=10)
-    ax.set_xlabel('Sigma', size=24, labelpad=10)
-    ax.tick_params(labelsize=16)
+    ax.tick_params(labelsize=label_tick_size)
+    ax.set_ylabel('Signal to Noise Ratio (SNR)',    size=label_text_size, labelpad=label_text_pad)
+    ax.set_xlabel('Sigma',                          size=label_text_size, labelpad=label_text_pad)
     ax.errorbar(
         noise_sigmas
         , np.mean(snrs, axis=1)
@@ -216,8 +219,11 @@ def intersection_validation():
     # --- Validation Config --- #
 
     # Output config
-    imgs_name   = 'inter'
-    figsize     = (16, 10)
+    imgs_name       = 'inter'
+    figsize         = (16, 10)
+    label_text_size = 24
+    label_text_pad  = 10
+    label_tick_size = 16
 
     # Image properties
     width   = 166
@@ -346,8 +352,9 @@ def intersection_validation():
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     ax.grid(which="both")
-    ax.set_ylabel('Root Mean Square Error [pixel]')
-    ax.set_xlabel('Intersection angle [deg]')
+    ax.tick_params(labelsize=label_tick_size)
+    ax.set_ylabel('Root Mean Square Error [pixel]', size=label_text_size, labelpad=label_text_pad)
+    ax.set_xlabel('Intersection angle [deg]',       size=label_text_size, labelpad=label_text_pad)
     ax.errorbar(
         angles
         , np.mean(errors, axis=1)
