@@ -203,6 +203,10 @@ def tracking_validation():
         , fmt='o'
     )
 
+    # Output data
+    print(snrs)
+    print(errors)
+
     # Render plots
     plt.show()
 
@@ -351,8 +355,10 @@ def intersection_validation():
         , fmt='o'
     )
 
-    # Print Signal to Noise Ratio used
+    # Output data
     print(f'{snr=}')
+    print(angles)
+    print(errors)
 
     # Render plots
     plt.show()
