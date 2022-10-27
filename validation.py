@@ -118,6 +118,7 @@ def tracking_validation():
     noise_sigmas    = np.linspace(noise_sigma_start, noise_sigma_end, num=int((noise_sigma_end - noise_sigma_start) // noise_sigma_step))
     snrs            = []
     errors          = []
+    times           = []
 
     # For each noise sigma
     for noise_sigma in noise_sigmas:
@@ -128,6 +129,9 @@ def tracking_validation():
 
         current_errors = []
         errors.append(current_errors)
+
+        current_times = []
+        times.append(current_times)
 
         # For each run
         for run in range(runs):
@@ -141,9 +145,12 @@ def tracking_validation():
             img_to_save = img
 
             # Track
+            runtime = time.perf_counter()
             result = track_filament((img,), selected_points, config).frames[0]
+            runtime = time.perf_counter() - runtime
             result_x = np.asarray([point.x for point in result.points])
             result_y = np.asarray([point.y for point in result.points])
+            times.append(runtime)
 
             # Signal to Noise Ratio [Dimensionless]
             bg      = img[bg_y_start:bg_y_end, bg_x_start:bg_x_end]
@@ -166,6 +173,7 @@ def tracking_validation():
                 f'| noise: {noise:<8.4f} '
                 f'| SNR: {snr:<8.4f} '
                 f'| RMSE: {rmse:<13.10f} '
+                f'| time: {runtime:<7.4f} '
                 f'| Interpolated: {inter_count:>3}/{point_count:<3} '
                 f'|'
             )
@@ -175,6 +183,7 @@ def tracking_validation():
 
     snrs    = np.array(snrs)
     errors  = np.array(errors)
+    times   = np.array(times)
 
     # Plot: RMSE vs SNR
     fig = plt.figure(figsize=figsize)
@@ -208,9 +217,27 @@ def tracking_validation():
         , fmt='o'
     )
 
+    # Plot: times vs SNR
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(1, 1, 1)
+    ax.grid(which="both")
+    ax.set_ylabel('Execution Time [second]',        size=label_text_size, labelpad=label_text_pad)
+    ax.set_xlabel('Signal to Noise Ratio (SNR)',    size=label_text_size, labelpad=label_text_pad)
+    ax.tick_params(labelsize=label_tick_size)
+    ax.errorbar(
+        np.mean(snrs, axis=1)
+        , np.mean(times, axis=1)
+        # We use the standard error: std/sqrt(N)
+        , yerr=np.std(times, axis=1)/np.sqrt(len(times))
+        , capsize=2
+        , fmt='o'
+    )
+
     # Output data
-    print(snrs)
-    print(errors)
+    with np.printoptions(threshold=np.inf):
+        print(snrs)
+        print(errors)
+        print(times)
 
     # Render plots
     plt.show()
@@ -365,9 +392,10 @@ def intersection_validation():
     )
 
     # Output data
-    print(f'{snr=}')
-    print(angles)
-    print(errors)
+    with np.printoptions(threshold=np.inf):
+        print(f'{snr=}')
+        print(angles)
+        print(errors)
 
     # Render plots
     plt.show()
