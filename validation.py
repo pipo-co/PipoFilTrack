@@ -101,7 +101,7 @@ def tracking_validation():
         point_density       = 1,
         missing_inter_len   = 3,
         max_tangent_length  = 15,
-        bezier_segment_len  = 100,
+        bezier_segment_len  = 500,
         bezier_smoothing    = True,
     )
 
@@ -254,7 +254,7 @@ def intersection_validation():
         point_density       = 1,
         missing_inter_len   = 3,
         max_tangent_length  = 15,
-        bezier_segment_len  = 100,
+        bezier_segment_len  = 500,
         bezier_smoothing    = True,
     )
 
@@ -341,12 +341,12 @@ def intersection_validation():
     ax = fig.add_subplot(1, 1, 1)
     ax.grid(which="both")
     ax.set_ylabel('Root Mean Square Error [pixel]')
-    ax.set_xlabel('Intersection angle')
+    ax.set_xlabel('Intersection angle [deg]')
     ax.errorbar(
         angles
-        , np.mean(errors, axis=0)
+        , np.mean(errors, axis=1)
         # We use the standard error: std/sqrt(N)
-        , yerr=np.std(errors, axis=0)/np.srqt(len(errors))
+        , yerr=np.std(errors, axis=1)/np.sqrt(len(errors))
         , capsize=2
         , fmt='o'
     )
