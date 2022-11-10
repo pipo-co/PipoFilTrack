@@ -1,6 +1,7 @@
 html {
   height: 100%;
 }
+
 body {
   min-height: 100%;
   background-color: #003837;
@@ -10,9 +11,14 @@ body {
 p {
   color: white !important;
 }
-h1 {
+
+h1,
+h2,
+h3,
+h4 {
   color: white !important;
 }
+
 .primary {
   color: white !important;
 }
@@ -53,12 +59,13 @@ h1 {
 
 .toggled-button {
   background-color: #e5e5e5;
-  color:#003837 !important;
+  color: #003837 !important;
 }
 
 .draw {
   cursor: crosshair;
 }
+
 .move {
   cursor: pointer;
 }
@@ -105,6 +112,7 @@ main {
 legend {
   color: white !important;
 }
+
 label {
   color: white !important;
 }
@@ -132,7 +140,8 @@ canvas {
   border-radius: 9px !important;
 }
 
-#undo, #redo {
+#undo,
+#redo {
   margin-top: 1%;
   max-height: 32px;
   cursor: pointer;
@@ -166,12 +175,12 @@ button {
 
 .con-tooltip {
   position: relative;
-  
+
   border-radius: 9px;
   padding: 0 10px;
-  
+
   display: inline-block;
-  
+
   transition: all 0.3s ease-in-out;
   cursor: default;
 }
@@ -183,16 +192,16 @@ button {
 
   background: #333;
   color: white;
-  
+
   position: absolute;
-  top:-200%;
+  top: -200%;
   left: -400%;
-  
+
   border-radius: 9px;
 
   transform: translateY(9px);
   transition: all 0.3s ease-in-out;
-  
+
   box-shadow: 0 0 3px rgba(56, 54, 54, 0.86);
 }
 
@@ -201,7 +210,7 @@ button {
   content: " ";
   width: 0;
   height: 0;
-  
+
   border-style: solid;
   border-width: 12px 12.5px 0 12.5px;
   border-color: #333 transparent transparent transparent;
@@ -210,22 +219,23 @@ button {
   left: 40%;
 }
 
-.con-tooltip:hover{
-  color:#00ff00;
+.con-tooltip:hover {
+  color: #00ff00;
   cursor: pointer;
   transition: .3s linear;
 }
 
-#results-loader{
-  position:relative;
+#results-loader {
+  position: relative;
   text-align: center;
   margin-top: 15px;
   margin-bottom: 35px;
-  top:50%;
-  left:50%;
-  transform:translate(-50%, -50%); 
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
-.circle{
+
+.circle {
   display: inline-block;
   width: 20px;
   height: 20px;
@@ -235,41 +245,119 @@ button {
   transform-origin: bottom center;
   position: relative;
 }
-@keyframes loading{
-  0%{
+
+@keyframes loading {
+  0% {
     transform: translateY(0px);
     background-color: #00b900;
   }
-  50%{
+
+  50% {
     transform: translateY(50px);
     background-color: #00ff00;
   }
-  100%{
+
+  100% {
     transform: translateY(0px);
     background-color: #00b900;
   }
 }
-.circle-1{
+
+.circle-1 {
   animation-delay: 0.1s;
 }
-.circle-2{
+
+.circle-2 {
   animation-delay: 0.2s;
 }
-.circle-3{
+
+.circle-3 {
   animation-delay: 0.3s;
 }
-.circle-4{
+
+.circle-4 {
   animation-delay: 0.4s;
 }
-.circle-5{
+
+.circle-5 {
   animation-delay: 0.5s;
 }
-.circle-6{
+
+.circle-6 {
   animation-delay: 0.6s;
 }
-.circle-7{
+
+.circle-7 {
   animation-delay: 0.7s;
 }
-.circle-8{
+
+.circle-8 {
   animation-delay: 0.8s;
 }
+
+pre, :not(pre) > code {
+  padding: .2em .4em;
+  color: white;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgb(57, 63, 71);
+  border-radius: 6px;
+}
+
+/* ANCHORS START */
+
+h1>a.anchor:before,
+h2>a.anchor:before,
+h3>a.anchor:before,
+h4>a.anchor:before,
+h5>a.anchor:before,
+h6>a.anchor:before {
+ content:"\0023";
+ font-size:.85em;
+ display:block;
+ padding-top:.1em
+}
+
+h1:hover>a.anchor,
+h1>a.anchor:hover,
+h2:hover>a.anchor,
+h2>a.anchor:hover,
+h3:hover>a.anchor,
+h3>a.anchor:hover,
+h4:hover>a.anchor,
+h4>a.anchor:hover,
+h5:hover>a.anchor,
+h5>a.anchor:hover,
+h6:hover>a.anchor,
+h6>a.anchor:hover {
+ visibility:visible
+}
+
+h1>a.anchor,
+h2>a.anchor,
+h3>a.anchor,
+h4>a.anchor,
+h5>a.anchor,
+h6>a.anchor {
+ position:absolute;
+ z-index:1001;
+ width:1.5ex;
+ margin-left:-1.5ex;
+ margin-top:.1rem;
+ display:block;
+ visibility:hidden;
+ text-align:center;
+ font-weight:400;
+ color:rgba(0,0,0,.2)
+}
+
+h1>a.anchor,
+h2>a.anchor,
+h3>a.anchor,
+h4>a.anchor,
+h5>a.anchor,
+h6>a.anchor {
+ color: rgba(240,240,240,.4);
+}
+
+/* ANCHORS END */
