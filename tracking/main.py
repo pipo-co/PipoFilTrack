@@ -19,6 +19,10 @@ def track_filament(frames: Iterable[np.ndarray], user_points: np.ndarray, config
     max_tangent_length = min(config.max_tangent_length, len(prev_frame_points) - 1)
 
     for frame in frames:
+        # En caso de que el filamento sea negro sobre un fondo blanco, debemos invertir la imagen
+        if config.inverted:
+            frame = 255 - frame
+
         # Calculamos los limites que definen los segmentos de las rectas normales
         normal_lines_limits = generate_normal_line_bounds(prev_frame_points, max_tangent_length, config.normal_line_length)
 

@@ -27,6 +27,7 @@ class Config:
     max_tangent_length: int     = int_config_field(15, 'Puntos para calcular tangente', 'Cantidad de puntos vecinos tomados para calcular la pendiente de cada punto', min_=1, max_=1000)
     bezier_segment_len: int     = int_config_field(100, 'Longitud del segmento de suavizado', 'Longitud por el que se parte el filamento, para luego ajustar a una curva de Bezier cada uno', min_=2, max_=1000)
     bezier_smoothing: bool      = bool_config_field(True, 'Suavizado final', 'Post-procesamiento de suavizado del filamento ajustando a una curva de Bezier por segmento')
+    inverted: bool              = bool_config_field(False, 'Imágenes invertidas', 'Indica que el filamento es negro y el fondo blanco')
 
     @classmethod
     def from_dict(cls, env):
