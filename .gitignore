@@ -136,4 +136,4 @@ sta
 .DS_Store
 .ssh/known_hosts
 /images/
-/validations
+/validation/*/
