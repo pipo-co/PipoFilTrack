@@ -204,7 +204,7 @@ async function processTrackingResults(trackingResult) {
     }
 
     const dateString = new Date().toISOString().split('.')[0].replace(/:/g, '.');
-    const resultsFileName = `${imgInput.files[0].name.split('.')[0]}_results_${dateString}`
+    const resultsFileName = `${imgInput.files[0].name.substring(0, imgInput.files[0].name.lastIndexOf('.'))}_results_${dateString}`
 
     if(downloadJson.href) {
         URL.revokeObjectURL(downloadJson.href);
