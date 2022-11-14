@@ -20,14 +20,14 @@ def ax_init(y_label, x_label):
     ax.set_xlabel(x_label, size=label_text_size, labelpad=label_text_pad)
     return ax
 
-def plot_error_bars(ax, x, y_mean, y_std, label, color):
+def plot_error_bars(ax, x, y_mean, y_std, label, color, marker):
     ax.errorbar(
         x
         , y_mean
         # We use the standard error: std/sqrt(N)
         , yerr=y_std / np.sqrt(len(y_std))
         , capsize=2
-        , fmt='o'
+        , fmt=marker
         , label=label
         , color=color
         , ecolor=color
@@ -53,16 +53,19 @@ plots = [
     {
         'label': 'Lineal',
         'color': '#e41a1c',
+        'marker': 'o',
         'data': load_data('linear')
     },
     {
         'label': 'Lineal Grande',
         'color': '#377eb8',
+        'marker': 'o',
         'data': load_data('linear-big')
     },
     {
         'label': 'Curvo',
         'color': '#4daf4a',
+        'marker': 'o',
         'data': load_data('sin')
     }
 ]
@@ -71,21 +74,21 @@ plots = [
 ax = ax_init('Root Mean Square Error [pixel]', 'Signal to Noise Ratio (SNR)')
 for plot in plots:
     data = plot['data']
-    plot_error_bars(ax, data['snrs_mean'], data['errors_mean'], data['errors_std'], plot['label'], plot['color'])
+    plot_error_bars(ax, data['snrs_mean'], data['errors_mean'], data['errors_std'], plot['label'], plot['color'], plot['marker'])
 ax.legend()
 
 # Plot: SNR vs sigma
 ax = ax_init('Signal to Noise Ratio (SNR)', 'Sigma')
 for plot in plots:
     data = plot['data']
-    plot_error_bars(ax, data['sigmas'], data['snrs_mean'], data['snrs_std'], plot['label'], plot['color'])
+    plot_error_bars(ax, data['sigmas'], data['snrs_mean'], data['snrs_std'], plot['label'], plot['color'], plot['marker'])
 ax.legend()
 
 # Plot: times vs SNR
 ax = ax_init('Execution Time [millisecond]', 'Signal to Noise Ratio (SNR)')
 for plot in plots:
     data = plot['data']
-    plot_error_bars(ax, data['snrs_mean'], data['times_mean'], data['times_std'], plot['label'], plot['color'])
+    plot_error_bars(ax, data['snrs_mean'], data['times_mean'], data['times_std'], plot['label'], plot['color'], plot['marker'])
 ax.legend()
 
 # Render plots
