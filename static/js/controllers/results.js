@@ -1,4 +1,4 @@
-import {drawIntoCanvas, resizeCanvasHeight} from "../utils/canvas.js";
+import {drawIntoCanvas} from "../utils/canvas.js";
 
 export default class ResultsViewer {
     constructor(templateId) {
