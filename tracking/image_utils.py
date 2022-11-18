@@ -1,8 +1,8 @@
 import os
 from typing import List, Iterator
 
-from PIL import Image, ImageSequence
 import numpy as np
+from PIL import Image, ImageSequence
 
 from tracking.models import ApplicationError
 
@@ -57,9 +57,6 @@ def frames_iterator(files, allowed_ext: List[str]) -> Iterator[np.ndarray]:
             img = np.fromfile(file, dtype=np.uint8).reshape(shape)
             yield img_to_8bit_array(img)
         else:
-            img = Image.open(file)
-            if img.format == 'TIFF' and img.n_frames > 1:  # If there is more than 1 frame, it's a multi tiff image
+            with Image.open(file) as img:
                 for frame in ImageSequence.Iterator(img):
                     yield img_to_8bit_array(frame)
-            else:
-                yield img_to_8bit_array(img)
