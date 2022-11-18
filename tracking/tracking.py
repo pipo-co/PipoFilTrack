@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 
 import numpy as np
-import skimage as skimg
+import skimage
 from scipy import stats
 from scipy.optimize import curve_fit
 from scipy.special import comb
@@ -15,7 +15,7 @@ def multi_point_linear_interpolation(points: np.ndarray, density: int = 1) -> np
 def points_linear_interpolation(start: np.ndarray, end: np.ndarray) -> np.ndarray:
     # line returns the pixels of the line described by the 2 points
     # https://scikit-image.org/docs/stable/api/skimage.draw.html#line
-    return np.stack(skimg.draw.line(*start.astype(int), *end.astype(int)), axis=-1)
+    return np.stack(skimage.draw.line(*start.astype(int), *end.astype(int)), axis=-1)
 
 def project_to_line(point: Tuple[float, float], m1: float, b1: float) -> Tuple[float, float]:
     if m1 == 0:
