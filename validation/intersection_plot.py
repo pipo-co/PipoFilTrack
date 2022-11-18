@@ -15,8 +15,8 @@ label_text_pad = 10
 label_tick_size = 16
 
 # Load data
-angles  = load_tsv(f'{target}/angle_data.csv')
-errors  = load_tsv(f'{target}/error_data.csv')
+angles  = load_tsv(f'{target}/angle_data.tsv')
+errors  = load_tsv(f'{target}/error_data.tsv')
 
 errors_mean = errors[:, 0]
 errors_std  = errors[:, 1]

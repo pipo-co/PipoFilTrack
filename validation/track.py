@@ -157,7 +157,7 @@ time_data   = (np.mean(np.array(times), axis=1), np.std(times,  axis=1))
 
 # Save data
 print(f'{seed=}')
-save_as_tsv(sigma_data, f'{target}/sigma_data.csv', ('sigma',))
-save_as_tsv(snr_data,   f'{target}/snr_data.csv',   ('mean', 'std'))
-save_as_tsv(error_data, f'{target}/error_data.csv', ('mean', 'std'))
-save_as_tsv(time_data,  f'{target}/time_data.csv',  ('mean', 'std'))
+save_as_tsv(sigma_data, f'{target}/sigma_data.tsv', ('sigma',))
+save_as_tsv(snr_data,   f'{target}/snr_data.tsv',   ('mean', 'std'))
+save_as_tsv(error_data, f'{target}/error_data.tsv', ('mean', 'std'))
+save_as_tsv(time_data,  f'{target}/time_data.tsv',  ('mean', 'std'))

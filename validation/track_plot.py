@@ -34,10 +34,10 @@ def plot_error_bars(ax, x, y_mean, y_std):
     )
 
 # Load data
-sigmas  = load_tsv(f'{target}/sigma_data.csv')
-snrs    = load_tsv(f'{target}/snr_data.csv')
-errors  = load_tsv(f'{target}/error_data.csv')
-times   = load_tsv(f'{target}/time_data.csv')
+sigmas  = load_tsv(f'{target}/sigma_data.tsv')
+snrs    = load_tsv(f'{target}/snr_data.tsv')
+errors  = load_tsv(f'{target}/error_data.tsv')
+times   = load_tsv(f'{target}/time_data.tsv')
 
 snrs_mean   = snrs[:, 0]
 snrs_std    = snrs[:, 1]

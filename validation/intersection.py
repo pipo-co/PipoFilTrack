@@ -155,5 +155,5 @@ error_data = (np.mean(np.array(errors), axis=1), np.std(errors, axis=1))
 # Save data
 print(f'{seed=}')
 print(f'{snr=}')
-save_as_tsv(angle_data, f'{target}/angle_data.csv', ('angle',))
-save_as_tsv(error_data, f'{target}/error_data.csv', ('mean', 'std'))
+save_as_tsv(angle_data, f'{target}/angle_data.tsv', ('angle',))
+save_as_tsv(error_data, f'{target}/error_data.tsv', ('mean', 'std'))
