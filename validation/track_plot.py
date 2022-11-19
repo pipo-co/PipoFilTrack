@@ -8,11 +8,23 @@ from validation_utils import load_tsv
 # Input config
 target = 'linear'
 
-# Plot config
+# Axis config
 figsize         = (16, 10)
-label_text_size = 24
-label_text_pad  = 10
-label_tick_size = 16
+label_text_size = 40
+label_text_pad  = 15
+label_tick_size = 30
+
+margins_config = {
+    'left': 0.105,
+    'right': 0.98,
+    'top': 0.97,
+    'bottom': 0.125,
+}
+
+# Marker config
+marker_size = 10
+line_style  = ''
+fill_style  = None
 
 def ax_init(y_label, x_label):
     fig = plt.figure(figsize=figsize)
@@ -21,6 +33,7 @@ def ax_init(y_label, x_label):
     ax.tick_params(labelsize=label_tick_size)
     ax.set_ylabel(y_label, size=label_text_size, labelpad=label_text_pad)
     ax.set_xlabel(x_label, size=label_text_size, labelpad=label_text_pad)
+    plt.subplots_adjust(**margins_config)
     return ax
 
 def plot_error_bars(ax, x, y_mean, y_std):
@@ -30,7 +43,10 @@ def plot_error_bars(ax, x, y_mean, y_std):
         # We use the standard error: std/sqrt(N)
         , yerr=y_std / np.sqrt(len(y_std))
         , capsize=2
-        , fmt='o'
+        , marker='o'
+        , markersize=marker_size
+        , linestyle=line_style
+        , fillstyle=fill_style
     )
 
 # Load data
@@ -47,15 +63,33 @@ times_mean  = times[:, 0]
 times_std   = times[:, 1]
 
 # Plot: RMSE vs SNR
-ax = ax_init('Root Mean Square Error [pixel]', 'Signal to Noise Ratio (SNR)')
+labels = ('Root Mean Square Error [pixel]', 'Signal to Noise Ratio (SNR)')
+ax = ax_init(*labels)
+plot_error_bars(ax, snrs_mean, errors_mean, errors_std)
+# Zoom
+ax = ax_init(*labels)
+ax.set_xlim(left=1, right=5)
+ax.set_ylim(top=1.6, auto=True)
 plot_error_bars(ax, snrs_mean, errors_mean, errors_std)
 
 # Plot: SNR vs sigma
-ax = ax_init('Signal to Noise Ratio (SNR)', 'Sigma')
+labels = ('Signal to Noise Ratio (SNR)', 'Sigma')
+ax = ax_init(*labels)
+plot_error_bars(ax, sigmas, snrs_mean, snrs_std)
+# Zoom
+ax = ax_init(*labels)
+ax.set_xlim(left=0, right=0.0062)
+ax.set_ylim(bottom=-0.2, top=10)
 plot_error_bars(ax, sigmas, snrs_mean, snrs_std)
 
 # Plot: times vs SNR
-ax = ax_init('Execution Time [millisecond]', 'Signal to Noise Ratio (SNR)')
+labels = ('Execution Time [millisecond]', 'Signal to Noise Ratio (SNR)')
+ax = ax_init(*labels)
+plot_error_bars(ax, snrs_mean, times_mean, times_std)
+# Zoom
+ax = ax_init(*labels)
+ax.set_xlim(left=1, right=10)
+ax.set_ylim(top=300, auto=True)
 plot_error_bars(ax, snrs_mean, times_mean, times_std)
 
 # Render plots

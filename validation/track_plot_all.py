@@ -2,14 +2,37 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.container import ErrorbarContainer
+from matplotlib.legend_handler import HandlerErrorbar
 
 from validation_utils import load_tsv
 
-# Plot config
+# Axis config
 figsize         = (16, 10)
-label_text_size = 24
-label_text_pad  = 10
-label_tick_size = 16
+label_text_size = 40
+label_text_pad  = 15
+label_tick_size = 30
+
+margins_config = {
+    'left': 0.105,
+    'right': 0.98,
+    'top': 0.97,
+    'bottom': 0.125,
+}
+
+# Marker config
+marker_size = 10
+line_style  = ''
+fill_style  = None
+
+legend_config = {
+    'fontsize': 30,
+    'markerscale': 2,
+    'labelspacing': 0.8,
+    'handler_map': {
+        ErrorbarContainer: HandlerErrorbar(xerr_size=0.5),
+    },
+}
 
 def ax_init(y_label, x_label):
     fig = plt.figure(figsize=figsize)
@@ -18,6 +41,7 @@ def ax_init(y_label, x_label):
     ax.tick_params(labelsize=label_tick_size)
     ax.set_ylabel(y_label, size=label_text_size, labelpad=label_text_pad)
     ax.set_xlabel(x_label, size=label_text_size, labelpad=label_text_pad)
+    plt.subplots_adjust(**margins_config)
     return ax
 
 def plot_error_bars(ax, x, y_mean, y_std, label, color, marker):
@@ -27,7 +51,10 @@ def plot_error_bars(ax, x, y_mean, y_std, label, color, marker):
         # We use the standard error: std/sqrt(N)
         , yerr=y_std / np.sqrt(len(y_std))
         , capsize=2
-        , fmt=marker
+        , marker=marker
+        , markersize=marker_size
+        , linestyle=line_style
+        , fillstyle=fill_style
         , label=label
         , color=color
         , ecolor=color
@@ -71,25 +98,52 @@ plots = [
 ]
 
 # Plot: RMSE vs SNR
-ax = ax_init('Root Mean Square Error [pixel]', 'Signal to Noise Ratio (SNR)')
+labels = ('Root Mean Square Error [pixel]', 'Signal to Noise Ratio (SNR)')
+ax = ax_init(*labels)
 for plot in plots:
     data = plot['data']
     plot_error_bars(ax, data['snrs_mean'], data['errors_mean'], data['errors_std'], plot['label'], plot['color'], plot['marker'])
-ax.legend()
+ax.legend(**legend_config)
+# Zoom
+ax = ax_init(*labels)
+ax.set_xlim(left=1, right=5)
+ax.set_ylim(top=1.6, auto=True)
+for plot in plots:
+    data = plot['data']
+    plot_error_bars(ax, data['snrs_mean'], data['errors_mean'], data['errors_std'], plot['label'], plot['color'], plot['marker'])
+ax.legend(**legend_config)
 
 # Plot: SNR vs sigma
-ax = ax_init('Signal to Noise Ratio (SNR)', 'Sigma')
+labels = ('Signal to Noise Ratio (SNR)', 'Sigma')
+ax = ax_init(*labels)
 for plot in plots:
     data = plot['data']
     plot_error_bars(ax, data['sigmas'], data['snrs_mean'], data['snrs_std'], plot['label'], plot['color'], plot['marker'])
-ax.legend()
+ax.legend(**legend_config)
+# Zoom
+ax = ax_init(*labels)
+ax.set_xlim(left=0, right=0.0062)
+ax.set_ylim(bottom=-0.2, top=10)
+for plot in plots:
+    data = plot['data']
+    plot_error_bars(ax, data['sigmas'], data['snrs_mean'], data['snrs_std'], plot['label'], plot['color'], plot['marker'])
+ax.legend(**legend_config)
 
 # Plot: times vs SNR
-ax = ax_init('Execution Time [millisecond]', 'Signal to Noise Ratio (SNR)')
+labels = ('Execution Time [millisecond]', 'Signal to Noise Ratio (SNR)')
+ax = ax_init(*labels)
 for plot in plots:
     data = plot['data']
     plot_error_bars(ax, data['snrs_mean'], data['times_mean'], data['times_std'], plot['label'], plot['color'], plot['marker'])
-ax.legend()
+ax.legend(**legend_config)
+# Zoom
+ax = ax_init(*labels)
+ax.set_xlim(left=1, right=10)
+ax.set_ylim(top=300, auto=True)
+for plot in plots:
+    data = plot['data']
+    plot_error_bars(ax, data['snrs_mean'], data['times_mean'], data['times_std'], plot['label'], plot['color'], plot['marker'])
+ax.legend(**legend_config)
 
 # Render plots
 plt.show()
