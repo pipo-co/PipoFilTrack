@@ -19,86 +19,120 @@
     img {
       max-height: 70vh;
     }
-    </style>
-
+  </style>
 </head>
 <body class="uk-background-cover">
   <a href="/" class="uk-button uk-button-default">Volver a Tracking</a>
+  <a href="/static/images/manual/sample_image_sequence.zip" class="uk-button uk-button-default" download>Imágenes de prueba</a>
+
   <main class="uk-container uk-container-small" style="background-color: rgba(140,140,140,0.2)">
-    
     <div id='content'>
-      <h1 id="manual-de-uso*"><a class="anchor" href="#manual-de-uso"></a>Manual de Uso</h1>
-      <p>Este manual busca detallar a un nuevo usuario cómo utilizar la aplicación web de manera efectiva y eficiente, además de especificar detalles técnicos.</p>
-      <p>Es importante aclarar que esta aplicación web fue testeada en los 3 sistemas operativos más comunes, con los tres motores de browser más populares, es decir, Window, Mac y Linux junto con Firefox, Safari y Chromium (Chrome, Edge, etc). Sin embargo, se espera que la misma sea compatible con más browsers y sistemas operativos que los detallados. Si bien la aplicación funciona en dispositivos mobiles, la interfaz fue diseñada para pantallas de computadora.</p>
-      <h2 id="objetivo*"><a class="anchor" href="#objetivo"></a>Objetivo</h2>
-      <p>El objetivo de la aplicación es el recuperar las posiciones de una sección de filamento seleccionado por el usuario, a lo largo de una secuencia de frames. El usuario es capaz de seleccionar la secuencia de imágenes; seleccionar el segmento de filamento al cual se debe realizar el seguimiento ubicando puntos a lo largo del mismo, acompañando su forma; ejecutar el seguimiento, y por último, descargar los resultados, ya sean graficados sobre la secuencia ingresada, o en formatos de texto para su posterior análisis.</p>
-      <h2 id="flujo-de-la-aplicación*"><a class="anchor" href="#flujo-de-la-aplicación"></a>Flujo de la aplicación</h2>
-      <p>En esta sección se detallará paso a paso las acciones que se deberán realizar para poder analizar una secuencia de imágenes, comentando acerca de los detalles pertinentes respecto la acción a tomar.</p>
-      <h3 id="1-inicio*"><a class="anchor" href="#1-inicio"></a>1. Inicio</h3>
-      <p class="uk-text-center"><img src="/static/images/manual/inicio1.png" alt="Inicio de la aplicación" /></p>
-      <p>Esta es la pantalla inicial de la aplicación. Como podemos ver, hay solo 3 cosas en pantalla. La primera es el botón <code>MANUAL DE USO</code>, el cual al hacerle click nos redigirá a este manual. El segundo es el botón <code>SELECCIONE LAS IMÁGENES QUE DESEA TRACKEAR</code>, el cual nos permitirá subir la secuencias de imágenes que deseamos trackear. Este es el siguiente paso a tomar. Por último, podemos ver la sección <code>Parámetros de tracking</code>, la cual podemos ignorar por ahora.</p>
-      <h3 id="2-selección-de-secuencia-de-imágenes-a-trackear*"><a class="anchor" href="#2-selección-de-secuencia-de-imágenes-a-trackear"></a>2. Selección de secuencia de imágenes a trackear</h3>
-      <p class="uk-text-center"><img src="/static/images/manual/seleccion_imagenes1.png" alt="Selección de imágenes" /></p>
-      <p>Una vez que le hacemos click al botón <code>SELECCIONE LAS IMÁGENES QUE DESEA TRACKEAR</code>, se nos abrirá una ventana sobre la cual estamos trabajando, la cual nos permitirá seleccionar las imágenes que deseamos trackear. Esta ventana está asociada al navegador de archivos de nuestro sistema operativo, por lo cual las acciones que se necesiten tomar en esta ventana pueden variar ligeramente a lo presentado en este manual; sin embargo, todos funcionan de maneras similares.</p>
-      <p>Deberemos navegar por los archivos de nuestro dispositivo hasta llegar a las imágenes que debemos trackear. Para subir las imágenes que deseamos, deberemos seleccionarlas y luego (al menos en el caso presentado) hacer click en el botón <code>Open</code>. Para seleccionar múltiples imágenes, podemos mantener presionado el botón del teclado <code>Ctrl</code>, y luego hacer click en todas las imágenes que deseemos subir. Otra opción es seleccionar un rango de imágenes, seleccionando la primera imagen del rango, y luego haciendo <code>Shift + click</code> en la última imagen del range que deseamos; podremos observar que todas las imágenes del rango son seleccionadas.</p>
-      <p>Es importante tener en cuenta que el orden en el cual subimos las imágenes importa, pues este debe corresponderse con el orden de la secuencia que deseamos analizar, y, por tanto, debe ser el orden por el cual el algoritmo los procese. El orden en el cual subimos las imágenes es el mismo orden que podemos ver en el navegador de archivos. El mismo en general tiene opciones para ordenar los archivos por orden creciente o decreciente, según distintas propiedades como nombre o tamaño.<br />
-      Para evitar problemas, se recomienda nombrar a todos las imágenes de la secuencia con el mismo nombre, y solo diferenciarlas por un número final que represente su posición en la secuencia. Luego, si ordenamos los archivos por nombre en orden descendente, las imágenes se mostraran en el orden de la secuencia, es decir, lo deseado. Téngase en cuenta que estos números finales deben tener todos el mismo largo para que esta técnica sea efectiva, por lo que puede ser necesario agregar ceros a izquierda. En la imagen presentada en esta sección se puede ver que se utilizó esta estrategia: todas las imágenes tienen el mismo nombre (<code>Image0041_C001T</code>), seguido por el número de fotograma de la secuencia con ceros a izquierda para que todos midan tres caracteres. Así, el orden siempre es el correcto.</p>
-      <p>Se deberá tener en cuenta que actualmente el tamaño máximo total de la secuencia de imágenes que la aplicación soporta subir es de <code>250 MB</code>. En caso de que la secuencia que se desee subir supere este valor, se recomienda analizar métodos de compresión de imágenes que mantengan la información de los filamentos, o de descartar información innecesaria de la misma, por ejemplo canales de color o de alpha. En caso de no poder evadir subir volúmenes tan altos de información, un administrador del servidor donde está alojada la aplicación web puede aumentar este máximo, ya sea temporal o permanentemente.</p>
-      <p>Actualmente, solo se soportan los formatos de imágenes <code>TIF</code>, <code>JPG</code> y <code>PNG</code>, es por eso que en la ventana de selección de imágenes solo aparecerán imágenes en estos formatos.</p>
-      <h3 id="3-selección-de-filamento-y-sus-puntos-de-control*"><a class="anchor" href="#3-selección-de-filamento-y-sus-puntos-de-control"></a>3. Selección de filamento y sus puntos de control</h3>
-      <p class="uk-text-center"><img src="/static/images/manual/seleccion_puntos1.png" alt="Selección de filamento y puntos 1" /></p>
-      <p>Una vez seleccionadas las imágenes de la secuencia, aparecerá en el centro de la pantalla la primera imagen de la secuencia. El siguiente paso es seleccionar puntos de control sobre el filamento que describan su forma, como podemos ver en la siguiente imagen.</p>
-      <p class="uk-text-center"><img src="/static/images/manual/seleccion_puntos2.png" alt="Selección de filamento y puntos 2" /></p>
-      <p>Si bien la selección de dichos puntos no es necesaria que sea muy precisa, si es muy deseable que tanto los puntos seleccionados, como las rectas que los conectan, se encuentren dentro del filamento a trackear. Es importante entender que la aplicación solo analizara el segmento de filamento seleccionado. Otra recomendación es seleccionar el segmento de filamento de manera que los extremos del mismo no se ubiquen en zonas conflictivas, es decir, de mucho ruido o intersecciones con otros filamentos, pues es en estas zonas donde actualmente el algoritmo es más débil.</p>
-      <p>Por otro lado, este es también el momento de elegir la configuración de parámetros que deseamos utilizar a la hora de realizar el tracking, en la sección de la esquina superior derecha. Se detallará en más detalle el significado de cada opción más adelante, por ahora se usarán los valores por defecto.</p>
-      <h4 id="controles-de-selección-de-puntos*"><a class="anchor" href="#controles-de-selección-de-puntos"></a>Controles de selección de puntos</h4>
-      <p>Como podemos apreciar en las imágenes, a la derecha de la imagen donde debemos seleccionar los puntos se encuentran 3 elementos de control, cuya función es simplificar el trabajo de selección de puntos.</p>
-      <p>El elemento superior es el control de zoom. Para imágenes de alta resolución, el filamento que deseamos seleccionar puede ser demasiado fino como para poder seleccionar los puntos de manera adecuada y cómoda. Es por esto que mediante los botones con los símbolos <code>+</code> y <code>-</code>, podemos acercar y alejar la imagen. Los puntos ya seleccionados se mantendrán en sus lugares correspondientes, y mantendrán su tamaño, por lo que podremos evaluar con mayor precision su posición real.<br />
-      En caso de desear movernos a otra parte de la imagen mientras estamos zoomeados, podremos hacerlo con el elemento inferior de control. Seleccionando el símbolo de la cruz con las cuatro flechas, dejaremos de poder insertar puntos en la imagen, y pasaremos a poder arrastrarla hasta la posición deseada. En caso de querer volver a poder insertar puntos en la imagen, deberemos volver a seleccionar el símbolo del lápiz que se encuentra arriba del símbolo de la cruz.</p>
-      <p class="uk-text-center"><img src="/static/images/manual/zoom1.png" alt="Zoom" /></p>
-      <p>Por último, está el elemento de control del medio. El mismo se encarga de deshacer y rehacer los puntos ya insertados en la imagen, respectivamente.</p>
-      <h4 id="preview-del-primer-frame*"><a class="anchor" href="#preview-del-primer-frame"></a>Preview del primer frame</h4>
-      <p class="uk-text-center"><img src="/static/images/manual/preview1.png" alt="Preview" /></p>
-      <p>Apenas tengamos insertados al menos 2 puntos en la imagen de selección de puntos, podremos observar que una segunda imagen aparece debajo del selector de parámetros. Esta es una preview de como quedaría el tracking aplicado a únicamente la primera imagen de la secuencia ingresada, es decir, de la imagen donde estamos insertando los puntos. Esta preview se refrescará cada vez que agreguemos un punto, o modifiquemos algún parámetro de tracking, para reflejar el tracking actualizado a la última información ingresada.</p>
-      <p>En esta preview se pueden observar las posiciones que el algoritmo de tracking recuperó, dibujados sobre la imagen. El objetivo de esta preview es ayudar al usuario durante el periodo de selección de puntos y de parámetros dándole una idea de como va a funcionar el tracking (al menos en un principio) con la configuración ingresada. Así, el usuario puede tener un ciclo iterativo de prueba y error mucho más veloz, que teniendo que ejecutar el tracking cada vez, especialmente cuando se trata de imágenes de alta resolución, o secuencias de muchas imágenes, pues en esos casos el tracking puede llegar a tomar varios minutos. Los detalles de como interpretar la información graficada sobre la imagen será discutida en la sección de resultados, pues es el mismo formato utilizado para los resultados finales.</p>
-      <h3 id="4-ejecución-de-tracking*"><a class="anchor" href="#4-ejecución-de-tracking"></a>4. Ejecución de tracking</h3>
-      <p class="uk-text-center"><img src="/static/images/manual/track1.png" alt="Tracking" /></p>
-      <p>Una vez que tenemos al menos 2 puntos insertados sobre la imagen de selección de puntos, aparecerá un tercer botón debajo de dicha imagen con la leyenda <code>TRACK</code>. Cuando estemos conformes con la configuración elegida, tanto la selección de puntos como los parámetros de tracking, debemos hacerle click a este botón para ejecutar el tracking.</p>
-      <p>En casos donde busquemos procesar muchas imágenes de alta resolución, es posible que dicho tracking tome algunos minutos. A menos que aparezca un mensaje de error, el servidor de la aplicación sigue procesando las imágenes. Una vez que se termine de procesar las imágenes, el visor de resultados aparecerá al final de la página.</p>
-      <h3 id="5-visualización-y-exportación-de-resultados*"><a class="anchor" href="#5-visualización-y-exportación-de-resultados"></a>5. Visualización y Exportación de Resultados</h3>
-      <p class="uk-text-center"><img src="/static/images/manual/resultados1.png" alt="Resultados" /></p>
-      <p>Una vez que el tracking haya resultado exitoso podremos visualizar y descargar las imágenes resultantes, y también descargar las coordenadas de los puntos en formato <code>Json</code> o <code>TSV</code>.</p>
-      <h4 id="visualizador-de-resultados*"><a class="anchor" href="#visualizador-de-resultados"></a>Visualizador de resultados</h4>
-      <p>Lo primero que salta a la vista es el visualizador de resultados.<br />
-      Clickeando el botón de <code>PLAY</code> abajo a la izquierda, el mismo irá pasando automáticamente las diferentes imágenes de la secuencia, con los puntos del filamento que fueron trackeados graficados encima. Clickeando ahora el botón de <code>PAUSE</code>, que ocupa el lugar donde estaba <code>PLAY</code>, las imágenes dejarán de pasar automáticamente, deteniéndose en la imagen actual. El botón de <code>STOP</code>, en cambio, también detiene las imágenes, pero vuelve a la primera imagen.<br />
-      Abajo al centro podremos ver qué número de cuadro, es decir imagen de la secuencia, estamos visualizando. Haciendo click en las flechas de los costados, podemos ir pasando manualmente las imágenes de la secuencia hacia el lado que deseemos. Es recomendable tener pausada la reproducción automática antes de pasarlas manualmente.<br />
-      Por último, abajo a la derecha podemos ver a que velocidad (medida en cuadros por segundo) se está pasando automáticamente por las imágenes, siendo 1 la velocidad más baja. Clickeando los símbolos <code>+</code> y <code>-</code> podremos aumentar o disminuir dicha velocidad.</p>
-      <h4 id="interpretación-de-resultados*"><a class="anchor" href="#interpretación-de-resultados"></a>Interpretación de resultados</h4>
-      <p>Los puntos graficados sobre la imagen pueden ser de 3 colores distintos, los cuales transmiten información adicional sobre la confianza que se le tiene a dicho punto. Su significado es el siguiente:</p>
+      <h1 id="manual-de-uso"><a class="anchor" href="#manual-de-uso"></a>Manual de Uso</h1>
+
+      <h2 id="objetivo"><a class="anchor" href="#objetivo"></a>Objetivo</h2>
+      <p>El objetivo de la aplicación es recuperar las posiciones de un segmento de filamento seleccionado a lo largo de una secuencia de frames.</p>
+
+      <h2 id="pasos-a-seguir"><a class="anchor" href="#pasos-a-seguir"></a>Pasos a seguir</h2>
+
+      <h3 id="1-inicio"><a class="anchor" href="#1-inicio"></a>1. Inicio</h3>
+      <p><img src="/static/images/manual/inicio1.png" alt="Inicio de la aplicación" /></p>
+      <p>Esta es la pantalla inicial de la aplicación.</p>
       <ul>
-      <li><code>Verde</code>: Este es el color estándar. Es decir que dicha coordenada fue recuperada siguiendo el método estándar definido de ajustar mediante una función gaussiana, por lo que se le tiene una alta confianza.</li>
-      <li><code>Azul</code>: Cuando el error del ajuste gaussiano utilizado para calcular un punto supero el límite configurado por parámetro del algoritmo, el mismo es calculado utilizando una rutina de reposición de puntos globales, que interpola linealmente el punto a partir de los puntos verdes vecinos que tenga hacia ambos lados. A la posición de estos puntos se les tiene una menor confianza, pues se está ubicando usando únicamente información que proveen otros puntos calculados. Para informar de esto, se los colorea de azul. Este color suele aparecer en zonas donde existe un alto ruido, o donde hay una intersección entre filamentos, lo cual distorsiona la información.</li>
-      <li><code>Rojo</code>: Este color de punto solo puede aparecer en los extremos del filamento. Estos puntos también poseen un error en el ajuste gaussiano que supera el límite impuesto, pero al estar al extremo del filamento, no se puede emplear la misma rutina de interpolación lineal para reponerlos, pues hay un lado que no aporta información. Es por esto que el método de reposición utilizado es el de mantener la posición que tenía en la iteración anterior. Este método es el que menos información aprovecha, y, por lo tanto, el menos confiable. En general hay que buscar evitar este tipo de puntos cambiando el segmento seleccionado, o los parámetros del algoritmo.</li>
+        <li><code>MANUAL DE USO</code>: redirige a este manual.</li>
+        <li><code>SELECCIONE LAS IMÁGENES QUE DESEA TRACKEAR</code>: permite subir la secuencias de imágenes que se desea trackear.</li>
+        <li><code>Parámetros de tracking</code>: Formulario de selección de los parámetros de tracking. Los mismos se detallan más adelante.</li>
       </ul>
-      <p>Si no nos interesa que los puntos posean distintos colores en los resultados, podemos deshabilitarlo desmarcando el checkbox izquierdo.</p>
-      <p>Si además del checkbox izquierdo marcamos el derecho, vamos a ver que a cada punto se le agrega una barra celeste en orientación perpendicular al filamento. Esto permite visualizar el perfil de intensidad que se utilizó para calcular el punto. Su largo es configurable en los parámetros del algoritmo. La opción de visualizarla se agregó para que resulte más sencillo entender por qué el algoritmo se comportó de cierta manera, y si es necesario modificar algún parámetro, por ejemplo el largo de estos perfiles.</p>
-      <h4 id="exportación-de-resultados*"><a class="anchor" href="#exportación-de-resultados"></a>Exportación de resultados</h4>
-      <p>Una vez finalizado el tracking, es lógico que deseemos exportar los resultados que obtuvimos.<br />
-      La primera opción ofrecida es descargar todas las imágenes obtenidas que vemos en el visualizador de resultados en formato <code>.PNG</code>, comprimidas en un <code>ZIP</code>. Para esto, hacer click en el link azul que dice <code>Zip</code>.</p>
-      <p>Otra opción es exportar las coordenadas de cada punto en un formato de texto. Se soportan 2 formatos: <code>Json</code> y <code>TSV</code>, elegidos por ser amigables tanto para humanos como computadoras, que se prestan para el análisis de datos. <code>TSV</code> es especialmente fácil de importar a una planilla de cálculo. Para descargarlos, simplemente hacer click en el link azul con el nombre del formato. El orden de los puntos, en ambos casos, respeta el orden en el que se seleccionó los puntos inicialmente.</p>
-      <p>La estructura <code>Json</code> utilizada es una lista donde cada item contiene los puntos de cada imagen, en orden. Cada item está compuesto por un objeto de un único element de clave <code>"points"</code> y valor un array con las coordenadas de todos los puntos del filamento de esa imagen, ordenamos. Las coordenadas están modeladas como un objeto con las propiedades <code>"x"</code> y <code>"y"</code>, cuyo valor es un número decimal que representa el sub-píxel donde el punto está ubicado dentro de la imagen. Un ejemplo de 2 imágenes y 2 puntos es:</p>
-      <pre><code class="json language-json">[
-      { "points": [
-        { "x": 1.5, "y": 2.5 },
-        { "x": 5.0, "y": 3.0 }
-      ] },
-      { "points": [
-        { "x": 5.5, "y": 0.5 },
-        { "x": 8.0, "y": 0.1 }
-      ] }
+
+      <h3 id="2-selección-de-secuencia-de-imágenes-a-trackear"><a class="anchor" href="#2-selección-de-secuencia-de-imágenes-a-trackear"></a>2. Selección de secuencia de imágenes a trackear</h3>
+      <p><img src="/static/images/manual/seleccion_imagenes1.png" alt="Selección de imágenes" /></p>
+      <ol>
+        <li>Hacer click en <code>SELECCIONE LAS IMÁGENES QUE DESEA TRACKEAR</code>.</li>
+        <li>Se abre una ventana similar a la de la imagen. Se muestran las imágenes que es posible subir a la aplicación. Se soportan los formatos <code>TIF</code>, <code>JPG</code> y <code>PNG</code>.</li>
+        <li>Seleccionar todos los frames de la secuencia. Se puede hacer manteniendo presionado <code>Ctrl</code> y haciendo click en todos los frames. Para seleccionar un rango, seleccionar el primer frame, y luego presionar <code>Shift</code> hacer click en el último frame.</li>
+        <li>Confirmar haciendo click en <code>Open</code>, o un botón similar.</li>
+      </ol>
+
+      <h4 id="consideraciones-extra"><a class="anchor" href="#consideraciones-extra"></a>Consideraciones extra</h4>
+
+      <h5 id="orden"><a class="anchor" href="#orden"></a>Orden</h5>
+      <p>El orden en el que vemos las imágenes en la ventana de selección es el orden en el que los frames aparecerán en la secuencia. Se recomienda nombrar a todos las imágenes de la secuencia con el mismo nombre, y solo diferenciarlas por un número final que represente su posición en la secuencia. Luego, ordenar los archivos por nombre de forma descendente, en general haciendo click en el encabezado <code>Name</code>.</p>
+
+      <h5 id="tamaño-máximo"><a class="anchor" href="#tamaño-máximo"></a>Tamaño máximo</h5>
+      <p>El tamaño máximo total de la secuencia de imágenes que la aplicación permite subir para el análisis es <code>250 MB</code>. En caso de superarlo, se recomienda previamente utilizar métodos de compresión. En caso de no poder evitar superar este límite, un administrador de la aplicación es capaz de aumentarlo, ya sea temporal o permanentemente.</p>
+
+      <h3 id="3-selección-de-filamento-y-sus-puntos-de-control"><a class="anchor" href="#3-selección-de-filamento-y-sus-puntos-de-control"></a>3. Selección de filamento y sus puntos de control</h3>
+      <p><img src="/static/images/manual/seleccion_puntos1.png" alt="Selección de filamento y puntos 1" /></p>
+      <p><img src="/static/images/manual/seleccion_puntos2.png" alt="Selección de filamento y puntos 2" /></p>
+      <p>Una vez seleccionadas las imágenes de la secuencia, aparecerá en el centro de la pantalla la primera imagen de la secuencia. El siguiente paso es seleccionar puntos de control sobre el filamento que describan su forma, como podemos ver en la siguiente imagen. Las líneas que conectan estos puntos deben estar idealmente siempre dentro del filamento. Además, los parámetros de tracking deseados deben ser seleccionados.</p>
+
+      <h4 id="controles-de-selección-de-puntos"><a class="anchor" href="#controles-de-selección-de-puntos"></a>Controles de selección de puntos</h4>
+      <p>El selector de puntos posee 3 elementos de control a su derecha. En orden de arriba hacia abajo:</p>
+      <ul>
+        <li><code>Zoom</code>: Los símbolos <code>+</code> y <code>-</code> permiten acercar y alejar la imagen, respectivamente.</li>
+        <li><code>Undo/Redo</code>: Permiten eliminar o volver a colocar el último punto seleccionado.</li>
+        <li><code>Modo</code>: Por defecto ons encontramos en el modo "lápiz", que nos permite colocar puntos al hacer click. El modo "cruz", en cambio, nos permite arrastrar la imagen con el mouse, en caso de que esté acercada.</li>
+      </ul>
+      <p><img src="/static/images/manual/zoom1.png" alt="Zoom" /></p>
+
+      <h4 id="preview-del-primer-frame"><a class="anchor" href="#preview-del-primer-frame"></a>Preview del primer frame</h4>
+      <p><img src="/static/images/manual/preview1.png" alt="Preview" /></p>
+      <p>Debajo del formulario de selección de parámetros, se puede encontrar el resultado de trackear el primer frame. El mismo se refresca cada vez que se modifique la selección de puntos, o los parámetros del algoritmo. El mismo permite rápidamente estimar el resultado de tracking que obtendremos con la configuración seleccionada.</p>
+
+      <h3 id="4-ejecución-de-tracking"><a class="anchor" href="#4-ejecución-de-tracking"></a>4. Ejecución de tracking</h3>
+      <p><img src="/static/images/manual/track1.png" alt="Tracking" /></p>
+      <p>Una vez que se esté seguro de la selección de puntos y de parámetros, con el botón <code>TRACK</code> se podrá iniciar el tracking.</p>
+
+      <h3 id="5-visualización-y-exportación-de-resultados"><a class="anchor" href="#5-visualización-y-exportación-de-resultados"></a>5. Visualización y Exportación de Resultados</h3>
+      <p><img src="/static/images/manual/resultados1.png" alt="Resultados" /></p>
+      <p>Una vez que el tracking haya resultado exitoso podremos visualizar las imágenes resultantes de manera animada o cuadro a cuadro, y descargarlas. Además, se podrá descargar las coordenadas de los puntos en formato <code>Json</code> o <code>TSV</code>, ambos amigables tanto para sistemas informáticos (ej. planillas de cálculo) como para humanos.</p>
+
+      <h4 id="visualizador-de-resultados"><a class="anchor" href="#visualizador-de-resultados"></a>Visualizador de resultados</h4>
+      <ul>
+        <li><code>PLAY/PAUSE</code>: Iniciar o pausar el pasaje de imágenes automático.</li>
+        <li><code>STOP</code>: Pausar el pasaje de imágenes automático, y volver al primer cuadro.</li>
+        <li><code>Pasaje manual</code>: Abajo al centro se puede ver el cuadro actual de la secuencia, y pasarla mediante las flechas de los costados.</li>
+        <li><code>Velocidad</code>: Se puede aumentar o disminuir la velocidad de la reproducción automática de las imágenes.</li>
+      </ul>
+
+      <h4 id="interpretación-de-resultados"><a class="anchor" href="#interpretación-de-resultados"></a>Interpretación de resultados</h4>
+      <p>Los puntos graficados sobre la imagen pueden ser de 3 colores distintos, los cuales transmiten información adicional sobre la confianza que se le tiene a dicho punto.</p>
+      <ul>
+        <li><code>Verde</code>: Color estándar. Es decir que dicha coordenada fue recuperada siguiendo el método estándar definido de ajustar mediante una función gaussiana, por lo que se le tiene una alta confianza.</li>
+        <li><code>Azul</code>: El error del ajuste gaussiano utilizado del punto superó el límite configurado. Entonces, el mismo es calculado empleando la rutina de reposición de puntos globales, interpolando linealmente. Estos puntos poseen una menor confianza. Este color suele aparecer en zonas donde existe un alto ruido, o donde hay una intersección entre filamentos, lo cual distorsiona la información.</li>
+        <li><code>Rojo</code>: Este color solo puede aparecer en los extremos del filamento. Son puntos que serían azules, pero que están ubicados al extremo del filamento, por lo que no se puede realizar la interpolación lineal. En cambio, se mantiene la posición calculada en el cuadro anterior. Este método es el menos confiable. En general hay que buscar evitar este tipo de puntos cambiando el segmento seleccionado, o los parámetros del algoritmo.</li>
+      </ul>
+
+      <h4 id="parámetros-de-visualización"><a class="anchor" href="#parámetros-de-visualización"></a>Parámetros de visualización</h4>
+      <p>Por encima del visualizador de resultados se encuentran 2 checkbox para modificar la información que se grafica en los resultados.</p>
+      <ul>
+        <li><code>Puntos codificados con colores</code>: Activa la codificación de colores. Si no, todos los puntos son verdes.</li>
+        <li><code>Perfiles de intensidad</code>: Grafica como barras celestes los perfiles de intensidad utilizados para cada punto durante el algoritmo. Útil para entender por qué el algoritmo puede estar fallando.</li>
+      </ul>
+
+      <h4 id="exportación-de-resultados"><a class="anchor" href="#exportación-de-resultados"></a>Exportación de resultados</h4>
+
+      <h5 id="imágenes"><a class="anchor" href="#imágenes"></a>Imágenes</h5>
+      <p>Se pueden exportar las imágenes como son vistas en el visualizador de resultados haciendo click en el link <code>ZIP</code>. Las mismas se descargan en un archivo <code>.ZIP</code> en formato <code>.PNG</code>.</p>
+
+      <h5 id="coordenadas---json"><a class="anchor" href="#coordenadas---json"></a>Coordenadas - JSON</h5>
+      <p>Se pueden descargas las coordenadas recuperadas en formato <code>JSON</code> haciendo click en el link correspondiente.</p>
+      <p>La estructura utilizada es una lista donde cada item contiene los puntos de cada imagen, en orden. Cada item está compuesto por un objeto de clave <code>"points"</code> y valor un array con las coordenadas de todos los puntos del filamento de esa imagen, ordenados. Las coordenadas están modeladas como un objeto con las propiedades <code>"x"</code> e <code>"y"</code>, cuyo valor es un número decimal que representa el sub-píxel donde el punto está ubicado dentro de la imagen. Un ejemplo de 2 imágenes y 2 puntos es:</p>
+      <pre><code class="json language-json">
+      [
+        { "points": [
+          { "x": 1.5, "y": 2.5 },
+          { "x": 5.0, "y": 3.0 }
+        ] },
+        { "points": [
+          { "x": 5.5, "y": 0.5 },
+          { "x": 8.0, "y": 0.1 }
+        ] }
       ]
       </code></pre>
-      <p>El formato del archivo <code>TSV</code> es más simple. Se compone de únicamente 3 headers: <code>frame</code>, <code>x</code>, <code>y</code>. El primero indica el número de imagen, el segundo es la coordenada <code>x</code> de posición sub-pixel de un punto dentro del filamento en la imagen correspondiente, y el tercero es lo mismo, pero para la coordenada <code>y</code>. Las coordenadas para un mismo número de imagen, están ordenadas por su aparición en el filamento, de forma similar que en el formato <code>Json</code>. Un ejemplo utilizando la misma situación que antes sería:</p>
+
+      <h5 id="coordenadas---tsv"><a class="anchor" href="#coordenadas---tsv"></a>Coordenadas - TSV</h5>
+      <p>Se pueden descargas las coordenadas recuperadas en formato <code>TSV</code> haciendo click en el link correspondiente.</p>
+      <p>El formato del archivo <code>TSV</code> se compone de únicamente 3 headers: <code>frame</code>, <code>x</code>, <code>y</code>. El primero indica el número de imagen, el segundo es la coordenada <code>x</code> de posición sub-pixel de un punto dentro del filamento en la imagen correspondiente, y el tercero es equivalente para la coordenada <code>y</code>. Un ejemplo de 2 imágenes y 2 puntos es:</p>
       <pre><code class="tsv language-tsv">
       frame   x   y
       0   1.5 2.5
@@ -106,21 +140,27 @@
       1   5.5 0.5
       1   8.0 0.1
       </code></pre>
-      <h2 id="parámetros-de-tracking*"><a class="anchor" href="#parámetros-de-tracking"></a>Parámetros de tracking</h2>
-      <p class="uk-text-center"><img src="/static/images/manual/parametros1.png" alt="Parámetros" /></p>
-      <p>En esta sección se explicarán cada uno de los parámetros que el algoritmo de tracking permite configurar. Cada uno de estos parámetros es necesario, y vienen un con valor por defecto que puede resultar inadecuado para el tipo de imágenes que se está intentando analizar. Es por esto que es importante conocer su significado y poder modificarlos según se necesite. Más allá de la siguiente explicación, en cualquier momento se puede hacer click en el símbolo <code>i</code> al lado de cada parámetro, para obtener una breve descripción. Los parámetros son:</p>
+
+      <h2 id="parámetros-de-tracking"><a class="anchor" href="#parámetros-de-tracking"></a>Parámetros de tracking</h2>
+      <p><img src="/static/images/manual/parametros1.png" alt="Parámetros" /></p>
       <ul>
-      <li><code>Tolerancia de error</code>: Este parámetro es un número decimal que indica el máximo error tolerado durante el ajuste gaussiano para obtener las coordenadas de un punto a partir de su perfil de intensidad asociado. En caso de que se supere, el punto pasara a considerarse "azul", y será calculado a partir de la rutina de reposición de puntos. El error es calculado como la raíz de la variancia de la media de la función gaussiana utilizada para el ajuste. Si en los resultados vemos puntos azules en lugares donde no parecería haber problema, una solución puede ser aumentar este parámetro. Si, por el contrario, vemos que aún en zonas problemáticas donde el tracking falló los puntos están verdes, puede ser que este parámetro está muy alto y permisivo.</li>
-      <li><code>Ancho de perfil de intensidad</code>: Este parámetro es un número entero que representa el largo en píxeles del perfil de intensidad que se toma por cada punto. Estos perfiles de intensidad se pueden visualizar en la sección de resultados como barras celestes. Es muy importante que el ancho de intensidad sea más largo que el ancho del filamento y que incluya un poco de fondo, así se puede formar correctamente la gaussiana.</li>
-      <li><code>Densidad de puntos</code>: Este parámetro es un número entero que representa cada cuantos píxeles tomamos un punto para analizar. Es decir, sería nuestro periodo de muestreo del filamento. Por defecto es 1, por lo que tomamos tantos puntos como píxeles haya. Esto, por supuesto, mejorará la precisión del análisis, sin embargo, también aumenta los tiempos de procesado, pues este es de orden lineal respecto la cantidad de puntos a analizar. En casos de muy alta resolución donde los tiempos de análisis sean demasiado altos, es posible que convenga sacrificar un poco de precisión en pos de velocidad.</li>
-      <li><code>Cantidad de puntos para interpolar</code>: Este parámetro es un número entero que representa la cantidad de puntos máximos que tomamos a ambos lados de un punto que necesita ser repuesto (es decir, un punto "azul") para calcular la interpolación lineal que necesita la rutina de reposición. En general el valor por defecto parece funcionar bien en la gran mayoría de casos, pero puede haber casos donde tomar más puntos mejore los resultados de la rutina.</li>
-      <li><code>Puntos para calcular la tangente</code>: Para calcular la dirección normal de un punto del filamento por la cual se deberá tomar su perfil de intensidad, primero se debe calcular la dirección tangente (que luego es rotada 90 grados), es decir, la pendiente del filamento en ese punto. Para calcularla se hace una interpolación de los puntos adyacentes a ambos lados. Este parámetro es un número entero que representa la cantidad de puntos adyacentes que se toman. En general se encontró que el valor por defecto de 15 funciona bien para la gran mayoría de los casos; sin embargo, es posible que en filamento de alta densidad de puntos este parámetro deba ser aumentado.</li>
-      <li><code>Longitud del segmento de suavizado</code>: Para la rutina de suavizado final del algoritmo, se ajustan todos los puntos del filamento obtenidos previamente a una curva de bezier. Sin embargo, no es posible ajustar largos arbitrariamente largos, por lo que filamentos de muchos puntos no podrían ser ajustados. Es por esto que se fija la cantidad de puntos que se ajustarán a una misma curva de bezier, luego se parte el filamento en tramos de este largo, se ajustan independiente, y por último se unen de nuevo. Este parámetro es un número entero que representa la cantidad de puntos que ajustaremos a una misma curva de bezier. Idealmente, queremos ajustar todos los puntos a una misma curva de bezier, es decir que querríamos que este parámetro sea superior a la cantidad de puntos que estamos trackeando. Sin embargo, si encontramos que el filamento que estamos trackeando es demasiado largo, o vemos que al ser tan larga la curva de bezier, no permitimos que el tracking se pueda curvar lo suficiente como para recuperar con precisión el filamento de la imagen, este parámetro puede ser disminuido.</li>
-      <li><code>Suavizado final</code>: Se decidió que la rutina final de suavizado sea opcional. Este parámetro indica si el algoritmo debe realizar la misma, o saltearla.</li>
+        <li><code>Tolerancia de error</code>: Número decimal que indica el máximo error tolerado durante el ajuste gaussiano para obtener las coordenadas de un punto a partir de su perfil de intensidad asociado. En caso de que se supere, el punto pasara a considerarse "azul", y será calculado a partir de la rutina de reposición de puntos. El error es calculado como la desviación estándar de la media de la gaussiana. Si en los resultados vemos puntos azules en lugares donde no parecería haber problemas, una solución puede ser aumentar este parámetro. Si vemos que aún en zonas problemáticas donde el tracking falló los puntos están verdes, puede ser que este parámetro está muy alto y permisivo.</li>
+        <li><code>Ancho de perfil de intensidad</code>: Número entero que representa el largo en píxeles del perfil de intensidad que se toma por cada punto. Estos perfiles de intensidad se pueden visualizar en la sección de resultados como barras celestes. Es muy importante que el ancho de intensidad sea más largo que el ancho del filamento y que incluya un poco de fondo, así se puede formar correctamente la gaussiana.</li>
+        <li><code>Densidad de puntos</code>: Número entero que representa cada cuantos píxeles se toma un punto para analizar. Es decir, sería nuestro periodo de muestreo del filamento. Por defecto es 1, por lo que tomamos tantos puntos como píxeles haya. Esto mejora la precisión del análisis, pero aumenta los tiempos de procesado. En casos de muy alta resolución donde los tiempos de análisis sean demasiado altos, es posible que convenga sacrificar precisión por velocidad.</li>
+        <li><code>Cantidad de puntos para interpolar</code>: Número entero que representa la cantidad de puntos máximos que tomamos a ambos lados de un punto que necesita ser repuesto (es decir, un punto "azul") para calcular la interpolación lineal que necesita la rutina de reposición. El valor por defecto parece funcionar bien en la gran mayoría de casos, pero puede haber casos donde tomar más puntos mejore los resultados de la rutina.</li>
+        <li><code>Puntos para calcular la tangente</code>: Para calcular la dirección normal de un punto del filamento por la cual se deberá tomar su perfil de intensidad, primero se debe calcular la dirección tangente (pendiente del filamento) en ese punto. Para calcularla se toma la recta que une los puntos que están a la distancia (en puntos) que este parámetro indica, dividido 2. El valor por defecto de 15 funciona bien para la gran mayoría de los casos, aunque es posible que en filamentos de alta densidad de puntos este parámetro deba ser aumentado.</li>
+        <li><code>Longitud del segmento de suavizado</code>: Para la rutina de suavizado final del algoritmo, se ajustan todos los puntos del filamento obtenidos previamente a curvas de Bézier. Este parámetro indica la cantidad de puntos que serán ajustados a la misma curva. Estos ajustes se hacen de manera independiente, y luego son unidos nuevamente por los extremos. Idealmente, queremos ajustar todos los puntos a una misma curva de bezier, es decir que querríamos que este parámetro sea superior a la cantidad de puntos que estamos trackeando. Sin embargo, si encontramos que el filamento que estamos trackeando es demasiado largo, o vemos que no permitimos que el tracking se pueda curvar lo suficiente como para recuperar con precisión el filamento de la imagen, este parámetro puede ser disminuido. La cantidad de segmentos de Bézier es la cantidad de puntos totales dividido este parámetro.</li>
+        <li><code>Suavizado final</code>: Se decidió que la rutina final de suavizado sea opcional. Este parámetro indica si el algoritmo debe realizar la misma, o saltearla.</li>
+        <li><code>Imágenes invertidas</code>: Este parámetro debe ser activado en caso de que el filamento a trackear sea negro sobre un fondo blanco. Así, la imagen es invertida antes de ser analizada.</li>
       </ul>
-      <h2 id="errores*"><a class="anchor" href="#errores"></a>Errores</h2>
-      <p class="uk-text-center"><img src="/static/images/manual/error1.png" alt="Ejemplo de error" /></p>
-      <p>Es posible que durante la ejecución de algoritmo de tracking suceda algún error, por ejemplo en el caso de la imagen, un error de conexión. Un mensaje ubicado debajo de la imagen de selección de puntos intentará guiarnos acerca de qué sucedió. En caso de un error de conexión, lo más probable es que el servidor donde la aplicación está corriendo este caído, o tenga algún problema externo a la aplicación. En cualquier otro caso, principalmente si el mensaje de error nno es de mucha ayuda, lo mejor es probar de recargar la página e intentar el tracking nuevamente. Si el error persiste, se recomienda contactarse con algún administrador del sistema.</p>
+
+      <h2 id="errores"><a class="anchor" href="#errores"></a>Errores</h2>
+      <p><img src="/static/images/manual/error1.png" alt="Ejemplo de error" /></p>
+      <p>Es posible que durante la ejecución de algoritmo de tracking suceda algún error. En dicho caso, se mostrará un mensaje de error debajo de la imagen de selección de puntos. Se intenta que dichos mensajes sean descriptivos. Los siguientes son excepciones:</p>
+      <ul>
+        <li><code>Server Connection Error: TypeError: NetworkError when attempting to fetch resource</code>: Este es un error de conexión al servidor. Lo más probable es que el servidor donde la aplicación está alojada este caído. Otra opción es que el navegador no tenga acceso a internet. Si se posee conexión y el error persiste, se recomienda contactarse con algún administrador del sistema.</li>
+        <li><code>Server Error: 413 - Request Entity Too Large</code>: Se está intentando subir una secuencia de imágenes cuyo tamaño total es superior al permitido, actualmente <code>250 MB</code>.</li>
+      </ul>
     </div>
       
     <a href="/" class="uk-button uk-button-default uk-width-1-1">Volver a Tracking</a>
